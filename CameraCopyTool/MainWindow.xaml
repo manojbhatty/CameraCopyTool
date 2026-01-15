@@ -75,38 +75,63 @@
             </Grid>
 
             <GroupBox Header="Already copied files" Margin="0,10,0,5" Grid.Row="2">
-                <ListView x:Name="lvAlreadyCopied" SelectionMode="Extended"  GridViewColumnHeader.Click="GridViewColumnHeader_Click">
+                <ListView x:Name="lvAlreadyCopied" SelectionMode="Extended" GridViewColumnHeader.Click="GridViewColumnHeader_Click">
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="File Name" Width="250" DisplayMemberBinding="{Binding Name}" />
-                            <GridViewColumn Header="Modified Date" Width="150" DisplayMemberBinding="{Binding ModifiedDate}" />
+                            <GridViewColumn>
+                                <GridViewColumn.Header>
+                                    <GridViewColumnHeader Content="File Name" Tag="Name"/>
+                                </GridViewColumn.Header>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn>
+                                <GridViewColumn.Header>
+                                    <GridViewColumnHeader Content="Modified Date" Tag="ModifiedDate"/>
+                                </GridViewColumn.Header>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding ModifiedDate}" HorizontalAlignment="Right"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
                         </GridView>
                     </ListView.View>
-                    <ListView.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem Header="Open" Click="Menu_Open_Click"/>
-                            <MenuItem Header="Delete" Click="Menu_Delete_Click"/>
-                        </ContextMenu>
-                    </ListView.ContextMenu>
                 </ListView>
             </GroupBox>
 
             <GroupBox Header="New files" Grid.Row="3">
-                <ListView x:Name="lvNewFiles" SelectionMode="Extended"  GridViewColumnHeader.Click="GridViewColumnHeader_Click">
+                <ListView x:Name="lvNewFiles" SelectionMode="Extended" GridViewColumnHeader.Click="GridViewColumnHeader_Click">
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="File Name" Width="250" DisplayMemberBinding="{Binding Name}" />
-                            <GridViewColumn Header="Modified Date" Width="150" DisplayMemberBinding="{Binding ModifiedDate}" />
+                            <GridViewColumn>
+                                <GridViewColumn.Header>
+                                    <GridViewColumnHeader Content="File Name" Tag="Name"/>
+                                </GridViewColumn.Header>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn>
+                                <GridViewColumn.Header>
+                                    <GridViewColumnHeader Content="Modified Date" Tag="ModifiedDate"/>
+                                </GridViewColumn.Header>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding ModifiedDate}" HorizontalAlignment="Right"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
                         </GridView>
                     </ListView.View>
-                    <ListView.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem Header="Open" Click="Menu_Open_Click"/>
-                            <MenuItem Header="Delete" Click="Menu_Delete_Click"/>
-                        </ContextMenu>
-                    </ListView.ContextMenu>
                 </ListView>
             </GroupBox>
+
         </Grid>
 
         <!-- CENTER ACTION -->
@@ -156,46 +181,36 @@
 
             <GroupBox Header="Files in destination" Margin="0,10,0,0" Grid.Row="2">
                 <ListView x:Name="lvDestinationFiles"
-          SelectionMode="Extended"
-          GridViewColumnHeader.Click="GridViewColumnHeader_Click"
-          FontFamily="Segoe UI Emoji">
-
+              SelectionMode="Extended"
+              GridViewColumnHeader.Click="GridViewColumnHeader_Click"
+              FontFamily="Segoe UI Emoji">
                     <ListView.View>
                         <GridView>
-
-                            <!-- File Name Column -->
                             <GridViewColumn>
                                 <GridViewColumn.Header>
                                     <GridViewColumnHeader Content="File Name" Tag="Name"/>
                                 </GridViewColumn.Header>
-
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding DisplayName}"
-                                   TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
-
-                            <!-- Modified Date Column -->
                             <GridViewColumn>
                                 <GridViewColumn.Header>
                                     <GridViewColumnHeader Content="Modified Date" Tag="ModifiedDate"/>
                                 </GridViewColumn.Header>
-
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding ModifiedDate}"
-                                   HorizontalAlignment="Right"/>
+                                        <TextBlock Text="{Binding ModifiedDate}" HorizontalAlignment="Right"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
-
                         </GridView>
                     </ListView.View>
                 </ListView>
-
             </GroupBox>
+
         </Grid>
 
     </Grid>

@@ -315,48 +315,41 @@ namespace CameraCopyTool
         }
 
         private void GridViewColumnHeader_Click(object sender, RoutedEventArgs e)
-{
-    if (e.OriginalSource is not GridViewColumnHeader header || header.Column == null)
-        return;
+        {
+            if (e.OriginalSource is not GridViewColumnHeader header || header.Column == null)
+                return;
 
-    // Determine property to sort by
-    string sortBy =
-        (header.Column.DisplayMemberBinding as Binding)?.Path?.Path
-        ?? header.Tag as string;
+            // Property to sort by from Tag
+            string sortBy = header.Tag as string;
+            if (string.IsNullOrEmpty(sortBy))
+                return;
 
-    if (string.IsNullOrEmpty(sortBy))
-        return;
+            // Find parent ListView
+            ListView listView = FindParent<ListView>(header);
+            if (listView == null)
+                return;
 
-    // Find owning ListView
-    ListView listView = FindParent<ListView>(header);
-    if (listView == null)
-        return;
+            // Determine sort direction
+            ListSortDirection direction;
+            if (_lastHeaderClicked == header)
+                direction = _lastDirection == ListSortDirection.Ascending
+                    ? ListSortDirection.Descending
+                    : ListSortDirection.Ascending;
+            else
+                direction = ListSortDirection.Ascending;
 
-    // Determine direction
-    ListSortDirection direction;
-    if (_lastHeaderClicked == header)
-    {
-        direction = _lastDirection == ListSortDirection.Ascending
-            ? ListSortDirection.Descending
-            : ListSortDirection.Ascending;
-    }
-    else
-    {
-        direction = ListSortDirection.Ascending;
-    }
+            // Clear arrows from all columns in this listview
+            ClearSortArrows(listView);
 
-    // Clear arrows on this ListView
-    ClearSortArrows(listView);
+            // Apply sort
+            SortListView(listView, sortBy, direction);
 
-    // Apply sort
-    SortListView(listView, sortBy, direction);
+            // Set arrow on clicked header
+            SetSortArrow(header, direction);
 
-    // Set arrow on clicked header
-    SetSortArrow(header, direction);
-
-    _lastHeaderClicked = header;
-    _lastDirection = direction;
-}
+            _lastHeaderClicked = header;
+            _lastDirection = direction;
+        }
 
 
 
@@ -416,11 +409,11 @@ namespace CameraCopyTool
             {
                 if (column.Header is GridViewColumnHeader header)
                 {
-                    if (header.Tag is string)
-                        header.Content = header.Content.ToString().Replace(" ▲", "").Replace(" ▼", "");
+                    header.Content = header.Content.ToString().Replace(" ▲", "").Replace(" ▼", "");
                 }
             }
         }
+
 
         private void SetSortArrow(GridViewColumnHeader header, ListSortDirection direction)
         {
