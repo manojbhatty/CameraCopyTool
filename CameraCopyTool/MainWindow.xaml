@@ -3,9 +3,21 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Camera Copy Tool" Height="600" Width="1000"
         MinHeight="400" MinWidth="800" Closing="Window_Closing">
-    <!-- Window resources go here -->
+
     <Window.Resources>
+        <!-- Context menu for ListView items -->
+        <ContextMenu x:Key="FileItemContextMenu">
+            <MenuItem Header="Open" Click="Menu_Open_Click"/>
+            <MenuItem Header="Delete" Click="Menu_Delete_Click"/>
+        </ContextMenu>
+
+        <!-- Highlight already copied items -->
         <Style TargetType="ListViewItem">
+            <!-- Ensure item is selected on right-click -->
+            <EventSetter Event="PreviewMouseRightButtonDown"
+                         Handler="ListViewItem_PreviewMouseRightButtonDown"/>
+            <!-- Attach context menu -->
+            <Setter Property="ContextMenu" Value="{StaticResource FileItemContextMenu}"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsAlreadyCopied}" Value="True">
                     <Setter Property="Background" Value="LightGreen"/>
@@ -13,205 +25,165 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+
+        <!-- General fonts -->
         <Style TargetType="ListView">
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
         </Style>
-
         <Style TargetType="TextBox">
             <Setter Property="FontSize" Value="16"/>
         </Style>
-
         <Style TargetType="Button">
             <Setter Property="FontSize" Value="16"/>
         </Style>
-
         <Style TargetType="GroupBox">
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
     </Window.Resources>
-    <Grid Margin="10">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <!-- Source panel -->
-            <ColumnDefinition Width="120" />
-            <!-- Center action -->
-            <ColumnDefinition Width="*" />
-            <!-- Destination panel -->
-        </Grid.ColumnDefinitions>
 
-        <!-- SOURCE PANEL -->
-        <Grid Grid.Column="0" Margin="5">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <!-- Header -->
-                <RowDefinition Height="Auto"/>
-                <!-- Source textbox + Browse -->
-                <RowDefinition Height="*"/>
-                <!-- Already copied files -->
-                <RowDefinition Height="*"/>
-                <!-- New files -->
-            </Grid.RowDefinitions>
+    <!-- Top-level Grid -->
+    <Grid>
+        <!-- MENU BAR -->
+        <Menu VerticalAlignment="Top">
+            <MenuItem Header="_Tools">
+                <MenuItem Header="_Refresh" Click="RefreshMenu_Click"/>
+            </MenuItem>
+        </Menu>
+        <!-- MAIN CONTENT GRID -->
+        <Grid Margin="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="120" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Source - Camera" FontWeight="Bold" FontSize="18" Grid.Row="0"/>
+            <!-- SOURCE PANEL -->
+            <Grid Grid.Column="0" Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-            <Grid Margin="0,5" Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="77*"/>
-                    <ColumnDefinition Width="283*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                <TextBlock Text="Source - Camera" FontWeight="Bold" FontSize="18" Grid.Row="0"/>
 
-                <TextBox x:Name="txtSourcePath"
-                         Height="28"
-                         Text="D:\SDCard\DCIM"
-                         TextChanged="SourcePath_TextChanged" Grid.ColumnSpan="2"/>
+                <Grid Margin="0,5" Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-                <Button Grid.Column="2"
-                        Content="Browse"
-                        Margin="5,0,0,0"
-                        Click="BrowseSource_Click"/>
+                    <TextBox x:Name="txtSourcePath" Height="28" Text="D:\SDCard\DCIM" TextChanged="SourcePath_TextChanged"/>
+                    <Button Grid.Column="1" Content="Browse" Margin="5,0,0,0" Click="BrowseSource_Click"/>
+                </Grid>
+
+                <!-- Already Copied -->
+                <GroupBox x:Name="gbAlreadyCopied" Header="Already copied files" Margin="0,10,0,5" Grid.Row="2">
+                    <ListView x:Name="lvAlreadyCopied" SelectionMode="Extended" GridViewColumnHeader.Click="GridViewColumnHeader_Click">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="File Name" Width="250" DisplayMemberBinding="{Binding Name}"/>
+                                <GridViewColumn Header="Modified Date" Width="150" DisplayMemberBinding="{Binding ModifiedDate}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </GroupBox>
+
+                <!-- New Files -->
+                <GroupBox x:Name="gbNewFiles" Header="New files" Grid.Row="3">
+                    <ListView x:Name="lvNewFiles" SelectionMode="Extended" GridViewColumnHeader.Click="GridViewColumnHeader_Click">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="File Name" Width="250" DisplayMemberBinding="{Binding Name}"/>
+                                <GridViewColumn Header="Modified Date" Width="150" DisplayMemberBinding="{Binding ModifiedDate}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </GroupBox>
             </Grid>
 
-            <GroupBox Header="Already copied files" Margin="0,10,0,5" Grid.Row="2">
-                <ListView x:Name="lvAlreadyCopied" SelectionMode="Extended" GridViewColumnHeader.Click="GridViewColumnHeader_Click">
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn>
-                                <GridViewColumn.Header>
-                                    <GridViewColumnHeader Content="File Name" Tag="Name"/>
-                                </GridViewColumn.Header>
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                            <GridViewColumn>
-                                <GridViewColumn.Header>
-                                    <GridViewColumnHeader Content="Modified Date" Tag="ModifiedDate"/>
-                                </GridViewColumn.Header>
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding ModifiedDate}" HorizontalAlignment="Right"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </GroupBox>
+            <!-- CENTER PANEL -->
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <Button x:Name="btnCopy" Content="Copy ➜" Height="50" Margin="10" Click="btnCopy_Click" FontSize="16" FontWeight="Bold"/>
+                <ProgressBar x:Name="pbCopyProgress" Height="20" Margin="10,5" Minimum="0" Maximum="100" Value="0"/>
+            </StackPanel>
 
-            <GroupBox Header="New files" Grid.Row="3">
-                <ListView x:Name="lvNewFiles" SelectionMode="Extended" GridViewColumnHeader.Click="GridViewColumnHeader_Click">
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn>
-                                <GridViewColumn.Header>
-                                    <GridViewColumnHeader Content="File Name" Tag="Name"/>
-                                </GridViewColumn.Header>
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                            <GridViewColumn>
-                                <GridViewColumn.Header>
-                                    <GridViewColumnHeader Content="Modified Date" Tag="ModifiedDate"/>
-                                </GridViewColumn.Header>
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding ModifiedDate}" HorizontalAlignment="Right"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </GroupBox>
+            <!-- DESTINATION PANEL -->
+            <Grid Grid.Column="2" Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-        </Grid>
+                <TextBlock Text="Destination - Computer" FontWeight="Bold" FontSize="18" Grid.Row="0"/>
 
-        <!-- CENTER ACTION -->
-        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-            <Button x:Name="btnCopy"
-                    Content="Copy ➜ " FontSize="16" FontWeight="Bold"
-                    Height="50"
-                    Margin="10" Click="btnCopy_Click"/>
-            <ProgressBar x:Name="pbCopyProgress"
-             Height="20"
-             Margin="10,5"
-             Minimum="0"
-             Maximum="100"
-             Value="0"/>
+                <Grid Margin="0,5" Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-        </StackPanel>
+                    <TextBox x:Name="txtDestinationPath" Height="28" Text="C:\Users\Public\Pictures" TextChanged="DestinationPath_TextChanged"/>
+                    <Button Grid.Column="1" Content="Browse" Margin="5,0,0,0" Click="BrowseDestination_Click"/>
+                </Grid>
 
-        <!-- DESTINATION PANEL -->
-        <Grid Grid.Column="2" Margin="5">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <!-- Header -->
-                <RowDefinition Height="Auto"/>
-                <!-- Destination textbox + Browse -->
-                <RowDefinition Height="*"/>
-                <!-- Files in destination -->
-            </Grid.RowDefinitions>
+                <GroupBox x:Name="gbDestinationFiles" Header="Files in destination" Margin="0,10,0,0" Grid.Row="2">
+                    <ListView x:Name="lvDestinationFiles"
+                              SelectionMode="Extended"
+                              GridViewColumnHeader.Click="GridViewColumnHeader_Click"
+                              FontFamily="Segoe UI Emoji">
+                        <ListView.View>
+                            <GridView>
+                                <!-- File Name -->
+                                <GridViewColumn>
+                                    <GridViewColumn.Header>
+                                        <GridViewColumnHeader Content="File Name" Tag="Name"/>
+                                    </GridViewColumn.Header>
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
 
-            <TextBlock Text="Destination - Computer" FontWeight="Bold" FontSize="18" Grid.Row="0"/>
-
-            <Grid Margin="0,5" Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <TextBox x:Name="txtDestinationPath"
-                         Height="28"
-                         Text="C:\Users\Public\Pictures"
-                         TextChanged="DestinationPath_TextChanged"/>
-
-                <Button Grid.Column="1"
-                        Content="Browse"
-                        Margin="5,0,0,0"
-                        Click="BrowseDestination_Click"/>
+                                <!-- Modified Date -->
+                                <GridViewColumn>
+                                    <GridViewColumn.Header>
+                                        <GridViewColumnHeader Content="Modified Date" Tag="ModifiedDate"/>
+                                    </GridViewColumn.Header>
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding ModifiedDate}" HorizontalAlignment="Right"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </GroupBox>
             </Grid>
-
-            <GroupBox Header="Files in destination" Margin="0,10,0,0" Grid.Row="2">
-                <ListView x:Name="lvDestinationFiles"
-              SelectionMode="Extended"
-              GridViewColumnHeader.Click="GridViewColumnHeader_Click"
-              FontFamily="Segoe UI Emoji">
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn>
-                                <GridViewColumn.Header>
-                                    <GridViewColumnHeader Content="File Name" Tag="Name"/>
-                                </GridViewColumn.Header>
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                            <GridViewColumn>
-                                <GridViewColumn.Header>
-                                    <GridViewColumnHeader Content="Modified Date" Tag="ModifiedDate"/>
-                                </GridViewColumn.Header>
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding ModifiedDate}" HorizontalAlignment="Right"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </GroupBox>
-
         </Grid>
 
+        <!-- LOADING OVERLAY (top layer) -->
+        <Grid x:Name="LoadingOverlay"
+              Background="#80000000"
+              Visibility="Collapsed"
+              Panel.ZIndex="100">
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                <ProgressBar IsIndeterminate="True"
+                             Width="250"
+                             Height="20"/>
+                <TextBlock Text="Loading files..."
+                           Foreground="White"
+                           FontSize="16"
+                           Margin="0,10,0,0"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>
