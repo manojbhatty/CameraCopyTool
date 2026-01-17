@@ -1,10 +1,12 @@
 ﻿using Microsoft.WindowsAPICodePack.Dialogs; // For modern folder picker
 using System.ComponentModel;
 using System.IO;
+using System.Security.Cryptography;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
+using System.Security.Cryptography;
 
 namespace CameraCopyTool
 {
@@ -630,5 +632,12 @@ namespace CameraCopyTool
             }
         }
 
+        private static string ComputeFileHash(string filePath)
+        {
+            using var stream = File.OpenRead(filePath);
+            using var sha = SHA256.Create();
+            byte[] hash = sha.ComputeHash(stream);
+            return Convert.ToHexString(hash); // .NET 5+
+        }
     }
 }

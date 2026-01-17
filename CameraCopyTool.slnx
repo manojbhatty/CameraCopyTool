@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="CameraCopyTool.Tests/CameraCopyTool.Tests.csproj" Id="c1dac76e-b7d5-439f-8fb5-b16830b90daf" />
+  <Project Path="CameraCopyTool.UI.Tests/CameraCopyTool.UI.Tests.csproj" Id="0cd80a72-fcf3-46cd-baa2-aa26f6a54c8f" />
   <Project Path="CameraCopyTool/CameraCopyTool.csproj" />
 </Solution>

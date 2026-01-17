@@ -47,8 +47,8 @@
     <Grid>
         <!-- MENU BAR -->
         <Menu VerticalAlignment="Top">
-            <MenuItem Header="_Tools">
-                <MenuItem Header="_Refresh" Click="RefreshMenu_Click"/>
+            <MenuItem Header="_Tools" AutomationProperties.AutomationId="ToolsMenu">
+                <MenuItem Header="_Refresh" Click="RefreshMenu_Click" AutomationProperties.AutomationId="RefreshMenu"/>
             </MenuItem>
         </Menu>
         <!-- MAIN CONTENT GRID -->
@@ -76,13 +76,13 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <TextBox x:Name="txtSourcePath" Height="28" Text="D:\SDCard\DCIM" TextChanged="SourcePath_TextChanged"/>
+                    <TextBox x:Name="txtSourcePath" Height="28" Text="D:\SDCard\DCIM" TextChanged="SourcePath_TextChanged" AutomationProperties.AutomationId="SourcePathTextBox"/>
                     <Button Grid.Column="1" Content="Browse" Margin="5,0,0,0" Click="BrowseSource_Click"/>
                 </Grid>
 
                 <!-- Already Copied -->
                 <GroupBox x:Name="gbAlreadyCopied" Header="Already copied files" Margin="0,10,0,5" Grid.Row="2">
-                    <ListView x:Name="lvAlreadyCopied" SelectionMode="Extended" GridViewColumnHeader.Click="GridViewColumnHeader_Click">
+                    <ListView x:Name="lvAlreadyCopied" SelectionMode="Extended" GridViewColumnHeader.Click="GridViewColumnHeader_Click" AutomationProperties.AutomationId="AlreadyCopiedListView">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="File Name" Width="250" DisplayMemberBinding="{Binding Name}"/>
@@ -94,7 +94,7 @@
 
                 <!-- New Files -->
                 <GroupBox x:Name="gbNewFiles" Header="New files" Grid.Row="3">
-                    <ListView x:Name="lvNewFiles" SelectionMode="Extended" GridViewColumnHeader.Click="GridViewColumnHeader_Click">
+                    <ListView x:Name="lvNewFiles" SelectionMode="Extended" GridViewColumnHeader.Click="GridViewColumnHeader_Click" AutomationProperties.AutomationId="NewFilesListView" >
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="File Name" Width="250" DisplayMemberBinding="{Binding Name}"/>
@@ -107,7 +107,7 @@
 
             <!-- CENTER PANEL -->
             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                <Button x:Name="btnCopy" Content="Copy ➜" Height="50" Margin="10" Click="btnCopy_Click" FontSize="16" FontWeight="Bold"/>
+                <Button x:Name="btnCopy" Content="Copy ➜" Height="50" Margin="10" Click="btnCopy_Click" FontSize="16" FontWeight="Bold" AutomationProperties.AutomationId="CopyButton"/>
                 <ProgressBar x:Name="pbCopyProgress" Height="20" Margin="10,5" Minimum="0" Maximum="100" Value="0"/>
             </StackPanel>
 
@@ -127,7 +127,7 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <TextBox x:Name="txtDestinationPath" Height="28" Text="C:\Users\Public\Pictures" TextChanged="DestinationPath_TextChanged"/>
+                    <TextBox x:Name="txtDestinationPath" Height="28" Text="C:\Users\Public\Pictures" TextChanged="DestinationPath_TextChanged" AutomationProperties.AutomationId="DestinationPathTextBox"/>
                     <Button Grid.Column="1" Content="Browse" Margin="5,0,0,0" Click="BrowseDestination_Click"/>
                 </Grid>
 

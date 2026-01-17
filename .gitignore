@@ -6,3 +6,6 @@
 /CameraCopyTool/bin
 /CameraCopyTool/obj
 /CameraCopyTool.Tests/obj
+/CameraCopyTool.UI.Tests/bin/Debug/net10.0
+/CameraCopyTool.UI.Tests/obj
+/CameraCopyTool.Tests/bin/Debug/net10.0
