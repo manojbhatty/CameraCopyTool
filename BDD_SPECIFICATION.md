@@ -141,7 +141,7 @@ The primary purpose of CameraCopyTool is to provide a user-friendly interface fo
 ```gherkin
 Scenario: User selects a valid source folder
   Given the application is open
-  When the user clicks the "Browse" button next to the source path
+  When the user clicks the "Choose Folder…" button next to the source path
   And selects a valid folder from the dialog
   Then the source path textbox should display the selected folder path
   And the file lists should refresh to show files from that folder
@@ -171,7 +171,7 @@ Scenario: User enters source path manually
 ```gherkin
 Scenario: User selects a valid destination folder
   Given the application is open
-  When the user clicks the "Browse" button next to the destination path
+  When the user clicks the "Choose Folder…" button next to the destination path
   And selects a valid folder from the dialog
   Then the destination path textbox should display the selected folder path
   And the file lists should refresh to show files from that folder
@@ -801,7 +801,7 @@ block-beta
         Tools["Tools ▼"]
         block:ToolsMenu[" "]
             columns 1
-            Refresh["Refresh (F5)"]
+            Refresh["Update File List (F5)"]
             Separator["─────"]
             Settings["Settings..."]
         end
@@ -811,7 +811,7 @@ block-beta
         block:SourcePanel["Source Panel"]
             columns 1
             SourceTitle["SOURCE - CAMERA"]
-            SourcePath["[Source Path TextBox] [Browse]"]
+            SourcePath["[Source Path TextBox] [Choose Folder…]"]
             block:AlreadyCopied["Already Copied Files"]
                 columns 1
                 ACHeader["Already copied files (X)"]
@@ -831,7 +831,7 @@ block-beta
         block:DestPanel["Destination Panel"]
             columns 1
             DestTitle["DESTINATION - COMPUTER"]
-            DestPath["[Destination Path TextBox] [Browse]"]
+            DestPath["[Destination Path TextBox] [Choose Folder…]"]
             block:DestFiles["Files in Destination"]
                 columns 1
                 DFHeader["Files in computer (X)"]
@@ -2031,9 +2031,9 @@ The following unit tests have been implemented to verify BDD compliance:
 
 ### Functional Tests
 
-- [x] Source folder selection via Browse button
+- [x] Source folder selection via Choose Folder… button
 - [x] Source folder selection via manual path entry
-- [x] Destination folder selection via Browse button
+- [x] Destination folder selection via Choose Folder… button
 - [x] Destination folder selection via manual path entry
 - [x] Path persistence across application restart
 - [x] Automatic file loading on startup with saved paths

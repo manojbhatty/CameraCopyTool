@@ -109,7 +109,7 @@
         <!-- MENU BAR -->
         <Menu VerticalAlignment="Top">
             <MenuItem Header="_Tools" AutomationProperties.AutomationId="ToolsMenu">
-                <MenuItem Header="_Refresh" Command="{Binding RefreshCommand}" AutomationProperties.AutomationId="RefreshMenu"/>
+                <MenuItem Header="_Update File List" Command="{Binding RefreshCommand}" AutomationProperties.AutomationId="RefreshMenu"/>
                 <Separator/>
                 <MenuItem Header="_Settings..." Command="{Binding OpenSettingsCommand}"/>
             </MenuItem>
@@ -141,10 +141,10 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <TextBox Grid.Column="0" Height="28" 
-                             Text="{Binding SourcePath, UpdateSourceTrigger=PropertyChanged}" 
+                    <TextBox Grid.Column="0" Height="28"
+                             Text="{Binding SourcePath, UpdateSourceTrigger=PropertyChanged}"
                              AutomationProperties.AutomationId="SourcePathTextBox"/>
-                    <Button Grid.Column="1" Content="Browse" Margin="5,0,0,0" 
+                    <Button Grid.Column="1" Content="Choose Folder…" Margin="5,0,0,0"
                             Command="{Binding BrowseSourceCommand}"/>
                 </Grid>
 
@@ -225,8 +225,8 @@
                         FontWeight="Bold"
                         FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
                         AutomationProperties.AutomationId="CopyButton"/>
-                <ProgressBar Height="20" Margin="10,5" 
-                             Minimum="0" Maximum="{Binding ProgressMaximum}" 
+                <ProgressBar Height="20" Margin="10,5"
+                             Minimum="0" Maximum="{Binding ProgressMaximum}"
                              Value="{Binding ProgressValue}"/>
             </StackPanel>
 
@@ -247,10 +247,10 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <TextBox Grid.Column="0" Height="28" 
-                             Text="{Binding DestinationPath, UpdateSourceTrigger=PropertyChanged}" 
+                    <TextBox Grid.Column="0" Height="28"
+                             Text="{Binding DestinationPath, UpdateSourceTrigger=PropertyChanged}"
                              AutomationProperties.AutomationId="DestinationPathTextBox"/>
-                    <Button Grid.Column="1" Content="Browse" Margin="5,0,0,0" 
+                    <Button Grid.Column="1" Content="Choose Folder…" Margin="5,0,0,0"
                             Command="{Binding BrowseDestinationCommand}"/>
                 </Grid>
 
