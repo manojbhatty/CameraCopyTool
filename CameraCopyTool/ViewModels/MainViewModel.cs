@@ -728,18 +728,17 @@ public class MainViewModel : ViewModelBase
         if (itemsToDelete.Count == 0)
             return;
 
-        // Show confirmation dialog
-        if (_dialogService.ShowMessage(
-                $"Are you sure you want to delete {itemsToDelete.Count} file(s)?",
-                "Confirm Delete",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning) != MessageBoxResult.Yes)
-            return;
-
         // Determine the folder path for deletion based on which list has selections
         // BDD Rule 3: Delete from New/Already Copied = Source, Delete from Destination = Destination
-        string folderPath = parameter as string ?? 
+        string folderPath = parameter as string ??
                            (SelectedDestinationFiles.Count > 0 ? DestinationPath : SourcePath);
+
+        string sourceLabel = folderPath == SourcePath ? "from your camera" : "from your computer";
+
+        // Show confirmation dialog with explicit warning
+        string message = $"⚠️ This will PERMANENTLY delete {itemsToDelete.Count} file(s) {sourceLabel}.\n\nThis action cannot be undone.";
+        if (!_dialogService.ShowDeleteConfirmation(message, FontSize))
+            return;
 
         foreach (var fileItem in itemsToDelete)
         {

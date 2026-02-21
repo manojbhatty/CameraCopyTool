@@ -1,5 +1,6 @@
 using System.IO;
 using System.Windows;
+using CameraCopyTool.Views;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace CameraCopyTool.Services;
@@ -38,6 +39,27 @@ public class DialogService : IDialogService
     public MessageBoxResult ShowMessage(string message, string title = "", MessageBoxButton buttons = MessageBoxButton.OK, MessageBoxImage image = MessageBoxImage.None)
     {
         return MessageBox.Show(message, title, buttons, image);
+    }
+
+    /// <summary>
+    /// Shows a confirmation dialog for deleting files.
+    /// Uses a custom-styled dialog that matches the application's design.
+    /// </summary>
+    /// <param name="message">The warning message to display.</param>
+    /// <param name="fontSize">The font size to use for accessibility.</param>
+    /// <returns>True if user confirmed deletion, false otherwise.</returns>
+    public bool ShowDeleteConfirmation(string message, double fontSize = 14)
+    {
+        var dlg = new DeleteConfirmationDialog(message, fontSize);
+        
+        // Get owner window for proper centering
+        if (Application.Current?.MainWindow != null)
+        {
+            dlg.Owner = Application.Current.MainWindow;
+        }
+        
+        var result = dlg.ShowDialog();
+        return result == true && dlg.Confirmed;
     }
 
     /// <summary>

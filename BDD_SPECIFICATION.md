@@ -497,8 +497,15 @@ Scenario: Delete from New Files list
   Given one or more files are selected in "New files"
   When the user presses the Delete key
   Or selects Delete from the context menu
-  Then a confirmation dialog should appear
-  Stating "Are you sure you want to delete X file(s)?"
+  Then a custom confirmation dialog should appear (matching application styling)
+  With a large warning icon (⚠️) 
+  With a dark semi-transparent background and drop shadow (overlay effect)
+  Stating "⚠️ This will PERMANENTLY delete X file(s) from your camera."
+  And "This action cannot be undone."
+  And two buttons: "Yes, Delete" and "No, Keep"
+  And the button text should match the application's font size setting
+  And the button text should be centered and bold
+  And the font size should match the user's accessibility setting
 
 Scenario: Delete multiple files
   Given multiple files are selected using Ctrl+Click or Shift+Click
@@ -506,16 +513,34 @@ Scenario: Delete multiple files
   Then the confirmation dialog should show the total count of files
   And all selected files should be deleted when confirmed
 
-Scenario: Delete confirmation
+Scenario: Delete from Destination list
+  Given one or more files are selected in "Files in destination"
+  When the user presses the Delete key
+  Or selects Delete from the context menu
+  Then a custom confirmation dialog should appear (matching application styling)
+  With a large warning icon (⚠️)
+  With a dark semi-transparent background and drop shadow (overlay effect)
+  Stating "⚠️ This will PERMANENTLY delete X file(s) from your computer."
+  And "This action cannot be undone."
+  And two buttons: "Yes, Delete" and "No, Keep"
+  And the button text should match the application's font size setting
+  And the button text should be centered and bold
+  And the font size should match the user's accessibility setting
+
+Scenario: Delete confirmation - Cancel
   Given the delete confirmation dialog is shown
-  When the user clicks "No"
+  When the user clicks "No, Keep"
+  Or presses Escape
   Then the deletion should be cancelled
+  And the dialog should close
   And no files should be deleted
 
-Scenario: Delete execution
+Scenario: Delete confirmation - Confirm
   Given the delete confirmation dialog is shown
-  When the user clicks "Yes"
-  Then the selected files should be deleted from the source folder
+  When the user clicks "Yes, Delete"
+  Or presses Enter
+  Then the selected files should be deleted from the source/destination folder
+  And the dialog should close
   And the file lists should refresh
 ```
 

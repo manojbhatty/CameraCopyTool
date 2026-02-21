@@ -27,6 +27,15 @@ public interface IDialogService
     MessageBoxResult ShowMessage(string message, string title = "", MessageBoxButton buttons = MessageBoxButton.OK, MessageBoxImage image = MessageBoxImage.None);
 
     /// <summary>
+    /// Shows a confirmation dialog for deleting files.
+    /// Displays a clear warning message with permanent deletion notice.
+    /// </summary>
+    /// <param name="message">The warning message to display.</param>
+    /// <param name="fontSize">The font size to use for accessibility.</param>
+    /// <returns>True if user confirmed deletion, false otherwise.</returns>
+    bool ShowDeleteConfirmation(string message, double fontSize = 14);
+
+    /// <summary>
     /// Shows a confirmation dialog for overwriting a file.
     /// Displays file comparison details to help the user decide.
     /// </summary>
