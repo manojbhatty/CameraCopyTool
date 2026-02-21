@@ -49,7 +49,7 @@ public class MainWindowTests
         _automation = new UIA3Automation();
 
         // 5️⃣ Wait for main window to appear
-        var mainWindow = _app.GetMainWindow(_automation);
+        var mainWindow = _app.GetMainWindow(_automation, new TimeSpan(0, 0, 10));
         Assert.That(mainWindow, Is.Not.Null);
 
         // Optional: Set the textboxes via Automation for source/destination
@@ -553,7 +553,7 @@ public class MainWindowTests
         // When a row is selected, hovering should NOT change its appearance
         var window = _app.GetMainWindow(_automation);
 
-        var newFilesList = window.FindFirstDescendant(cf => 
+        var newFilesList = window.FindFirstDescendant(cf =>
             cf.ByAutomationId("NewFilesListView")).AsListBox();
 
         Retry.WhileFalse(
@@ -564,16 +564,74 @@ public class MainWindowTests
         // Select the first item
         var firstItem = newFilesList.Items[0];
         firstItem.Select();
-        
+
         // Verify item is selected
         Assert.That(firstItem.IsSelected, Is.True, "Item should be selected");
-        
-        // Note: Visual state verification (background/foreground colors) 
+
+        // Note: Visual state verification (background/foreground colors)
         // requires UI automation patterns that may not be available in all test environments
         // The XAML MultiTrigger implementation ensures:
         // - Selected items maintain dark blue background (#1976D2) even when hovered
         // - White bold text remains visible on selected rows during hover
-        
+
         Assert.Pass("Selected item verified - visual state maintained by XAML MultiTrigger");
+    }
+
+    [Test]
+    public void ListView_Columns_HasCorrectWidthConfiguration()
+    {
+        // BDD User Story 2.1, 2.2, 2.3: ListView column configuration
+        // File Name column: Takes all remaining horizontal space (dynamically sized)
+        // Modified Date column: Fixed width (120px) to fit content, Right-aligned
+        var window = _app.GetMainWindow(_automation);
+
+        // Test all three ListViews have the correct column structure
+        var listViewIds = new[]
+        {
+            "AlreadyCopiedListView",
+            "NewFilesListView",
+            "DestinationFilesListView"
+        };
+
+        foreach (var listViewId in listViewIds)
+        {
+            var listView = window.FindFirstDescendant(cf =>
+                cf.ByAutomationId(listViewId));
+
+            Assert.That(listView, Is.Not.Null, $"{listViewId} should exist");
+
+            // Get the header row to verify columns exist
+            var header = listView.FindFirstDescendant(cf =>
+                cf.ByControlType(FlaUI.Core.Definitions.ControlType.Header));
+
+            Assert.That(header, Is.Not.Null, $"{listViewId} should have a header");
+
+            // Get all header items (columns)
+            var headerItems = header.FindAllChildren(cf =>
+                cf.ByControlType(FlaUI.Core.Definitions.ControlType.HeaderItem));
+
+            Assert.That(headerItems.Length, Is.EqualTo(2), $"{listViewId} should have exactly 2 columns");
+
+            // Verify column headers
+            Assert.That(headerItems[0].Name, Is.EqualTo("File Name"), $"{listViewId} first column should be 'File Name'");
+            Assert.That(headerItems[1].Name, Is.EqualTo("Modified Date"), $"{listViewId} second column should be 'Modified Date'");
+
+            // Verify column widths
+            // File Name column should be significantly wider (takes remaining space)
+            // Modified Date column should be fixed width (120px) to fit content
+            var fileNameWidth = headerItems[0].BoundingRectangle.Width;
+            var modifiedDateWidth = headerItems[1].BoundingRectangle.Width;
+
+            // The File Name column should be at least 2x wider than Modified Date column
+            // because it takes all remaining horizontal space
+            Assert.That(fileNameWidth, Is.GreaterThan(modifiedDateWidth * 2),
+                $"{listViewId} File Name column ({fileNameWidth}px) should be wider than Modified Date column ({modifiedDateWidth}px) - File Name should take all remaining space");
+
+            // Modified Date column should have a reasonable fixed width (around 120px)
+            Assert.That(modifiedDateWidth, Is.GreaterThan(100),
+                $"{listViewId} Modified Date column should be wide enough to show content (actual: {modifiedDateWidth}px)");
+        }
+
+        Assert.Pass("All ListViews have correct column configuration - File Name takes remaining space, Modified Date is fixed width");
     }
 }

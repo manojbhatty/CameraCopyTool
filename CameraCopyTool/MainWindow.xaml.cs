@@ -58,6 +58,39 @@ namespace CameraCopyTool
         {
             // Subscribe to the OpenSettingsRequested event to show the Settings dialog
             _viewModel.OpenSettingsRequested += OnOpenSettingsRequested;
+
+            // Subscribe to ListView SizeChanged events to adjust column widths dynamically
+            lvAlreadyCopied.SizeChanged += ListView_SizeChanged;
+            lvNewFiles.SizeChanged += ListView_SizeChanged;
+            lvDestinationFiles.SizeChanged += ListView_SizeChanged;
+        }
+
+        /// <summary>
+        /// Handles the SizeChanged event for ListViews to dynamically adjust column widths.
+        /// The File Name column takes all remaining space after the Modified Date column.
+        /// </summary>
+        private void ListView_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (sender is ListView listView && listView.View is GridView gridView &&
+                gridView.Columns.Count == 2)
+            {
+                // Get the actual width of the Modified Date column (auto-sized to content)
+                // If it's the first load, we need to let WPF calculate the auto width first
+                var modifiedDateColumn = gridView.Columns[1];
+                double modifiedDateWidth = modifiedDateColumn.ActualWidth;
+                
+                // If ActualWidth is 0 or NaN (not yet calculated), use a default minimum
+                if (modifiedDateWidth <= 0 || double.IsNaN(modifiedDateWidth))
+                {
+                    modifiedDateWidth = 140;
+                }
+                
+                // Calculate available width for File Name column
+                // Subtract: Modified Date width + scroll bar width (~18) + small padding
+                double fileNameWidth = Math.Max(100, listView.ActualWidth - modifiedDateWidth - 25);
+                
+                gridView.Columns[0].Width = fileNameWidth;
+            }
         }
 
         /// <summary>

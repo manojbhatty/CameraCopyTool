@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System.IO;
+using System.Text;
+using System.Windows;
 using CameraCopyTool.Services;
 using CameraCopyTool.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +29,10 @@ namespace CameraCopyTool
             var services = new ServiceCollection();
             ConfigureServices(services);
             _serviceProvider = services.BuildServiceProvider();
+
+            // Subscribe to global exception events
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            DispatcherUnhandledException += App_DispatcherUnhandledException;
         }
 
         /// <summary>
@@ -50,6 +56,80 @@ namespace CameraCopyTool
         }
 
         /// <summary>
+        /// Logs an exception to a file in the application's data directory.
+        /// </summary>
+        /// <param name="ex">The exception to log.</param>
+        /// <param name="source">The source of the exception (e.g., "Dispatcher", "AppDomain").</param>
+        private static void LogException(Exception ex, string source)
+        {
+            try
+            {
+                var logPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "CameraCopyTool",
+                    "error.log");
+
+                var directory = Path.GetDirectoryName(logPath);
+                if (directory != null && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                var logEntry = new StringBuilder();
+                logEntry.AppendLine($"=== {source} Exception ===");
+                logEntry.AppendLine($"Timestamp: {DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}");
+                logEntry.AppendLine($"Exception Type: {ex.GetType().FullName}");
+                logEntry.AppendLine($"Message: {ex.Message}");
+                logEntry.AppendLine($"Stack Trace: {ex.StackTrace}");
+
+                if (ex.InnerException != null)
+                {
+                    logEntry.AppendLine();
+                    logEntry.AppendLine($"=== Inner Exception ===");
+                    logEntry.AppendLine($"Type: {ex.InnerException.GetType().FullName}");
+                    logEntry.AppendLine($"Message: {ex.InnerException.Message}");
+                    logEntry.AppendLine($"Stack Trace: {ex.InnerException.StackTrace}");
+                }
+
+                logEntry.AppendLine();
+                logEntry.AppendLine(new string('=', 80));
+                logEntry.AppendLine();
+
+                File.AppendAllText(logPath, logEntry.ToString());
+            }
+            catch
+            {
+                // Ignore logging errors to prevent infinite loops
+            }
+        }
+
+        /// <summary>
+        /// Handles unhandled exceptions from the AppDomain.
+        /// </summary>
+        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            if (e.ExceptionObject is Exception ex)
+            {
+                LogException(ex, "AppDomain");
+            }
+        }
+
+        /// <summary>
+        /// Handles unhandled exceptions from the WPF dispatcher.
+        /// </summary>
+        private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            LogException(e.Exception, "Dispatcher");
+            e.Handled = true; // Prevent application crash
+
+            MessageBox.Show(
+                $"An error occurred: {e.Exception.Message}\n\nDetails have been logged to the error log file.",
+                "Error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+
+        /// <summary>
         /// Called when the application starts.
         /// Creates and shows the main window using dependency injection.
         /// </summary>
@@ -67,6 +147,9 @@ namespace CameraCopyTool
             }
             catch (Exception ex)
             {
+                // Log the exception
+                LogException(ex, "Startup");
+
                 // Show any startup errors to the user
                 MessageBox.Show(ex.ToString(), "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }

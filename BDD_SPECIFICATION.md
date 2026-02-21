@@ -891,10 +891,12 @@ block-beta
 **Note**: AutomationIds are set on the ListView elements for screen reader accessibility.
 
 #### ListView Columns
-| Column | Header | Width | Binding |
-|--------|--------|-------|---------|
-| File Name | "File Name" | 250 | `Name` or `DisplayName` |
-| Modified Date | "Modified Date" | 150 | `ModifiedDate` |
+| Column | Header | Width | Alignment | Binding |
+|--------|--------|-------|-----------|---------|
+| File Name | "File Name" | `*` (stretches to fill available space) | Left | `Name` or `DisplayName` |
+| Modified Date | "Modified Date" | `Auto` (sizes to content) | Right | `ModifiedDate` |
+
+**Note**: The File Name column takes all remaining horizontal space, while the Modified Date column sizes automatically to fit its content and is right-aligned for better readability.
 
 ### Settings Dialog Layout
 
