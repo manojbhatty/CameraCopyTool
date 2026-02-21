@@ -252,7 +252,8 @@
                     </GroupBox.HeaderTemplate>
                     <ListView x:Name="lvDestinationFiles" SelectionMode="Extended"
                               ItemsSource="{Binding DestinationFiles}"
-                              FontFamily="Segoe UI Emoji">
+                              FontFamily="Segoe UI Emoji"
+                              AutomationProperties.AutomationId="DestinationFilesListView">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="File Name" Width="250">
