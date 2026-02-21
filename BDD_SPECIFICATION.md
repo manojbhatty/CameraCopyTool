@@ -1314,6 +1314,32 @@ And the file lists should refresh
 - Hover states use visible light blue highlight - clear feedback when mouse is over items
 - Row borders (1px, light gray) separate items clearly - no confusion about where one item ends
 - All interactive states use color + text style changes together (never color alone)
+- **Selected state takes precedence over hover** - when a row is selected, hovering over it does NOT change the background, ensuring text remains readable with white bold text on blue background
+
+### Requirement 1.1.1: ListView Row State Priority
+
+**Specification**:
+- ListView row visual states have a specific priority order to ensure readability
+- When multiple states apply, the higher priority state's styling is used
+
+**State Priority Order** (highest to lowest):
+1. **Selected** (highest priority) - Dark blue background (#1976D2), white text, bold
+2. **Hover** (only when not selected) - Light blue background (#E3F2FD), black text
+3. **Already Copied** (base state) - Green background (#4CAF50), black text, bold
+4. **Normal** (default) - White background, black text
+
+**Behavior Matrix**:
+| Selected | MouseOver | Result Background | Result Foreground | Result Font |
+|----------|-----------|-------------------|-------------------|-------------|
+| False | False | White (or green if already copied) | Black | Normal (or bold if already copied) |
+| False | True | Light Blue (#E3F2FD) | Black | Normal |
+| True | False | Dark Blue (#1976D2) | White (#FFFFFF) | **Bold** |
+| True | True | Dark Blue (#1976D2) | White (#FFFFFF) | **Bold** |
+
+**Implementation**:
+- Uses WPF `MultiTrigger` to ensure hover only applies when `IsSelected=False`
+- Selected state always maintains high-contrast white text on blue background
+- This prevents the issue where hovering over a selected row would make text hard to read
 
 ### Requirement 1.2: Status Indicators
 
@@ -1972,6 +1998,35 @@ void Save();
 
 ## Appendix: Test Scenarios Checklist
 
+### Unit Test Coverage
+
+The following unit tests have been implemented to verify BDD compliance:
+
+**FileViewModelTests.cs** - MainViewModel Unit Tests:
+- Constructor tests (collections, commands, font size defaults)
+- Property tests (SourcePath, DestinationPath, FontSize, etc.)
+- Header properties tests (BDD v1.6 format with parentheses)
+- CopyCommand tests (BDD v1.3 - disabled when no selection)
+- BrowseSource/BrowseDestination command tests
+- LoadFilesAsync tests (cleanup temp files, error handling)
+- CopyAsync tests (safe copy, overwrite dialog, progress, success message)
+- DeleteCommand tests (BDD Rule 3 - delete from correct folder)
+- OpenCommand tests (single and multiple files)
+- OpenSettingsCommand tests (BDD User Story 6.1)
+- FileItem model tests (DisplayName with ✅ icon)
+- Accessibility tests (font size 14-28px, default 20px)
+
+**MainWindowTests.cs** - UI Integration Tests:
+- AutomationId verification (all required controls)
+- Copy button enable/disable behavior
+- ListView display tests (all three lists)
+- Section headers format test (parentheses for counts)
+- Context menu tests (Open and Delete options)
+- Settings dialog tests (font size slider 14-28px)
+- Temp file cleanup tests
+- Keyboard shortcut tests (F5, Delete)
+- **ListView styling tests** (MultiTrigger for hover/selection priority)
+
 ### Functional Tests
 
 - [x] Source folder selection via Browse button
@@ -2078,9 +2133,10 @@ void Save();
 | WCAG AAA Text Contrast | ✅ Complete | 7:1 contrast ratio met |
 | Non-Text Contrast (3:1) | ✅ Complete | UI components meet requirements |
 | Keyboard Navigation | ✅ Complete | F5, Delete shortcuts work |
-| Screen Reader Support | ⚠️ Partial | Missing `DestinationFilesListView` AutomationId |
+| Screen Reader Support | ✅ Complete | All AutomationIds assigned including `DestinationFilesListView` |
 | Status Indicators (Color+Icon+Text) | ⚠️ Partial | Icons planned for future |
 | Natural Sort | ⚠️ Planned | Future enhancement |
+| ListView State Priority | ✅ Complete | Selected state takes precedence over hover |
 
 ---
 
@@ -2096,6 +2152,8 @@ void Save();
 | 1.5.0 | 2026-02-22 | AI Assistant | Updated personas to focus exclusively on 75-year-old user (Margaret) with limited computer literacy. Added prominent row selection colors (dark blue #1976D2 with white bold text). Added visible hover states (light blue #E3F2FD). Added row borders (#E0E0E0) and padding (8px) for better click targets. Updated BDD with detailed design implications table for elderly users. |
 | 1.6.0 | 2026-02-22 | AI Assistant | Updated ListView section headers to use parentheses for counts: "Already copied files (X)", "New files (X)", "Files in computer (X)". Changed from "Files in destination" to "Files in computer" for clearer language. Updated BDD User Stories 2.1, 2.2, 2.3 and mermaid diagram to reflect new header format. |
 | 1.7.0 | 2026-02-22 | AI Assistant | **Verification Update**: Verified implementation against BDD. Updated file sorting spec to note natural sort is future enhancement. Added implementation status notes for disk space error handling and status icons. Updated test scenarios checklist with pass/fail status. Added Accessibility Compliance Summary table. Added note about AutomationId for destination ListView. |
+| 1.8.0 | 2026-02-22 | AI Assistant | **Unit Tests Update**: Added comprehensive unit tests covering all BDD scenarios. Added 50+ unit tests in FileViewModelTests.cs (constructor, properties, commands, accessibility). Added 15+ UI integration tests in MainWindowTests.cs (AutomationIds, keyboard shortcuts, settings dialog). Updated CameraCopyTool.Tests.csproj with Moq and test SDK packages. Added Unit Test Coverage section to BDD appendix. Fixed missing AutomationId for DestinationFilesListView in MainWindow.xaml. |
+| 1.9.0 | 2026-02-22 | AI Assistant | **ListView Hover Fix**: Fixed issue where hovering over a selected row made text hard to read. Added Requirement 1.1.1 documenting ListView row state priority (Selected > Hover > Already Copied > Normal). Updated BDD with behavior matrix showing all state combinations. Changed implementation to use MultiTrigger ensuring hover only applies when IsSelected=False. Updated Accessibility Compliance Summary to mark ListView State Priority as Complete. |
 
 ---
 

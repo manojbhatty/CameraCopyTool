@@ -29,16 +29,20 @@
                     <Setter Property="Foreground" Value="#000000"/>
                     <Setter Property="FontWeight" Value="Bold"/>
                 </DataTrigger>
-                <!-- Selected state: Prominent blue highlight -->
+                <!-- Selected state: Prominent blue highlight with white text -->
                 <Trigger Property="IsSelected" Value="True">
                     <Setter Property="Background" Value="#1976D2"/>
                     <Setter Property="Foreground" Value="#FFFFFF"/>
                     <Setter Property="FontWeight" Value="Bold"/>
                 </Trigger>
-                <!-- Mouse over: Subtle but visible highlight -->
-                <Trigger Property="IsMouseOver" Value="True">
+                <!-- Mouse over: Subtle but visible highlight (only when NOT selected) -->
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsMouseOver" Value="True"/>
+                        <Condition Property="IsSelected" Value="False"/>
+                    </MultiTrigger.Conditions>
                     <Setter Property="Background" Value="#E3F2FD"/>
-                </Trigger>
+                </MultiTrigger>
             </Style.Triggers>
         </Style>
 

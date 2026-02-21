@@ -514,8 +514,27 @@ public class MainViewModel : ViewModelBase
 
             // Update observable collections on the UI thread
             // ObservableCollection must be modified on the thread that created it (UI thread)
-            Application.Current.Dispatcher.Invoke(() =>
+            if (Application.Current != null && Application.Current.Dispatcher != null)
             {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    AlreadyCopiedFiles.Clear();
+                    NewFiles.Clear();
+                    DestinationFiles.Clear();
+
+                    foreach (var f in alreadyCopied)
+                        AlreadyCopiedFiles.Add(f);
+
+                    foreach (var f in newFiles)
+                        NewFiles.Add(f);
+
+                    foreach (var f in destFileItems)
+                        DestinationFiles.Add(f);
+                });
+            }
+            else
+            {
+                // Test environment - update directly
                 AlreadyCopiedFiles.Clear();
                 NewFiles.Clear();
                 DestinationFiles.Clear();
@@ -528,7 +547,7 @@ public class MainViewModel : ViewModelBase
 
                 foreach (var f in destFileItems)
                     DestinationFiles.Add(f);
-            });
+            }
 
             StatusMessage = $"Loaded {NewFiles.Count} new files, {AlreadyCopiedFiles.Count} already copied";
         }
@@ -652,11 +671,20 @@ public class MainViewModel : ViewModelBase
             // Update UI collections to reflect copied files
             foreach (var fileItem in copiedFiles)
             {
-                Application.Current.Dispatcher.Invoke(() =>
+                if (Application.Current != null && Application.Current.Dispatcher != null)
                 {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        NewFiles.Remove(fileItem);
+                        AlreadyCopiedFiles.Add(fileItem);
+                    });
+                }
+                else
+                {
+                    // Test environment - update directly
                     NewFiles.Remove(fileItem);
                     AlreadyCopiedFiles.Add(fileItem);
-                });
+                }
             }
 
             ProgressValue = 0;
@@ -683,9 +711,11 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Deletes selected files from any of the three ListViews.
     /// Shows a confirmation dialog before deleting.
+    /// Files in New Files or Already Copied lists are deleted from Source.
+    /// Files in Destination list are deleted from Destination.
     /// </summary>
     /// <param name="parameter">Command parameter. If provided, specifies the folder path.
-    /// Otherwise, uses the SourcePath.</param>
+    /// Otherwise, determines path based on which list has selections.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     private async Task DeleteSelectedAsync(object? parameter)
     {
@@ -706,8 +736,10 @@ public class MainViewModel : ViewModelBase
                 MessageBoxImage.Warning) != MessageBoxResult.Yes)
             return;
 
-        // Determine the folder path for deletion
-        string folderPath = parameter as string ?? SourcePath;
+        // Determine the folder path for deletion based on which list has selections
+        // BDD Rule 3: Delete from New/Already Copied = Source, Delete from Destination = Destination
+        string folderPath = parameter as string ?? 
+                           (SelectedDestinationFiles.Count > 0 ? DestinationPath : SourcePath);
 
         foreach (var fileItem in itemsToDelete)
         {
@@ -718,15 +750,28 @@ public class MainViewModel : ViewModelBase
                 _fileService.DeleteFile(filePath);
 
                 // Remove from UI collection on the UI thread
-                Application.Current.Dispatcher.Invoke(() =>
+                if (Application.Current != null && Application.Current.Dispatcher != null)
                 {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        if (NewFiles.Contains(fileItem))
+                            NewFiles.Remove(fileItem);
+                        else if (AlreadyCopiedFiles.Contains(fileItem))
+                            AlreadyCopiedFiles.Remove(fileItem);
+                        else if (DestinationFiles.Contains(fileItem))
+                            DestinationFiles.Remove(fileItem);
+                    });
+                }
+                else
+                {
+                    // Test environment - update directly
                     if (NewFiles.Contains(fileItem))
                         NewFiles.Remove(fileItem);
                     else if (AlreadyCopiedFiles.Contains(fileItem))
                         AlreadyCopiedFiles.Remove(fileItem);
                     else if (DestinationFiles.Contains(fileItem))
                         DestinationFiles.Remove(fileItem);
-                });
+                }
             }
             catch (Exception ex)
             {
