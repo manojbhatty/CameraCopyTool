@@ -1,8 +1,41 @@
 ﻿<Application x:Class="CameraCopyTool.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:CameraCopyTool">
+             xmlns:local="clr-namespace:CameraCopyTool"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <Application.Resources>
-         
+        <!-- High-Contrast Color Scheme for Accessibility (WCAG AAA) -->
+        <!-- Already copied files: High-contrast green background with black text -->
+        <SolidColorBrush x:Key="AlreadyCopiedBackgroundBrush" Color="#4CAF50"/>
+        <SolidColorBrush x:Key="AlreadyCopiedTextBrush" Color="#000000"/>
+        
+        <!-- Selected row colors: Prominent blue with white text -->
+        <SolidColorBrush x:Key="SelectedRowBackgroundBrush" Color="#1976D2"/>
+        <SolidColorBrush x:Key="SelectedRowTextBrush" Color="#FFFFFF"/>
+        
+        <!-- Hover row colors: Subtle light blue highlight -->
+        <SolidColorBrush x:Key="HoverRowBackgroundBrush" Color="#E3F2FD"/>
+        
+        <!-- Button colors: High-contrast blue with white text -->
+        <SolidColorBrush x:Key="ButtonBackgroundBrush" Color="#2196F3"/>
+        <SolidColorBrush x:Key="ButtonTextBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="ButtonBorderBrush" Color="#1976D2"/>
+        <SolidColorBrush x:Key="ButtonHoverBackgroundBrush" Color="#1976D2"/>
+        
+        <!-- Loading overlay colors -->
+        <SolidColorBrush x:Key="LoadingOverlayBackgroundBrush" Color="#80000000"/>
+        <SolidColorBrush x:Key="LoadingTextBrush" Color="#FFFFFF"/>
+        
+        <!-- General high-contrast colors -->
+        <SolidColorBrush x:Key="HighContrastBorderBrush" Color="#000000"/>
+        <SolidColorBrush x:Key="RowBorderBrush" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="#4CAF50"/>
+        <SolidColorBrush x:Key="WarningBrush" Color="#FF9800"/>
+        <SolidColorBrush x:Key="ErrorBrush" Color="#F44336"/>
+
+        <!-- Default Font Sizes for Accessibility -->
+        <sys:Double x:Key="DefaultFontSize">20</sys:Double>
+        <sys:Double x:Key="MinimumFontSize">14</sys:Double>
+        <sys:Double x:Key="MaximumFontSize">28</sys:Double>
     </Application.Resources>
 </Application>

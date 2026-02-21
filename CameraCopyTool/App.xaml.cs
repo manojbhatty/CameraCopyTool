@@ -1,25 +1,86 @@
 ﻿using System.Windows;
+using CameraCopyTool.Services;
+using CameraCopyTool.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CameraCopyTool
 {
+    /// <summary>
+    /// The main application class for CameraCopyTool.
+    /// Handles application startup, dependency injection configuration, and service registration.
+    /// Inherits from WPF's Application class.
+    /// </summary>
     public partial class App : Application
     {
-        // Usually nothing is needed here if you use StartupUri
-        // In App.xaml.cs
+        /// <summary>
+        /// The service provider for dependency injection.
+        /// Used to resolve services and ViewModels throughout the application.
+        /// </summary>
+        private readonly IServiceProvider _serviceProvider;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="App"/> class.
+        /// Configures dependency injection and builds the service provider.
+        /// </summary>
+        public App()
+        {
+            var services = new ServiceCollection();
+            ConfigureServices(services);
+            _serviceProvider = services.BuildServiceProvider();
+        }
+
+        /// <summary>
+        /// Configures the dependency injection container with application services.
+        /// Registers all services, ViewModels, and Views used by the application.
+        /// </summary>
+        /// <param name="services">The service collection to configure.</param>
+        private static void ConfigureServices(IServiceCollection services)
+        {
+            // Register services as singletons (one instance for the application lifetime)
+            services.AddSingleton<IFileService, FileService>();
+            services.AddSingleton<IDialogService, DialogService>();
+            services.AddSingleton<ISettingsService, SettingsService>();
+
+            // Register MainViewModel as transient (new instance each time)
+            services.AddTransient<MainViewModel>();
+
+            // Register MainWindow as transient (new instance each time)
+            // MainWindow receives its dependencies (including MainViewModel) via constructor injection
+            services.AddTransient<MainWindow>();
+        }
+
+        /// <summary>
+        /// Called when the application starts.
+        /// Creates and shows the main window using dependency injection.
+        /// </summary>
+        /// <param name="e">Event data for the startup event.</param>
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
             try
             {
-                var main = new MainWindow();
-                main.Show();
+                // Resolve MainWindow from DI container
+                // This ensures all dependencies are properly injected
+                var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+                mainWindow.Show();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                // Show any startup errors to the user
+                MessageBox.Show(ex.ToString(), "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
+        /// <summary>
+        /// Gets a service of the specified type from the service provider.
+        /// Static helper method for accessing services from anywhere in the application.
+        /// </summary>
+        /// <typeparam name="T">The type of service to retrieve.</typeparam>
+        /// <returns>The requested service instance.</returns>
+        public static T GetService<T>() where T : class
+        {
+            return ((App)Current)._serviceProvider.GetRequiredService<T>();
+        }
     }
 }

@@ -185,6 +185,122 @@ public class MainWindowTests
         Assert.Pass();
     }
 
+    [Test]
+    public void TempFiles_Are_Cleaned_On_Refresh()
+    {
+        // Create a fake temp file
+        var tempFile = Path.Combine(_tempDestinationFolder, "Orphan.txt.copying");
+        File.WriteAllText(tempFile, "partial");
+
+        var window = _app.GetMainWindow(_automation);
+
+        var toolsMenu = window.FindFirstDescendant(cf =>
+            cf.ByAutomationId("ToolsMenu")).AsMenuItem();
+        toolsMenu.Expand();
+
+        var refreshMenu = window.FindFirstDescendant(cf =>
+            cf.ByAutomationId("RefreshMenu")).AsMenuItem();
+        refreshMenu.Click();
+
+        Retry.WhileTrue(
+            () => File.Exists(tempFile),
+            TimeSpan.FromSeconds(2)
+        );
+
+        Assert.That(File.Exists(tempFile), Is.False);
+    }
+
+    [Test]
+    public void OrphanTempFiles_Are_Cleaned_On_Refresh()
+    {
+        var tempFile = Path.Combine(_tempDestinationFolder, "Broken.jpg.copying");
+        File.WriteAllText(tempFile, "partial");
+
+        var window = _app.GetMainWindow(_automation);
+
+        var toolsMenu = window.FindFirstDescendant(cf =>
+            cf.ByAutomationId("ToolsMenu")).AsMenuItem();
+        toolsMenu.Expand();
+
+        var refreshMenu = window.FindFirstDescendant(cf =>
+            cf.ByAutomationId("RefreshMenu")).AsMenuItem();
+        refreshMenu.Click();
+
+        Retry.WhileTrue(
+            () => File.Exists(tempFile),
+            TimeSpan.FromSeconds(2)
+        );
+
+        Assert.That(File.Exists(tempFile), Is.False);
+    }
+
+    [Test]
+    public void Copy_Moves_File_To_AlreadyCopied_List()
+    {
+        var window = _app.GetMainWindow(_automation);
+
+        var newFiles = window.FindFirstDescendant(cf =>
+            cf.ByAutomationId("NewFilesListView")).AsListBox();
+
+        Retry.WhileFalse(() => newFiles.Items.Length > 0, TimeSpan.FromSeconds(5));
+
+        newFiles.Items[0].Select();
+
+        var copyButton = window.FindFirstDescendant(cf =>
+            cf.ByAutomationId("CopyButton")).AsButton();
+        copyButton.Invoke();
+
+        var alreadyCopied = window.FindFirstDescendant(cf =>
+            cf.ByAutomationId("AlreadyCopiedListView")).AsListBox();
+
+        Retry.WhileFalse(() => alreadyCopied.Items.Length > 0, TimeSpan.FromSeconds(5));
+
+        Assert.That(alreadyCopied.Items.Length, Is.GreaterThan(0));
+    }
+
+    [Test]
+    public void Delete_From_NewFiles_Deletes_From_Source()
+    {
+        var window = _app.GetMainWindow(_automation);
+
+        var list = window.FindFirstDescendant(cf =>
+            cf.ByAutomationId("NewFilesListView")).AsListBox();
+
+        Retry.WhileFalse(() => list.Items.Length > 0, TimeSpan.FromSeconds(5));
+
+        list.Items[0].RightClick();
+
+        var deleteItem = window.FindFirstDescendant(cf =>
+            cf.ByName("Delete")).AsMenuItem();
+        deleteItem.Click();
+
+        // 🔑 Wait for confirmation dialog
+        var confirmDialog = Retry
+     .WhileNull(() => window.ModalWindows.FirstOrDefault(),
+                TimeSpan.FromSeconds(3))
+     .Result;
+
+        Assert.That(confirmDialog, Is.Not.Null);
+
+        var yesButton = confirmDialog
+     .FindFirstDescendant(cf => cf.ByName("Yes"))
+     .AsButton();
+
+        Assert.That(yesButton, Is.Not.Null);
+
+        yesButton.Click();
+
+        // 🔑 Wait until file is actually gone
+        Retry.WhileTrue(
+            () => Directory.GetFiles(_tempSourceFolder).Length > 1,
+            TimeSpan.FromSeconds(3)
+        );
+
+        Assert.That(
+            Directory.GetFiles(_tempSourceFolder).Length,
+            Is.EqualTo(1)
+        );
+    }
 
 
 }
