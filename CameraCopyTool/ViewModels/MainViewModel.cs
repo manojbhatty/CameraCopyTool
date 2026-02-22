@@ -203,7 +203,13 @@ public class MainViewModel : ViewModelBase
     public int ProgressValue
     {
         get => _progressValue;
-        set => SetProperty(ref _progressValue, value);
+        set
+        {
+            if (SetProperty(ref _progressValue, value))
+            {
+                OnPropertyChanged(nameof(ProgressPercentage));
+            }
+        }
     }
 
     /// <summary>
@@ -213,7 +219,26 @@ public class MainViewModel : ViewModelBase
     public int ProgressMaximum
     {
         get => _progressMaximum;
-        set => SetProperty(ref _progressMaximum, value);
+        set
+        {
+            if (SetProperty(ref _progressMaximum, value))
+            {
+                OnPropertyChanged(nameof(ProgressPercentage));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the progress percentage for display in the UI.
+    /// Calculated from ProgressValue and ProgressMaximum.
+    /// </summary>
+    public double ProgressPercentage
+    {
+        get
+        {
+            if (ProgressMaximum <= 0) return 0;
+            return (double)ProgressValue / ProgressMaximum * 100;
+        }
     }
 
     /// <summary>
@@ -591,13 +616,16 @@ public class MainViewModel : ViewModelBase
         IsCopying = true;
         ProgressValue = 0;
         // Set progress maximum to total bytes to copy
-        ProgressMaximum = (int)filesToCopy.Sum(f => f.FileSize);
+        long totalBytes = filesToCopy.Sum(f => f.FileSize);
+        ProgressMaximum = (int)Math.Min(totalBytes, int.MaxValue);
+        System.Diagnostics.Debug.WriteLine($"Starting copy: {filesToCopy.Count} files, {totalBytes} bytes, ProgressMaximum={ProgressMaximum}");
         StatusMessage = "Copying files...";
 
         try
         {
             int successCount = 0;
             var copiedFiles = new List<FileItem>();
+            long bytesCopiedBeforeCurrentFile = 0;
 
             foreach (var fileItem in filesToCopy)
             {
@@ -620,16 +648,25 @@ public class MainViewModel : ViewModelBase
                             break; // Stop copying all remaining files
 
                         if (choice == OverwriteChoice.No)
-                            continue; // Skip this file, continue with next
+                        {
+                            // Skip this file but add its size to the cumulative progress
+                            bytesCopiedBeforeCurrentFile += fileItem.FileSize;
+                            continue;
+                        }
                     }
 
                     // Clean up any stale temporary files from previous failed operations
                     _fileService.CleanupTempFiles(DestinationPath);
 
                     // Copy file to temporary location with progress reporting
+                    // Capture current file's starting position for cumulative progress
+                    long currentFileStart = bytesCopiedBeforeCurrentFile;
                     var progress = new Progress<long>(bytesRead =>
                     {
-                        ProgressValue = (int)bytesRead;
+                        long cumulativeBytes = currentFileStart + bytesRead;
+                        int progressValue = (int)Math.Min(cumulativeBytes, int.MaxValue);
+                        System.Diagnostics.Debug.WriteLine($"Progress: {bytesRead} / {fileItem.FileSize} = {progressValue} / {ProgressMaximum}");
+                        ProgressValue = progressValue;
                     });
 
                     await _fileService.CopyFileAsync(sourcePath, tempDestPath, progress, CancellationToken.None);
@@ -640,6 +677,7 @@ public class MainViewModel : ViewModelBase
 
                     copiedFiles.Add(fileItem);
                     successCount++;
+                    bytesCopiedBeforeCurrentFile += fileItem.FileSize;
                 }
                 catch (OperationCanceledException)
                 {

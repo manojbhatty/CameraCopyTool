@@ -275,9 +275,17 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <ProgressBar Height="20" Margin="10,5"
-                             Minimum="0" Maximum="{Binding ProgressMaximum}"
-                             Value="{Binding ProgressValue}"/>
+                <Grid Height="30" Margin="10,5">
+                    <ProgressBar x:Name="CopyProgressBar" Minimum="0"
+                                 Maximum="{Binding ProgressMaximum}"
+                                 Value="{Binding ProgressValue}"
+                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                 Panel.ZIndex="0"/>
+                    <TextBlock x:Name="ProgressText" HorizontalAlignment="Center" VerticalAlignment="Center"
+                               FontWeight="Bold" FontSize="14" Foreground="#000000"
+                               Text="{Binding ProgressPercentage, StringFormat={}{0:F0}%}"
+                               Panel.ZIndex="1"/>
+                </Grid>
             </StackPanel>
 
             <!-- DESTINATION PANEL -->

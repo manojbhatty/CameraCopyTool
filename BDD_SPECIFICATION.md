@@ -5,7 +5,7 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 2.4.0 |
+| **Version** | 2.6.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
 | **Last Updated** | 2026-02-22 |
@@ -955,11 +955,19 @@ block-beta
   - Purpose: Draws attention to primary action for users with cognitive or attention difficulties
 
 #### Progress Bar
-- **Binding**: 
-  - `Value` → `ProgressValue`
-  - `Maximum` → `ProgressMaximum`
-- **Height**: 20 pixels
+- **Container**: Grid with overlaid percentage TextBlock
+- **Height**: 30 pixels (increased for better visibility)
+- **Bindings**:
+  - `Value` → `ProgressValue` (bytes copied)
+  - `Maximum` → `ProgressMaximum` (total bytes)
 - **Mode**: Determinate during copy
+- **Percentage Display**:
+  - **Position**: Centered inside progress bar
+  - **Format**: "{0:F0}%" (e.g., "45%")
+  - **Font Size**: 14 pixels
+  - **Font Weight**: Bold
+  - **Color**: #000000 (black text for high contrast)
+- **Purpose**: Provides clear visual feedback during copy operations, reduces user anxiety during long transfers
 
 #### ListViews
 | ListView | AutomationId | ItemsSource | SelectionMode | Container |
@@ -1060,6 +1068,48 @@ block-beta
 | **Startup Location** | CenterOwner |
 | **Resizable** | No |
 | **ShowInTaskbar** | No |
+
+### Delete Confirmation Dialog Specifications
+
+| Property | Value |
+|----------|-------|
+| **Width** | 500 pixels |
+| **Height** | 320 pixels |
+| **Startup Location** | CenterOwner (relative to main window) |
+| **Resizable** | No |
+| **ShowInTaskbar** | No |
+| **Window Style** | None (custom styled with transparency) |
+| **Background** | Transparent with dark overlay (#80000000) |
+| **Content Background** | White with light gray border (#CCCCCC) |
+| **Corner Radius** | 8 pixels |
+| **Drop Shadow** | Blur: 20, Opacity: 0.5, Direction: 0 |
+
+**Dialog Content:**
+| Element | Specification |
+|---------|---------------|
+| **Warning Icon** | ⚠️ emoji, FontSize: 40px |
+| **Title** | "Confirm Delete", FontSize: 18px, Bold |
+| **Message** | Wrapped text, FontSize: 14px, LineHeight: 22px |
+| **Grid Margin** | 30 pixels |
+
+**Button Specifications:**
+| Button | Text | Style | Height | Padding | Colors |
+|--------|------|-------|--------|---------|--------|
+| **Yes, Delete** | "Yes, Delete" | DeleteButtonStyle | 55px | 20,15 | Background: #F44336 (red), Border: #D32F2F, Hover: #D32F2F/#B71C1C |
+| **No, Keep** | "No, Keep" | CancelButtonStyle | 55px | 20,15 | Background: #757575 (gray), Border: #616161, Hover: #616161/#424242 |
+
+**Button Properties (both):**
+- MinWidth: 150 pixels
+- FontWeight: Bold
+- Foreground: #FFFFFF (white)
+- VerticalContentAlignment: Center
+- HorizontalContentAlignment: Center
+- IsDefault (Yes): Enter key triggers
+- IsCancel (No): Escape key triggers
+
+**Color Rationale:**
+- **Red (Yes, Delete)**: Indicates destructive action, follows standard UI conventions
+- **Gray (No, Keep)**: Neutral/cancel action, less prominent than destructive action
 
 ### Slider Specifications
 
@@ -2282,6 +2332,8 @@ The following unit tests have been implemented to verify BDD compliance:
 | 2.2.0 | 2026-02-22 | AI Assistant | **Visual Panel Separation**: Added subtle background colors (#F0F0F0) to Source and Destination panels with thin borders (#D0D0D0) for clearer visual hierarchy. Added Border controls with rounded corners (4px) to separate the three main columns. Updated Main Window Layout section with Visual Separation table. Removed redundant inline Height/Padding/BorderThickness properties from TextBox and Button controls (now using global styles). Fixed Menu overlap issue by adding ZIndex and adjusting margins. |
 | 2.3.0 | 2026-02-22 | AI Assistant | **Copy Button Visibility Improvements**: Increased Copy button height from 50px to 60px with larger font (24px). Changed button color to high-contrast green (#4CAF50) for "go" signal. Added subtle pulse animation (opacity 1.0↔0.7, 1s cycle) when files are ready to copy. Updated Copy Button specification table with detailed properties. Added pulse animation acceptance criteria scenarios to User Story 3.1. |
 | 2.4.0 | 2026-02-22 | AI Assistant | **Copy Button Layout Refinements**: Changed Copy button to two-line layout with "Copy" on first line and "➜" arrow on second line. Increased button height to 80px for better visibility. Updated font sizes (Copy: 22px, Arrow: 32px). Fixed disabled state text color to use standard Windows disabled control colors (#A0A0A0 on #E0E0E0 background) for better readability. Added Foreground binding to button content TextBlocks for proper color inheritance. Updated Copy Button specification table with two-line layout details. |
+| 2.5.0 | 2026-02-22 | AI Assistant | **Progress Bar Visibility Improvements**: Increased progress bar height from 20px to 30px. Added percentage text overlay inside progress bar showing completion percentage (e.g., "45%"). Text is bold, 14px, black color for high contrast. Added ProgressPercentage calculated property to MainViewModel. Updated Progress Bar specification table with detailed properties. Benefits: clearer progress feedback, reduces anxiety during long operations, better accessibility. |
+| 2.6.0 | 2026-02-22 | AI Assistant | **Delete Confirmation Dialog Improvements**: Increased dialog size from 220px to 320px height and 450px to 500px width for better button visibility. Updated button colors: "Yes, Delete" uses red (#F44336) for destructive action, "No, Keep" uses gray (#757575) for cancel action. Increased button height to 55px with padding 20,15. Added MinHeight 70px for button row. Updated Grid margin from 25 to 30 pixels. Added Delete Confirmation Dialog Specifications section to BDD with detailed styling table. Benefits: buttons fully visible, color coding follows UI conventions (red=destructive, gray=neutral), improved accessibility. |
 
 ---
 
