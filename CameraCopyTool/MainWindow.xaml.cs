@@ -25,16 +25,9 @@ namespace CameraCopyTool
         private readonly MainViewModel _viewModel;
 
         /// <summary>
-        /// Tracks the last clicked GridView column header for sorting.
-        /// (Currently unused - reserved for future sorting functionality)
+        /// Tracks the last sorted header for each ListView to clear its indicator.
         /// </summary>
-        private GridViewColumnHeader? _lastHeaderClicked;
-
-        /// <summary>
-        /// Tracks the last sort direction for column sorting.
-        /// (Currently unused - reserved for future sorting functionality)
-        /// </summary>
-        private ListSortDirection _lastDirection = ListSortDirection.Ascending;
+        private readonly Dictionary<ListView, GridViewColumnHeader?> _lastSortedHeaders = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow"/> class.
@@ -234,6 +227,136 @@ namespace CameraCopyTool
                 item.IsSelected = true;
                 item.Focus();
             }
+        }
+
+        /// <summary>
+        /// Handles click on GridView column headers for sorting.
+        /// Toggles between ascending and descending sort order.
+        /// </summary>
+        private void GridViewColumnHeader_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is GridViewColumnHeader header && header.Column != null)
+            {
+                string sortBy = header.Column.Header?.ToString() ?? "";
+                if (string.IsNullOrEmpty(sortBy)) return;
+
+                // Determine which ListView this header belongs to
+                ListView? listView = null;
+                ICollectionView? view = null;
+
+                if (lvAlreadyCopied.IsLoaded && IsHeaderInListView(lvAlreadyCopied, header))
+                {
+                    listView = lvAlreadyCopied;
+                    view = CollectionViewSource.GetDefaultView(_viewModel.AlreadyCopiedFiles);
+                }
+                else if (lvNewFiles.IsLoaded && IsHeaderInListView(lvNewFiles, header))
+                {
+                    listView = lvNewFiles;
+                    view = CollectionViewSource.GetDefaultView(_viewModel.NewFiles);
+                }
+                else if (lvDestinationFiles.IsLoaded && IsHeaderInListView(lvDestinationFiles, header))
+                {
+                    listView = lvDestinationFiles;
+                    view = CollectionViewSource.GetDefaultView(_viewModel.DestinationFiles);
+                }
+
+                if (view == null) return;
+
+                // Toggle sort direction
+                ListSortDirection direction = ListSortDirection.Ascending;
+                if (view.SortDescriptions.Count > 0)
+                {
+                    var currentSort = view.SortDescriptions[0];
+                    if (currentSort.PropertyName == GetPropertyName(sortBy) && currentSort.Direction == ListSortDirection.Ascending)
+                    {
+                        direction = ListSortDirection.Descending;
+                    }
+                }
+
+                // Apply sort
+                view.SortDescriptions.Clear();
+                view.SortDescriptions.Add(new SortDescription(GetPropertyName(sortBy), direction));
+
+                // Update the clicked header's indicator and clear the previous one
+                if (listView != null)
+                {
+                    UpdateHeaderIndicator(listView, header, direction);
+                }
+
+                // Mark event as handled to prevent selection changes
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Updates the sort indicator on a specific header.
+        /// </summary>
+        private void UpdateHeaderIndicator(ListView listView, GridViewColumnHeader header, ListSortDirection direction)
+        {
+            // Clear the indicator from the previously sorted header in this ListView
+            if (_lastSortedHeaders.TryGetValue(listView, out var lastHeader) && lastHeader != null)
+            {
+                var lastIndicator = FindChild<TextBlock>(lastHeader, "SortIndicator");
+                if (lastIndicator != null)
+                {
+                    lastIndicator.Visibility = System.Windows.Visibility.Collapsed;
+                }
+            }
+
+            // Set indicator on the clicked header
+            var clickedIndicator = FindChild<TextBlock>(header, "SortIndicator");
+            if (clickedIndicator != null)
+            {
+                clickedIndicator.Text = direction == ListSortDirection.Ascending ? "▲" : "▼";
+                clickedIndicator.Visibility = System.Windows.Visibility.Visible;
+            }
+
+            // Track this as the last sorted header
+            _lastSortedHeaders[listView] = header;
+        }
+
+        /// <summary>
+        /// Finds a child element by name in the visual tree.
+        /// </summary>
+        private static T? FindChild<T>(DependencyObject parent, string childName) where T : DependencyObject
+        {
+            if (parent == null) return null;
+
+            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+                if (child is FrameworkElement fe && fe.Name == childName)
+                    return child as T;
+
+                var result = FindChild<T>(child, childName);
+                if (result != null) return result;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Checks if a header belongs to a specific ListView.
+        /// </summary>
+        private bool IsHeaderInListView(ListView listView, GridViewColumnHeader header)
+        {
+            if (listView.View is GridView gridView)
+            {
+                return gridView.Columns.Contains(header.Column);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Maps column header text to property name for sorting.
+        /// </summary>
+        private string GetPropertyName(string header)
+        {
+            return header switch
+            {
+                "File Name" => nameof(FileItem.DisplayName),
+                "Modified Date" => nameof(FileItem.ModifiedDate),
+                _ => header
+            };
         }
 
         /// <summary>

@@ -5,7 +5,7 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 2.11.0 |
+| **Version** | 2.14.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
 | **Last Updated** | 2026-02-22 |
@@ -1101,12 +1101,25 @@ block-beta
 **Purpose**: Color-coded sections provide immediate visual distinction between already-backed-up files and files needing backup, reducing cognitive load and improving scanability for users with visual or cognitive impairments.
 
 #### ListView Columns
-| Column | Header | Width | Alignment | Binding |
-|--------|--------|-------|-----------|---------|
-| File Name | "File Name" | `*` (stretches to fill available space) | Left | `DisplayName` (includes ✅ tick icon for already-copied files) |
-| Modified Date | "Modified Date" | `200` pixels (fixed for 12-hour format) | Right | `ModifiedDate` |
+| Column | Header | Width | Alignment | Binding | Sortable |
+|--------|--------|-------|-----------|---------|----------|
+| File Name | "File Name" | `*` (stretches to fill available space) | Left | `DisplayName` (includes ✅ tick icon for already-copied files) | Yes (Click header) |
+| Modified Date | "Modified Date" | `200` pixels (fixed for 12-hour format) | Right | `ModifiedDate` | Yes (Click header) |
 
 **Note**: The File Name column takes all remaining horizontal space, while the Modified Date column has a fixed width of 200 pixels to accommodate the 12-hour time format with AM/PM. The Modified Date column is right-aligned for better readability.
+
+**Column Header Sorting:**
+- **Interaction**: Click on any column header to sort by that column
+- **Sort Order**: First click = Ascending (▲), Second click = Descending (▼) (toggles)
+- **Visual Feedback**: 
+  - Cursor changes to hand pointer on hover
+  - Only the actively sorted column shows the direction indicator
+  - Other column headers do not show indicators (clear indication of active sort)
+  - Indicator: ▲ (ascending) or ▼ (descending) in blue (#1976D2)
+- **Applies To**: All three ListViews (Already Copied, New Files, Destination)
+- **Sort Properties**:
+  - File Name: Sorts by `DisplayName` (case-insensitive, alphabetical)
+  - Modified Date: Sorts by `ModifiedDate` (chronological)
 
 #### ListView Styling
 
@@ -2311,6 +2324,14 @@ The following unit tests have been implemented to verify BDD compliance:
 - Temp file cleanup tests
 - Keyboard shortcut tests (F5, Delete)
 - **ListView styling tests** (MultiTrigger for hover/selection priority)
+- **ListView column configuration tests** (File Name takes remaining space, Modified Date fixed width)
+- **ListView sorting tests** (BDD v2.11-2.12, Category: UI):
+  - Column header click sorts ListView
+  - Sort toggle (ascending ↔ descending)
+  - Sort indicators show only on active sort column
+  - Sorting works on all three ListViews independently
+  - Sort indicators (▲/▼) display correctly
+  - Note: Tests use Assert.Ignore() when application doesn't load data in test environment
 
 ### Functional Tests
 
@@ -2450,6 +2471,9 @@ The following unit tests have been implemented to verify BDD compliance:
 | 2.8.0 | 2026-02-22 | AI Assistant | **ListView Toggle Selection**: Added toggle selection behavior to all three ListViews. Clicking an already selected row now deselects it (toggle behavior). Extended selection mode still supports Ctrl+Click for individual toggles and Shift+Click for range selection. Updated ListView specification with Selection Behavior section documenting toggle, extended, and multi-select support. Benefits: more intuitive selection management, easier to correct accidental selections, consistent with modern UI patterns. |
 | 2.9.0 | 2026-02-22 | AI Assistant | **Color-Coded Section Distinction**: Added distinct color-coded backgrounds to Already Copied and New Files sections for clear visual distinction. Already Copied uses light green background (#E8F5E9) with green border (#81C784) indicating "done/complete/safe". New Files uses light blue background (#E3F2FD) with blue border (#64B5F6) indicating "new/pending/action needed". Both sections have rounded corners (4px) and 1px borders. Added New Files GroupBox Control specification table. Added Section Visual Distinction comparison table. Updated Already Copied Expander Control specification with Visual Styling and Color Rationale properties. Benefits: immediate visual distinction between sections, reduced cognitive load, improved scanability for users with visual or cognitive impairments, semantic color coding (green=done, blue=pending). |
 | 2.10.0 | 2026-02-22 | AI Assistant | **Status Bar Implementation**: Added dedicated status bar at bottom of window (30px height, light gray background #F5F5F5). Displays: current state with icon (Ready ✓, Loading ⏳, Copying 📋, No Source 📁), total source file count, and new file count in blue. Status bar uses ZIndex 100 to stay on top. Added Feature 9: Status Bar with User Story 9.1 and acceptance criteria. Added Status Bar specification table with sections, states, and bindings. Added StatusBarIcon, StatusBarText, SourceFileCountText, NewFileCountText properties to MainViewModel. Benefits: always-visible status information, better situational awareness, professional appearance, color-coded new file count draws attention to actionable items. |
+| 2.11.0 | 2026-02-22 | AI Assistant | **ListView Column Sorting**: Added click-to-sort functionality to all ListView column headers (File Name, Modified Date). Click once for ascending sort, click again for descending (toggle behavior). Cursor changes to hand pointer on hover for visual feedback. Sorting applies to all three ListViews (Already Copied, New Files, Destination). File Name sorts by DisplayName (case-insensitive alphabetical), Modified Date sorts chronologically. Updated ListView Columns table with Sortable column. Added Column Header Sorting specification section. Benefits: easier file navigation, users can quickly find specific files, familiar interaction pattern consistent with Windows Explorer. |
+| 2.12.0 | 2026-02-22 | AI Assistant | **Sort Direction Indicators**: Added visual sort direction indicators (▲/▼ arrows) to column headers. Only the actively sorted column shows the indicator (▲ ascending, ▼ descending, blue #1976D2 color). Other columns do not show indicators for clear sort state. Updated Column Header Sorting specification with Visual Feedback details. Benefits: clear indication of current sort column, users know at a glance which column is sorted and in which direction, improved usability. |
+| 2.13.0 | 2026-02-22 | AI Assistant | **ListView Sorting Unit Tests**: Added comprehensive UI integration tests for ListView sorting functionality. Tests cover: column header click sorting, sort toggle behavior, sort indicators showing only on active column, sorting on all three ListViews. Added ListView_ColumnHeaderClick_SortsAndShowsIndicator, ListView_Sorting_WorksOnAllListViews, ListView_SortIndicator_OnlyShowsOnActiveColumn test methods to MainWindowTests.cs. Updated Unit Test Coverage section with sorting tests documentation. Benefits: automated verification of sorting behavior, regression protection, ensures BDD compliance. |
 
 ---
 

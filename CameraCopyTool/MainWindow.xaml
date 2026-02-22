@@ -111,6 +111,29 @@
             <Setter Property="FontFamily" Value="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
             <Setter Property="FontSize" Value="{Binding FontSize, Mode=OneWay}"/>
         </Style>
+        <Style x:Key="SortableGridViewColumnHeader" TargetType="GridViewColumnHeader">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridViewColumnHeader">
+                        <Grid>
+                            <Border Background="Transparent" Padding="5,3">
+                                <StackPanel Orientation="Horizontal">
+                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                                    <TextBlock x:Name="SortIndicator" Text="▲" 
+                                               FontSize="10" 
+                                               Foreground="#1976D2"
+                                               VerticalAlignment="Center"
+                                               Margin="5,0,0,0"
+                                               Visibility="Collapsed"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Window.InputBindings>
@@ -219,6 +242,11 @@
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="File Name">
+                                    <GridViewColumn.HeaderContainerStyle>
+                                        <Style BasedOn="{StaticResource SortableGridViewColumnHeader}" TargetType="GridViewColumnHeader">
+                                            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="GridViewColumnHeader_PreviewMouseLeftButtonDown"/>
+                                        </Style>
+                                    </GridViewColumn.HeaderContainerStyle>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
@@ -226,6 +254,12 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
                                 <GridViewColumn Header="Modified Date" Width="200">
+                                    <GridViewColumn.HeaderContainerStyle>
+                                        <Style BasedOn="{StaticResource SortableGridViewColumnHeader}" TargetType="GridViewColumnHeader">
+                                            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                                            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="GridViewColumnHeader_PreviewMouseLeftButtonDown"/>
+                                        </Style>
+                                    </GridViewColumn.HeaderContainerStyle>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding ModifiedDate}" HorizontalAlignment="Right" FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
@@ -259,6 +293,11 @@
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="File Name">
+                                    <GridViewColumn.HeaderContainerStyle>
+                                        <Style BasedOn="{StaticResource SortableGridViewColumnHeader}" TargetType="GridViewColumnHeader">
+                                            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="GridViewColumnHeader_PreviewMouseLeftButtonDown"/>
+                                        </Style>
+                                    </GridViewColumn.HeaderContainerStyle>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
@@ -266,6 +305,12 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
                                 <GridViewColumn Header="Modified Date" Width="200">
+                                    <GridViewColumn.HeaderContainerStyle>
+                                        <Style BasedOn="{StaticResource SortableGridViewColumnHeader}" TargetType="GridViewColumnHeader">
+                                            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                                            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="GridViewColumnHeader_PreviewMouseLeftButtonDown"/>
+                                        </Style>
+                                    </GridViewColumn.HeaderContainerStyle>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding ModifiedDate}" HorizontalAlignment="Right" FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
@@ -369,6 +414,11 @@
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="File Name">
+                                    <GridViewColumn.HeaderContainerStyle>
+                                        <Style BasedOn="{StaticResource SortableGridViewColumnHeader}" TargetType="GridViewColumnHeader">
+                                            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="GridViewColumnHeader_PreviewMouseLeftButtonDown"/>
+                                        </Style>
+                                    </GridViewColumn.HeaderContainerStyle>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
@@ -376,6 +426,12 @@
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
                                 <GridViewColumn Header="Modified Date" Width="200">
+                                    <GridViewColumn.HeaderContainerStyle>
+                                        <Style BasedOn="{StaticResource SortableGridViewColumnHeader}" TargetType="GridViewColumnHeader">
+                                            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                                            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="GridViewColumnHeader_PreviewMouseLeftButtonDown"/>
+                                        </Style>
+                                    </GridViewColumn.HeaderContainerStyle>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding ModifiedDate}" HorizontalAlignment="Right" FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
