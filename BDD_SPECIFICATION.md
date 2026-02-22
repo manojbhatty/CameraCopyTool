@@ -5,7 +5,7 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 2.1.0 |
+| **Version** | 2.2.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
 | **Last Updated** | 2026-02-22 |
@@ -827,6 +827,15 @@ Scenario: Loading completes
 ### Main Window Layout
 
 The main window uses a three-column layout with source panel on the left, copy controls in the center, and destination panel on the right.
+
+**Visual Separation Between Panels:**
+| Element | Background | Border | Purpose |
+|---------|------------|--------|---------|
+| Source Panel (Column 0) | #F0F0F0 (medium-light gray) | Right: 1px #D0D0D0 | Distinguishes source from center |
+| Destination Panel (Column 2) | #F0F0F0 (medium-light gray) | Left: 1px #D0D0D0 | Distinguishes destination from center |
+| Center Panel (Column 1) | None (transparent) | None | Clean space for copy controls |
+
+**Note**: Panel backgrounds use medium-light gray (#F0F0F0) with rounded corners (4px) and darker borders (#D0D0D0) to create clear visual hierarchy with better contrast for users with visual impairments.
 
 **Source Panel Grid Rows:**
 | Row | Height | Content |
@@ -2244,6 +2253,7 @@ The following unit tests have been implemented to verify BDD compliance:
 | 1.9.0 | 2026-02-22 | AI Assistant | **ListView Hover Fix**: Fixed issue where hovering over a selected row made text hard to read. Added Requirement 1.1.1 documenting ListView row state priority (Selected > Hover > Already Copied > Normal). Updated BDD with behavior matrix showing all state combinations. Changed implementation to use MultiTrigger ensuring hover only applies when IsSelected=False. Updated Accessibility Compliance Summary to mark ListView State Priority as Complete. |
 | 2.0.0 | 2026-02-22 | AI Assistant | **Major UI Updates**: Changed Modified Date format from 24-hour (`HH:mm`) to 12-hour (`hh:mm tt`) with AM/PM for better readability. Increased Modified Date column width from 170px to 200px to accommodate longer format. Unified all three ListViews to use `DisplayName` binding with ✅ tick icon prefix for already-copied files. Added `FontFamily="Segoe UI Emoji"` to all ListViews for proper emoji rendering. Restored green background (#4CAF50) for already-copied files (now shows both tick icon AND green background). Updated ListView Styling section with comprehensive styling tables. Updated User Stories 2.1, 2.2, 2.3 with new date format and tick icon behavior. |
 | 2.1.0 | 2026-02-22 | AI Assistant | **Collapsible Already Copied Section**: Changed "Already Copied Files" from GroupBox to Expander control that starts collapsed by default. Updated Source Panel Grid Row 2 from `*` to `Auto` height so New Files section expands when Already Copied is collapsed. Added collapsible section acceptance criteria to User Story 2.2. Updated Main Window Layout section with Grid row specifications. Updated ListView table to show Expander container type. Added Expander Control specification table. Updated Mermaid diagram to reflect collapsible behavior. |
+| 2.2.0 | 2026-02-22 | AI Assistant | **Visual Panel Separation**: Added subtle background colors (#F9F9F9) to Source and Destination panels with thin borders (#E0E0E0) for clearer visual hierarchy. Added Border controls with rounded corners (4px) to separate the three main columns. Updated Main Window Layout section with Visual Separation table. Removed redundant inline Height/Padding/BorderThickness properties from TextBox and Button controls (now using global styles). |
 
 ---
 
