@@ -5,7 +5,7 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 1.0.0 |
+| **Version** | 2.24.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
 | **Last Updated** | 2026-02-22 |
@@ -63,16 +63,18 @@ The primary purpose of CameraCopyTool is to provide a user-friendly interface fo
 
 ### Core Capabilities
 
-1. Browse and select source folder (camera/device)
-2. Browse and select destination folder (computer)
-3. Display files in three categories:
+1. **Visible Action Buttons**: Clear, prominent buttons for common actions (Help, Refresh, Settings)
+2. **Collapsible Help Panel**: Step-by-step instructions for first-time users
+3. Browse and select source folder (camera/device)
+4. Browse and select destination folder (computer)
+5. Display files in three categories:
    - New files (not yet copied)
    - Already copied files
    - Files in destination
-4. Copy selected files or all new files
-5. Delete files from any location
-6. Open files with default applications
-7. Configure font size for accessibility
+6. Copy selected files or all new files
+7. Delete files from any location
+8. Open files with default applications
+9. Configure font size for accessibility
 
 ---
 
@@ -118,15 +120,198 @@ The primary purpose of CameraCopyTool is to provide a user-friendly interface fo
 | High contrast | Green (#4CAF50) for "already copied", blue (#1976D2) for selected |
 | Clear selection | Bold white text on blue background when selected |
 | Obvious hover | Light blue highlight when mouse is over items |
-| Simple language | "Copy Photos" not "Execute Transfer", "Choose Folder" not "Browse" |
+| Simple language | "Copy" not "Execute Transfer", "Select Folder…" not "Browse" |
 | Reassurance | Clear success messages: "✓ Copied 15 photos successfully!" |
 | Large buttons | Minimum 50px height, bold text, high-contrast colors |
 | Visible borders | 1px borders between list items, dark button borders |
 | Never color-only | Status uses icon + color + text together |
+| No hidden menus | Action buttons with clear labels: "How to Use", "Refresh (F5)", "Settings" |
+| Step-by-step help | Collapsible help panel with numbered instructions |
+| Clear color coding | Green = already copied, Blue = new files (explained in help panel) |
 
 ---
 
 ## Feature Specifications
+
+### Feature 0: Action Buttons and Help Panel
+
+#### User Story 0.1: Visible Action Buttons
+
+**As a** first-time user
+**I want to** see clear, obvious buttons for common actions
+**So that** I don't have to search through hidden menus
+
+**Acceptance Criteria:**
+
+```gherkin
+Scenario: Action buttons are visible at all times
+  Given the application is open
+  When viewing the main window
+  Then three action buttons should be visible at the top of the window:
+    | Button | Icon | Label | Color | Purpose |
+    |--------|------|-------|-------|---------|
+    | Help | ❓ | "How to Use" | Blue (#2196F3) | Toggle help panel visibility |
+    | Refresh | 🔄 | "Refresh (F5)" | Green (#4CAF50) | Reload file lists |
+    | Settings | ⚙️ | "Settings" | Orange (#FF9800) | Open settings dialog |
+  And each button should have large, bold text
+  And each button should have a minimum height of 35 pixels
+  And each button should have a minimum width of 120 pixels
+
+Scenario: Action buttons have hover effects
+  Given the mouse pointer is over an action button
+  When hovering
+  Then the button background should darken to indicate interactivity
+  And the cursor should change to a hand pointer
+
+Scenario: Help button toggles help panel
+  Given the help panel is currently hidden
+  When the user clicks the "How to Use" button
+  Then the help panel should become visible
+  And the button text should change to "Hide Instructions ▲"
+
+Scenario: Help button hides help panel
+  Given the help panel is currently visible
+  When the user clicks the "Hide Instructions ▲" button
+  Then the help panel should collapse
+  And the button text should change to "Show Instructions ▼"
+
+Scenario: Refresh button reloads files
+  Given the application has loaded files
+  When the user clicks the "Refresh (F5)" button
+  Then the file lists should reload from source and destination folders
+  And a loading indicator should appear during refresh
+  And the status bar should show "Loading files..."
+
+Scenario: Refresh via F5 keyboard shortcut
+  Given the application is open
+  When the user presses F5
+  Then the file lists should reload (same as clicking Refresh button)
+
+Scenario: Settings button opens settings dialog
+  Given the application is open
+  When the user clicks the "Settings" button
+  Then the Settings dialog should open
+  And the dialog should be centered on the main window
+```
+
+#### User Story 0.2: Collapsible Help Panel
+
+**As a** first-time user
+**I want to** see step-by-step instructions
+**So that** I know how to use the application without reading external documentation
+
+**Acceptance Criteria:**
+
+```gherkin
+Scenario: Help panel is collapsed by default on first run
+  Given the application is started for the first time
+  When the main window loads
+  Then the help panel should be collapsed by default
+  And the "How to Use" button should be visible at the top
+  And clicking "How to Use" should expand the help panel
+
+Scenario: Help panel displays instructions
+  Given the help panel is visible
+  When viewing the panel
+  Then it should display the following content in a two-column layout:
+    
+    **Left Column - Copy Instructions:**
+    | Element | Content |
+    |---------|---------|
+    | Header | "📋 To Copy Videos:" |
+    | Step 1 | "1. Select your camera folder using 'Select Folder…'" |
+    | Step 2 | "2. Select your computer folder using 'Select Folder…'" |
+    | Step 3 | "3. Select the videos you want to copy (click on them)" |
+    | Step 4 | "4. Click the big green 'Copy' button" |
+    
+    **Right Column - Delete Instructions:**
+    | Element | Content |
+    |---------|---------|
+    | Header | "🗑️ To Delete Files:" |
+    | Step 1 | "1. Select file(s) to delete in any list" |
+    | Step 2 | "2. Press Delete key or right-click → Delete" |
+    | Step 3 | "3. Confirm (⚠️ This is permanent!)" |
+    
+    **Bottom - Color Legend:**
+    | Element | Content |
+    |---------|---------|
+    | Legend 1 | "✓ Already copied = GREEN" (green #2E7D32) |
+    | Legend 2 | "✓ New files = BLUE" (blue #1565C0) |
+
+Scenario: Help panel visual styling
+  Given the help panel is visible
+  When viewing the panel
+  Then it should have:
+    | Property | Value |
+    |----------|-------|
+    | Background | Light blue (#E3F2FD) |
+    | Border | Blue (#90CAF9) |
+    | Border Thickness | 1px bottom only |
+    | Height (expanded) | 220 pixels |
+    | Height (collapsed) | 0 pixels |
+    | Layout | Two-column (Copy on left, Delete on right) |
+    | Font Size | Dynamic (binds to Window.FontSize property) |
+
+Scenario: Help panel color legend
+  Given the help panel is visible
+  When viewing the color legend at the bottom of the panel
+  Then it should display:
+    - Green checkmark (✓) with text "Already copied = GREEN" in green (#2E7D32), bold
+    - Blue checkmark (✓) with text "New files = BLUE" in blue (#1565C0), bold
+  And the legend should be horizontally aligned at the bottom of the help panel
+
+Scenario: Help panel remembers user preference
+  Given the user has hidden the help panel
+  When the application is closed and reopened
+  Then the help panel should remain hidden (preference persisted)
+
+Scenario: Main content slides when help panel toggles
+  Given the help panel is currently visible
+  And the main content area is displayed below the help panel
+  When the user clicks "How to Use" to hide the help panel
+  Then the help panel should collapse smoothly (height animates from 220 to 0)
+  And the main content area should slide up to fill the space
+  And the status bar should move up accordingly
+
+Scenario: Main content slides down when help panel expands
+  Given the help panel is currently hidden
+  And the main content area is displayed at the top
+  When the user clicks "How to Use" to show the help panel
+  Then the help panel should expand smoothly (height animates from 0 to 220)
+  And the main content area should slide down
+  And the status bar should move down accordingly
+```
+
+#### User Story 0.3: Action Button Bar Layout
+
+**As a** user
+**I want** action buttons to be positioned consistently
+**So that** I can find them quickly
+
+**Acceptance Criteria:**
+
+```gherkin
+Scenario: Action button bar layout
+  Given the application is open
+  When viewing the action button bar
+  Then it should have:
+    | Property | Value |
+    |----------|-------|
+    | Position | Top of window, below title bar |
+    | Height | 50 pixels |
+    | Background | Light gray (#F5F5F5) |
+    | Border | Bottom: 1px #E0E0E0 |
+    | Refresh Button Position | Left side |
+    | Help/Settings Position | Right side |
+
+Scenario: Action button bar is always visible
+  Given the application is in any state
+  When viewing the window
+  Then the action button bar should always be visible
+  And should not be obscured by other UI elements
+```
+
+---
 
 ### Feature 1: Folder Selection
 
@@ -141,7 +326,7 @@ The primary purpose of CameraCopyTool is to provide a user-friendly interface fo
 ```gherkin
 Scenario: User selects a valid source folder
   Given the application is open
-  When the user clicks the "Choose Folder…" button next to the source path
+  When the user clicks the "Select Folder…" button next to the source path
   And selects a valid folder from the dialog
   Then the source path textbox should display the selected folder path
   And the file lists should refresh to show files from that folder
@@ -171,7 +356,7 @@ Scenario: User enters source path manually
 ```gherkin
 Scenario: User selects a valid destination folder
   Given the application is open
-  When the user clicks the "Choose Folder…" button next to the destination path
+  When the user clicks the "Select Folder…" button next to the destination path
   And selects a valid folder from the dialog
   Then the destination path textbox should display the selected folder path
   And the file lists should refresh to show files from that folder
@@ -212,8 +397,8 @@ Scenario: Application starts with empty paths (first run)
 
 #### User Story 2.1: Display New Files
 
-**As a** user  
-**I want to** see files that haven't been copied yet  
+**As a** user
+**I want to** see files that haven't been copied yet
 **So that** I know which files need to be transferred
 
 **Acceptance Criteria:**
@@ -222,22 +407,42 @@ Scenario: Application starts with empty paths (first run)
 Scenario: New files are displayed correctly
   Given valid source and destination folders are selected
   When files exist in the source that don't exist in the destination
-  Then those files should appear in the "New files" section
+  Then those files should appear in the "🆕 New Videos to Copy" section
   And each file should display:
 
     | Field         | Format                     |
     |---------------|----------------------------|
     | Name          | Full filename with extension |
-    | Modified Date | `yyyy-MM-dd HH:mm`         |
+    | Modified Date | `yyyy-MM-dd hh:mm tt` (12-hour format with AM/PM) |
 
-  And the section header should display: "New files (count)" where count is the number of new files
+  And the section header should display: "🆕 New Videos to Copy (count)" where count is the number of NEW VIDEO files only
+
+Scenario: Video file filtering for counts
+  Given files exist in the source folder
+  When counting files for headers and status bar
+  Then only video files should be counted
+  And supported video extensions include:
+    | Extension | Format |
+    |-----------|--------|
+    | .mp4, .m4v | MPEG-4 Video |
+    | .mov | QuickTime Movie |
+    | .avi | Audio Video Interleave |
+    | .mkv | Matroska Video |
+    | .wmv | Windows Media Video |
+    | .flv | Flash Video |
+    | .webm | WebM Video |
+    | .mpeg, .mpg | MPEG Video |
+    | .3gp, .3g2 | 3GPP Video |
+
+  And non-video files (photos, documents, etc.) should still appear in the ListView
+  But should NOT be included in the count
 
 Scenario: File comparison logic
   Given a file exists in both source and destination
   When the file has the same name AND same file size
   Then it should be considered "already copied"
   And should NOT appear in "New files"
-  
+
   When the file has the same name but different size
   Then it should be considered "new" (needs recopy)
 ```
@@ -254,22 +459,32 @@ Scenario: File comparison logic
 Scenario: Already copied files are displayed
   Given files in the source also exist in the destination
   When the file lists are loaded
-  Then those files should appear in the "Already copied files" section
+  Then those files should appear in the "✅ Already Copied Videos" section
   And each file should display:
 
     | Field         | Format                     |
     |---------------|----------------------------|
     | Name          | Full filename with extension |
-    | Modified Date | `yyyy-MM-dd HH:mm`         |
+    | Modified Date | `yyyy-MM-dd hh:mm tt` (12-hour format with AM/PM) |
 
-  And the section header should display: "Already copied files (count)" where count is the number of already copied files
+  And the section header should display: "✅ Already Copied Videos (count)" where count is the number of already copied VIDEO files only
 
 Scenario: Already copied files are visually distinguished
   Given a file is marked as already copied
   When displayed in the ListView
-  Then the background should be high-contrast green (#4CAF50)
+  Then the file name should be prefixed with a tick icon (✅)
+  And the background should be high-contrast green (#4CAF50)
   And the text should be black (#000000)
   And the font weight should be Bold
+
+Scenario: Already copied section is collapsible
+  Given the application is open
+  When viewing the "✅ Already Copied Videos" section
+  Then it should be displayed as a collapsible Expander control
+  And it should start in a collapsed state by default
+  And clicking the section header should expand to show the ListView
+  And clicking the header again should collapse the ListView
+  And the "🆕 New Videos to Copy" section should expand to fill the space when collapsed
 ```
 
 #### User Story 2.3: Display Destination Files
@@ -283,15 +498,15 @@ Scenario: Already copied files are visually distinguished
 ```gherkin
 Scenario: Destination files are displayed
   When the file lists are loaded
-  Then all files in the destination folder should appear in the "Files in destination" section
+  Then all files in the destination folder should appear in the "💻 Videos on Your Computer" section
   And each file should display:
 
     | Field         | Format                                  |
     |---------------|-----------------------------------------|
     | Name          | Filename with ✅ prefix if also in source |
-    | Modified Date | `yyyy-MM-dd HH:mm`                      |
+    | Modified Date | `yyyy-MM-dd hh:mm tt` (12-hour format with AM/PM) |
 
-  And the section header should display: "Files in computer (count)" where count is the total number of files in the destination folder
+  And the section header should display: "💻 Videos on Your Computer (count)" where count is the total number of VIDEO files in the destination folder
 ```
 
 #### User Story 2.4: File List Refresh
@@ -359,6 +574,19 @@ Scenario: Copy button is disabled when inappropriate
   Or files are currently loading
   When viewing the Copy button
   Then it should be disabled (grayed out)
+
+Scenario: Copy button has pulse animation when ready
+  Given there are files in the "New files" list
+  And at least one file is selected
+  When viewing the Copy button
+  Then it should display a subtle pulse animation (opacity cycling between 1.0 and 0.7)
+  And the animation should repeat continuously until selection changes
+
+Scenario: Copy button pulse animation stops when no files selected
+  Given the Copy button was pulsing
+  When the user deselects all files
+  Then the pulse animation should stop
+  And the button should remain static (but still enabled if files exist)
 ```
 
 #### User Story 3.2: Safe Copy with Temporary Files
@@ -514,7 +742,7 @@ Scenario: Delete multiple files
   And all selected files should be deleted when confirmed
 
 Scenario: Delete from Destination list
-  Given one or more files are selected in "Files in destination"
+  Given one or more files are selected in "💻 Videos on Your Computer"
   When the user presses the Delete key
   Or selects Delete from the context menu
   Then a custom confirmation dialog should appear (matching application styling)
@@ -560,7 +788,7 @@ Scenario: Delete from Already Copied list
   And the lists should refresh
 
 Scenario: Delete from Destination list
-  Given files are selected in "Files in destination"
+  Given files are selected in "💻 Videos on Your Computer"
   When the user initiates delete
   Then those files should be deleted from the destination folder
   And the lists should refresh
@@ -680,12 +908,30 @@ Scenario: Font size persists across sessions
 **Acceptance Criteria:**
 
 ```gherkin
+Scenario: Video files are visually distinguished from non-video files
+  Given files of different types are displayed in any ListView
+  When viewing the files
+  Then video files should have:
+    | Property | Value |
+    |----------|-------|
+    | Text Color | Black (#000000) |
+    | Opacity | 100% (1.0) |
+  And non-video files should have:
+    | Property | Value |
+    |----------|-------|
+    | Text Color | Black (#000000) |
+    | Opacity | 75% (0.75) |
+  And both should remain clearly readable
+  And the distinction should help users quickly identify video content
+  And non-video files should be easier to read while still appearing less prominent
+
 Scenario: Already copied files use high-contrast styling
   Given a file is marked as already copied
   When displayed in the ListView
   Then the background should be a high-contrast color (e.g., #4CAF50 green)
   And the text should be bold
   And the text color should be high-contrast (black or dark gray)
+  And the opacity should be 100% (overrides file type styling)
 
 Scenario: Status indicators use color + icon + text
   Given a status needs to be communicated (success, warning, error)
@@ -812,39 +1058,121 @@ Scenario: Loading completes
 
 ---
 
+### Feature 9: Status Bar
+
+#### User Story 9.1: Status Bar Display
+
+**As a** user
+**I want to** see application status at all times
+**So that** I have situational awareness of the application state
+
+**Acceptance Criteria:**
+
+```gherkin
+Scenario: Status bar is always visible
+  Given the application is open
+  When viewing the window
+  Then a status bar should be visible at the bottom of the window
+  With height of 30 pixels
+  And light gray background (#F5F5F5)
+  And top border (#E0E0E0) for separation
+
+Scenario: Status bar shows current state icon and text
+  Given the application is in different states
+  When viewing the status bar
+  Then it should display:
+    | State     | Icon | Text                |
+    |-----------|------|---------------------|
+    | Ready     | ✓    | "Ready"             |
+    | Loading   | ⏳    | "Loading files..."  |
+    | Copying   | 📋   | "Copying files..."  |
+    | No Source | 📁   | "Select source folder" |
+
+Scenario: Status bar shows file counts
+  Given files are loaded
+  When viewing the status bar
+  Then it should display:
+    - Total VIDEO files in source (e.g., "15 videos in source")
+    - New VIDEO file count in blue (e.g., "5 new videos")
+  And counts should include ONLY video files (mp4, mov, avi, mkv, wmv, flv, webm, m4v, mpeg, mpg, 3gp, 3g2)
+  And new file count should use bold blue text (#1976D2)
+  And non-video files (photos, documents) should NOT be included in the count
+
+Scenario: Status bar updates during operations
+  Given a copy operation is in progress
+  When viewing the status bar
+  Then it should show the copying icon and text
+  And update in real-time as the operation progresses
+```
+
+---
+
 ## User Interface Specifications
 
 ### Main Window Layout
 
 The main window uses a three-column layout with source panel on the left, copy controls in the center, and destination panel on the right.
 
+**Visual Separation Between Panels:**
+| Element | Background | Border | Purpose |
+|---------|------------|--------|---------|
+| Source Panel (Column 0) | #F0F0F0 (medium-light gray) | Right: 1px #D0D0D0 | Distinguishes source from center |
+| Destination Panel (Column 2) | #F0F0F0 (medium-light gray) | Left: 1px #D0D0D0 | Distinguishes destination from center |
+| Center Panel (Column 1) | None (transparent) | None | Clean space for copy controls |
+
+**Note**: Panel backgrounds use medium-light gray (#F0F0F0) with rounded corners (4px) and darker borders (#D0D0D0) to create clear visual hierarchy with better contrast for users with visual impairments.
+
+**Source Panel Grid Rows:**
+| Row | Height | Content |
+|-----|--------|---------|
+| 0 | Auto | "📷 Your Camera Videos" title |
+| 1 | Auto | Source path ComboBox and "📁 Select Folder…" button |
+| 2 | Auto | "✅ Already Copied Videos" Expander (collapsible) |
+| 3 | * (star) | "🆕 New Videos to Copy" ListView (expands to fill remaining space) |
+
+**Note**: Row 2 (Already Copied) uses `Auto` height so when the Expander collapses, the section shrinks and Row 3 (New Files) expands to fill the available vertical space.
+
+**Main Window Grid Rows:**
+| Row | Height | Content | Behavior |
+|-----|--------|---------|----------|
+| 0 | Auto (50px) | Action Button Bar | Fixed position |
+| 1 | Auto (180px/0px) | Help Panel | Collapses/expands, pushes main content |
+| 2 | * (star) | Main Content Area | Takes remaining space, slides up/down |
+| 3 | Auto (30px) | Status Bar | Fixed at bottom |
+
+**Note**: When the Help Panel collapses (Row 1 = 0px), the Main Content Area (Row 2) expands to fill the space. When the Help Panel expands (Row 1 = 180px), the Main Content Area shrinks accordingly. This creates a smooth sliding animation effect.
+
 ```mermaid
 block-beta
     columns 1
-    block:MenuBar["Menu Bar"]
+    block:ActionBar["Action Button Bar (Top of Window)"]
+        columns 3
+        HelpBtn["❓ How to Use (Blue)"]
+        Space[" "]
+        RefreshBtn["🔄 Refresh (F5) (Green)"]
+        SettingsBtn["⚙️ Settings (Orange)"]
+    end
+    block:HelpPanel["Help Panel (Collapsible - Visible by Default)"]
         columns 1
-        Tools["Tools ▼"]
-        block:ToolsMenu[" "]
-            columns 1
-            Refresh["Update File List (F5)"]
-            Separator["─────"]
-            Settings["Settings..."]
-        end
+        HelpHeader["❓ How to Copy Your Photos"]
+        HelpToggle["[Hide Instructions ▲]"]
+        HelpSteps["Step 1: Select camera folder\nStep 2: Select computer folder\nStep 3: Select photos (click)\nStep 4: Click 'Copy Photos'"]
+        HelpLegend["✓ GREEN = Already copied\n✓ BLUE = New files"]
     end
     block:MainContent["Main Content Area"]
         columns 3
         block:SourcePanel["Source Panel"]
             columns 1
-            SourceTitle["SOURCE - CAMERA"]
-            SourcePath["[Source Path TextBox] [Choose Folder…]"]
-            block:AlreadyCopied["Already Copied Files"]
+            SourceTitle["📷 Your Camera Videos"]
+            SourcePath["[Source Path ComboBox] [📁 Select Folder…]"]
+            block:AlreadyCopied["✅ Already Copied Videos (Collapsible Expander - Starts Collapsed)"]
                 columns 1
-                ACHeader["Already copied files (X)"]
+                ACHeader["▶ ✅ Already Copied Videos (X) (Click to Expand)"]
                 ACList["File Name | Modified Date"]
             end
-            block:NewFiles["New Files"]
+            block:NewFiles["🆕 New Videos to Copy (Expands when Already Copied is Collapsed)"]
                 columns 1
-                NFHeader["New files (X)"]
+                NFHeader["🆕 New Videos to Copy (X)"]
                 NFList["File Name | Modified Date"]
             end
         end
@@ -855,11 +1183,11 @@ block-beta
         end
         block:DestPanel["Destination Panel"]
             columns 1
-            DestTitle["DESTINATION - COMPUTER"]
-            DestPath["[Destination Path TextBox] [Choose Folder…]"]
-            block:DestFiles["Files in Destination"]
+            DestTitle["💻 Your Computer Videos"]
+            DestPath["[Destination Path ComboBox] [📁 Select Folder…]"]
+            block:DestFiles["Videos on Your Computer"]
                 columns 1
-                DFHeader["Files in computer (X)"]
+                DFHeader["💻 Videos on Your Computer (X)"]
                 DFList["File Name | Modified Date"]
             end
         end
@@ -879,49 +1207,362 @@ block-beta
 
 ### Control Specifications
 
-#### Source Path TextBox
+#### Source Path ComboBox
 - **AutomationId**: `SourcePathTextBox`
 - **Binding**: Two-way to `SourcePath` property
 - **Height**: 28 pixels
 - **Behavior**: Triggers file load on text change (debounced 300ms)
+- **Features**: Displays recent folders dropdown, editable text field
 
-#### Destination Path TextBox
+#### Browse Source Button
+| Property | Value |
+|----------|-------|
+| **Content** | "📁 Select Folder…" |
+| **Command** | `BrowseSourceCommand` |
+| **Position** | Right of Source Path ComboBox |
+| **Action** | Opens folder picker dialog |
+| **Background** | #E0E0E0 (light gray, subdued) |
+| **Foreground** | #424242 (dark gray) |
+| **Font Size** | 12px (smaller than action buttons) |
+| **Padding** | 8,4 pixels |
+| **Border** | 1px #BDBDBD (light gray border) |
+| **Hover Background** | #BDBDBD (medium gray) |
+| **Hover Border** | #9E9E9E (darker gray) |
+| **Pressed Background** | #9E9E9E (medium-dark gray) |
+| **Design Rationale** | Subdued styling since folder selection is infrequent after initial setup; less visually distracting than primary action buttons |
+
+#### Action Button Bar
+| Property | Value |
+|----------|-------|
+| **Position** | Top of window, below title bar |
+| **Height** | 50 pixels |
+| **Background** | #F5F5F5 (light gray) |
+| **Border** | Bottom: 1px #E0E0E0 |
+| **Layout** | Three-column grid (Help left, spacer, Refresh/Settings right) |
+
+#### Help Button ("How to Use")
+| Property | Value |
+|----------|-------|
+| **Content** | "❓ How to Use" |
+| **Command** | `ToggleHelpCommand` |
+| **Style** | `HelpButtonStyle` (Based on `ActionButtonStyle`) |
+| **Font Family** | System message font |
+| **Font Size** | Bound to `FontSize` property (same as user setting) |
+| **Background** | #2196F3 (blue) |
+| **Hover Background** | #1976D2 (darker blue) |
+| **Pressed Background** | #1565C0 (deep blue) |
+| **Foreground** | #FFFFFF (white) |
+| **Font Weight** | Bold |
+| **Padding** | 15,8 pixels |
+| **Min Width** | 120 pixels |
+| **Min Height** | 35 pixels |
+
+#### Refresh Button
+| Property | Value |
+|----------|-------|
+| **Content** | "🔄 Refresh (F5)" |
+| **Command** | `RefreshCommand` |
+| **Style** | `RefreshButtonStyle` (Based on `ActionButtonStyle`) |
+| **Font Family** | System message font |
+| **Font Size** | Bound to `FontSize` property (same as user setting) |
+| **Background** | #4CAF50 (green) |
+| **Hover Background** | #43A047 (darker green) |
+| **Pressed Background** | #388E3C (deep green) |
+| **Foreground** | #FFFFFF (white) |
+| **Font Weight** | Bold |
+| **Padding** | 15,8 pixels |
+| **Min Width** | 120 pixels |
+| **Min Height** | 35 pixels |
+
+#### Settings Button
+| Property | Value |
+|----------|-------|
+| **Content** | "⚙️ Settings" |
+| **Command** | `OpenSettingsCommand` |
+| **Style** | `SettingsButtonStyle` (Based on `ActionButtonStyle`) |
+| **Font Family** | System message font |
+| **Font Size** | Bound to `FontSize` property (same as user setting) |
+| **Background** | #757575 (subdued gray) |
+| **Hover Background** | #616161 (darker gray) |
+| **Pressed Background** | #424242 (deep gray) |
+| **Foreground** | #FFFFFF (white) |
+| **Font Weight** | Bold |
+| **Padding** | 15,8 pixels |
+| **Min Width** | 120 pixels |
+| **Min Height** | 35 pixels |
+| **Design Rationale** | Subdued gray styling to be less visually distracting; Settings is a secondary action compared to primary actions like Refresh and Copy |
+
+#### Help Panel
+| Property | Value |
+|----------|-------|
+| **Visibility** | Bound to `ShowHelpPanel` property (default: False) |
+| **Background** | #E3F2FD (light blue) |
+| **Border** | #90CAF9 (blue), bottom only, 1px |
+| **Height (Expanded)** | 180 pixels |
+| **Height (Collapsed)** | 0 pixels |
+| **Animation** | Collapses/expands via Height property |
+| **Layout Behavior** | Main content area slides down when expanded, slides up when collapsed |
+| **Grid Row** | Row 1 (between Action Button Bar and Main Content) |
+| **Default State** | Collapsed (hidden) on first run |
+
+#### Help Panel Header
+| Property | Value |
+|----------|-------|
+| **Title** | "❓ How to Copy Your Photos" |
+| **Font Size** | 18 pixels |
+| **Font Weight** | Bold |
+| **Toggle Button** | "Hide Instructions ▲" / "Show Instructions ▼" |
+| **Toggle Command** | `ToggleHelpCommand` |
+| **Toggle Foreground** | #1976D2 (blue) |
+
+#### Help Panel Instructions
+| Element | Content | Font Size |
+|---------|---------|-----------|
+| Header | "📋 To Copy Videos:" | 14px, Bold |
+| Step 1 | "1. Select your camera folder using 'Select Folder…'" | 14px |
+| Step 2 | "2. Select your computer folder using 'Select Folder…'" | 14px |
+| Step 3 | "3. Select the videos you want to copy (click on them)" | 14px |
+| Step 4 | "4. Click the big green 'Copy' button" | 14px |
+| Header | "🗑️ To Delete Files:" | 14px, Bold |
+| Step 1 | "1. Select file(s) to delete in any list" | 14px |
+| Step 2 | "2. Press Delete key or right-click → Delete" | 14px |
+| Step 3 | "3. Confirm (⚠️ This is permanent!)" | 14px |
+| Legend 1 | "✓ Already copied = GREEN" | 14px, Bold, #2E7D32 |
+| Legend 2 | "✓ New files = BLUE" | 14px, Bold, #1565C0 |
+
+#### Destination Path ComboBox
 - **AutomationId**: `DestinationPathTextBox`
 - **Binding**: Two-way to `DestinationPath` property
 - **Height**: 28 pixels
 - **Behavior**: Triggers file load on text change (debounced 300ms)
+- **Features**: Displays recent folders dropdown, editable text field
+
+#### Browse Destination Button
+| Property | Value |
+|----------|-------|
+| **Content** | "📁 Select Folder…" |
+| **Command** | `BrowseDestinationCommand` |
+| **Position** | Right of Destination Path ComboBox |
+| **Action** | Opens folder picker dialog |
+| **Background** | #E0E0E0 (light gray, subdued) |
+| **Foreground** | #424242 (dark gray) |
+| **Font Size** | 12px (smaller than action buttons) |
+| **Padding** | 8,4 pixels |
+| **Border** | 1px #BDBDBD (light gray border) |
+| **Hover Background** | #BDBDBD (medium gray) |
+| **Hover Border** | #9E9E9E (darker gray) |
+| **Pressed Background** | #9E9E9E (medium-dark gray) |
+| **Design Rationale** | Subdued styling since folder selection is infrequent after initial setup; less visually distracting than primary action buttons |
 
 #### Copy Button
 - **AutomationId**: `CopyButton`
-- **Content**: "Copy ➜"
-- **Height**: 50 pixels
-- **FontSize**: Dynamic (user-configurable)
-- **FontWeight**: Bold
-- **Enabled**: When not copying, not loading, and files selected
+- **Content**: Two-line layout with "Copy" text and "➜" arrow
+  - Line 1: "Copy" (FontSize: 22, FontWeight: Bold)
+  - Line 2: "➜" right arrow emoji (FontSize: 32, FontWeight: Bold)
+- **Height**: 80 pixels (large, prominent)
+- **Background**: #4CAF50 (high-contrast green for "go")
+- **Border**: 2px #388E3C (darker green border)
+- **Padding**: 20,10 pixels
+- **Enabled**: When not copying, not loading, and at least one file selected in "New Files"
+- **Foreground Colors**:
+  - Enabled: #FFFFFF (white text)
+  - Disabled: #A0A0A0 (light gray text - standard Windows disabled control color)
+- **Disabled State**:
+  - Background: #E0E0E0 (light gray)
+  - Border: #C0C0C0 (medium gray)
+- **Pulse Animation**: Subtle opacity pulse (1.0 ↔ 0.7, 1 second cycle) when files are ready to copy
+  - Starts when: New Files list has items AND at least one file is selected
+  - Stops when: No files selected or copy operation begins
+  - Purpose: Draws attention to primary action for users with cognitive or attention difficulties
 
 #### Progress Bar
-- **Binding**: 
-  - `Value` → `ProgressValue`
-  - `Maximum` → `ProgressMaximum`
-- **Height**: 20 pixels
+- **Container**: Grid with overlaid percentage TextBlock
+- **Height**: 30 pixels (increased for better visibility)
+- **Bindings**:
+  - `Value` → `ProgressValue` (bytes copied)
+  - `Maximum` → `ProgressMaximum` (total bytes)
 - **Mode**: Determinate during copy
+- **Percentage Display**:
+  - **Position**: Centered inside progress bar
+  - **Format**: "{0:F0}%" (e.g., "45%")
+  - **Font Size**: 14 pixels
+  - **Font Weight**: Bold
+  - **Color**: #000000 (black text for high contrast)
+- **Progress Behavior**:
+  - **During Copy**: Progress capped at 95% to account for file move operations
+  - **After Each File**: Progress updates to reflect completed copy + move
+  - **At Completion**: Progress shows 100% only when ALL files are fully transferred
+  - **After Completion**: Progress resets to 0 after success message is shown
+- **Purpose**: Provides clear visual feedback during copy operations, reduces user anxiety during long transfers
+- **Accuracy**: Progress bar only reaches 100% when transfer is fully complete (not during intermediate copy operations)
+
+#### Status Bar
+| Property | Value |
+|----------|-------|
+| **Position** | Bottom of window (VerticalAlignment: Bottom) |
+| **Height** | 30 pixels |
+| **Background** | #F5F5F5 (light gray) |
+| **Border** | Top: 1px #E0E0E0 (light gray) |
+| **ZIndex** | 100 (top layer) |
+
+**Status Bar Sections:**
+| Section | Content | Binding | Styling |
+|---------|---------|---------|---------|
+| **Status (Left)** | Icon + Text | `StatusBarIcon`, `StatusBarText` | Icon: 14px, Text: 13px Medium |
+| **Source Count** | Total files in source | `SourceFileCountText` | 13px |
+| **New Count** | New file count | `NewFileCountText` | 13px Bold, #1976D2 Blue |
+
+**Status States:**
+| State | Icon | Text | Trigger |
+|-------|------|------|---------|
+| **Ready** | ✓ | "Ready" | Default state |
+| **Loading** | ⏳ | "Loading files..." | IsLoading = True |
+| **Copying** | 📋 | "Copying files..." | IsCopying = True |
+| **No Source** | 📁 | "Select source folder" | SourcePath is empty |
+
+**Benefits:**
+- Always-visible status information improves situational awareness
+- Color-coded new file count (blue) draws attention to actionable items
+- Professional appearance with standardized status bar pattern
+- Icons provide quick visual state recognition
 
 #### ListViews
-| ListView | AutomationId | ItemsSource | SelectionMode |
-|----------|--------------|-------------|---------------|
-| Already Copied | `AlreadyCopiedListView` | `AlreadyCopiedFiles` | Extended |
-| New Files | `NewFilesListView` | `NewFiles` | Extended |
-| Destination | `DestinationFilesListView` | `DestinationFiles` | Extended |
+| ListView | AutomationId | ItemsSource | SelectionMode | Container |
+|----------|--------------|-------------|---------------|-----------|
+| ✅ Already Copied Videos | `AlreadyCopiedListView` | `AlreadyCopiedFiles` | Extended | Expander (collapsible, starts collapsed) |
+| 🆕 New Videos to Copy | `NewFilesListView` | `NewFiles` | Extended | GroupBox |
+| 💻 Videos on Your Computer | `DestinationFilesListView` | `DestinationFiles` | Extended | GroupBox |
 
 **Note**: AutomationIds are set on the ListView elements for screen reader accessibility.
 
-#### ListView Columns
-| Column | Header | Width | Alignment | Binding |
-|--------|--------|-------|-----------|---------|
-| File Name | "File Name" | `*` (stretches to fill available space) | Left | `Name` or `DisplayName` |
-| Modified Date | "Modified Date" | `Auto` (sizes to content) | Right | `ModifiedDate` |
+**File Display Behavior:**
+- **All File Types Shown**: ListViews display ALL files (videos, photos, documents, etc.)
+- **Video Count Only**: Header counts and status bar counts include ONLY video files
+- **Supported Video Formats**: .mp4, .m4v, .mov, .avi, .mkv, .wmv, .flv, .webm, .mpeg, .mpg, .3gp, .3g2
+- **Example**: If folder has 10 files (3 videos + 7 photos):
+  - ListView shows: all 10 files
+  - Header shows: "🆕 New Videos to Copy (3)"
+  - Status bar shows: "3 videos in source"
 
-**Note**: The File Name column takes all remaining horizontal space, while the Modified Date column sizes automatically to fit its content and is right-aligned for better readability.
+**Visual Distinction - Video vs Non-Video Files:**
+- **Video Files** (full prominence):
+  - Text Color: Black (#000000)
+  - Opacity: 100% (1.0)
+  - Purpose: Draw attention to primary content (videos are the focus of this app)
+  
+- **Non-Video Files** (less prominent, still clearly readable):
+  - Text Color: Black (#000000) - maintains color accuracy for better readability
+  - Opacity: 75% (0.75) - subdued but easy to read
+  - Purpose: Visible and readable while indicating secondary importance
+  - Accessibility: Black text maintains maximum contrast, better for users with visual impairments
+  
+- **Overrides** (all files become fully prominent):
+  - Selected: Blue background, white text, 100% opacity
+  - Already Copied: Green background, black text, 100% opacity
+  - Mouse Over: Light blue background, 100% opacity
+
+**Selection Behavior:**
+- **Extended Selection**: Users can select multiple files using Ctrl+Click or Shift+Click
+- **Toggle Selection**: Clicking an already selected row will deselect it (toggle behavior)
+- **Multi-select Support**: Ctrl+Click toggles individual items, Shift+Click selects ranges
+- **Selection Applies To**: All three ListViews (✅ Already Copied Videos, 🆕 New Videos to Copy, 💻 Videos on Your Computer)
+
+#### ✅ Already Copied Videos Expander Control
+| Property | Value |
+|----------|-------|
+| **Control Type** | `Expander` |
+| **Default State** | Collapsed (`IsExpanded="False"`) |
+| **Header Binding** | `{Binding AlreadyCopiedFilesHeader}` |
+| **Header Style** | Bold text, clickable |
+| **Expand Direction** | Down (expands downward) |
+| **Layout Behavior** | When collapsed, "🆕 New Videos to Copy" section expands to fill available space (uses `*` row height) |
+| **Visual Styling** | Light green background (#E8F5E9), green border (#81C784), rounded corners (4px) |
+| **Color Rationale** | Green indicates "done", "complete", "safe" - files already backed up |
+
+#### 🆕 New Videos to Copy GroupBox Control
+| Property | Value |
+|----------|-------|
+| **Control Type** | `GroupBox` (wrapped in Border for styling) |
+| **Header Binding** | `{Binding NewFilesHeader}` |
+| **Header Style** | Standard weight text |
+| **Visual Styling** | Light blue background (#E3F2FD), blue border (#64B5F6), rounded corners (4px) |
+| **Color Rationale** | Blue indicates "new", "pending", "action needed" - files awaiting backup |
+| **Layout Behavior** | Uses `*` (star) row height to expand and fill available vertical space |
+
+#### Section Visual Distinction
+| Feature | ✅ Already Copied Videos | 🆕 New Videos to Copy |
+|---------|---------------|-----------|
+| **Background Color** | #E8F5E9 (light green) | #E3F2FD (light blue) |
+| **Border Color** | #81C784 (green) | #64B5F6 (blue) |
+| **Semantic Meaning** | Done, complete, safe | New, pending, action needed |
+| **Corner Radius** | 4px (rounded) | 4px (rounded) |
+| **Border Thickness** | 1px | 1px |
+
+**Purpose**: Color-coded sections provide immediate visual distinction between already-backed-up files and files needing backup, reducing cognitive load and improving scanability for users with visual or cognitive impairments.
+
+#### ListView Columns
+| Column | Header | Width | Alignment | Binding | Sortable |
+|--------|--------|-------|-----------|---------|----------|
+| File Name | "File Name" | `*` (stretches to fill available space) | Left | `DisplayName` (includes ✅ tick icon for already-copied files) | Yes (Click header) |
+| Modified Date | "Modified Date" | `200` pixels (fixed for 12-hour format) | Right | `ModifiedDate` | Yes (Click header) |
+
+**Note**: The File Name column takes all remaining horizontal space, while the Modified Date column has a fixed width of 200 pixels to accommodate the 12-hour time format with AM/PM. The Modified Date column is right-aligned for better readability.
+
+**Column Header Sorting:**
+- **Interaction**: Click on any column header to sort by that column
+- **Sort Order**: First click = Ascending (▲), Second click = Descending (▼) (toggles)
+- **Visual Feedback**: 
+  - Cursor changes to hand pointer on hover
+  - Only the actively sorted column shows the direction indicator
+  - Other column headers do not show indicators (clear indication of active sort)
+  - Indicator: ▲ (ascending) or ▼ (descending) in blue (#1976D2)
+- **Applies To**: All three ListViews (Already Copied, New Files, Destination)
+- **Sort Properties**:
+  - File Name: Sorts by `DisplayName` (case-insensitive, alphabetical)
+  - Modified Date: Sorts by `ModifiedDate` (chronological)
+
+#### ListView Styling
+
+| Property | Value |
+|----------|-------|
+| **Font Family** | Segoe UI Emoji (for tick icon support) |
+| **Item Container** | ListViewItem with custom triggers |
+| **Border** | 1px bottom border, color #E0E0E0 |
+| **Padding** | 5,8 pixels |
+
+**Column Header Styling** (SortableGridViewColumnHeader):
+| Property | Value | Purpose |
+|----------|-------|---------|
+| **Background** | #E3F2FD (light blue) | Distinct from white data rows |
+| **Foreground** | #1976D2 (blue text) | Clearly different from black data text |
+| **FontWeight** | Bold | Emphasizes header vs data |
+| **Border** | 2px bottom (#90CAF9) | Visual separation from data rows |
+| **Padding** | 8,6 pixels | More spacious than data rows |
+| **Hover Background** | #BBDEFB (darker blue) | Interactive feedback |
+| **Hover Border** | #64B5F6 | Enhanced hover effect |
+| **Cursor** | Hand | Indicates clickability for sorting |
+
+**Already Copied File Styling** (via DataTrigger on `IsAlreadyCopied = True`):
+| Property | Value |
+|----------|-------|
+| Background | #4CAF50 (high-contrast green) |
+| Foreground | #000000 (black) |
+| FontWeight | Bold |
+| DisplayName Prefix | ✅ (tick emoji) |
+
+**Selected Item Styling** (via Trigger on `IsSelected = True`):
+| Property | Value |
+|----------|-------|
+| Background | #1976D2 (blue) |
+| Foreground | #FFFFFF (white) |
+| FontWeight | Bold |
+
+**Mouse Over Styling** (via MultiTrigger when `IsMouseOver = True` AND `IsSelected = False`):
+| Property | Value |
+|----------|-------|
+| Background | #90CAF9 (high-visibility blue) |
+
+**Note**: The tick icon (✅) is displayed via the `DisplayName` property, which prepends "✅ " to the file name when `IsAlreadyCopied` is true. All three ListViews (Already Copied, New Files, and Destination Files) use the same styling for consistency.
 
 ### Settings Dialog Layout
 
@@ -964,6 +1605,48 @@ block-beta
 | **Startup Location** | CenterOwner |
 | **Resizable** | No |
 | **ShowInTaskbar** | No |
+
+### Delete Confirmation Dialog Specifications
+
+| Property | Value |
+|----------|-------|
+| **Width** | 500 pixels |
+| **Height** | 320 pixels |
+| **Startup Location** | CenterOwner (relative to main window) |
+| **Resizable** | No |
+| **ShowInTaskbar** | No |
+| **Window Style** | None (custom styled with transparency) |
+| **Background** | Transparent with dark overlay (#80000000) |
+| **Content Background** | White with light gray border (#CCCCCC) |
+| **Corner Radius** | 8 pixels |
+| **Drop Shadow** | Blur: 20, Opacity: 0.5, Direction: 0 |
+
+**Dialog Content:**
+| Element | Specification |
+|---------|---------------|
+| **Warning Icon** | ⚠️ emoji, FontSize: 40px |
+| **Title** | "Confirm Delete", FontSize: 18px, Bold |
+| **Message** | Wrapped text, FontSize: 14px, LineHeight: 22px |
+| **Grid Margin** | 30 pixels |
+
+**Button Specifications:**
+| Button | Text | Style | Height | Padding | Colors |
+|--------|------|-------|--------|---------|--------|
+| **Yes, Delete** | "Yes, Delete" | DeleteButtonStyle | 55px | 20,15 | Background: #F44336 (red), Border: #D32F2F, Hover: #D32F2F/#B71C1C |
+| **No, Keep** | "No, Keep" | CancelButtonStyle | 55px | 20,15 | Background: #757575 (gray), Border: #616161, Hover: #616161/#424242 |
+
+**Button Properties (both):**
+- MinWidth: 150 pixels
+- FontWeight: Bold
+- Foreground: #FFFFFF (white)
+- VerticalContentAlignment: Center
+- HorizontalContentAlignment: Center
+- IsDefault (Yes): Enter key triggers
+- IsCancel (No): Escape key triggers
+
+**Color Rationale:**
+- **Red (Yes, Delete)**: Indicates destructive action, follows standard UI conventions
+- **Gray (No, Keep)**: Neutral/cancel action, less prominent than destructive action
 
 ### Slider Specifications
 
@@ -2053,12 +2736,20 @@ The following unit tests have been implemented to verify BDD compliance:
 - Temp file cleanup tests
 - Keyboard shortcut tests (F5, Delete)
 - **ListView styling tests** (MultiTrigger for hover/selection priority)
+- **ListView column configuration tests** (File Name takes remaining space, Modified Date fixed width)
+- **ListView sorting tests** (BDD v2.11-2.12, Category: UI):
+  - Column header click sorts ListView
+  - Sort toggle (ascending ↔ descending)
+  - Sort indicators show only on active sort column
+  - Sorting works on all three ListViews independently
+  - Sort indicators (▲/▼) display correctly
+  - Note: Tests use Assert.Ignore() when application doesn't load data in test environment
 
 ### Functional Tests
 
-- [x] Source folder selection via Choose Folder… button
+- [x] Source folder selection via Select Folder… button
 - [x] Source folder selection via manual path entry
-- [x] Destination folder selection via Choose Folder… button
+- [x] Destination folder selection via Select Folder… button
 - [x] Destination folder selection via manual path entry
 - [x] Path persistence across application restart
 - [x] Automatic file loading on startup with saved paths
@@ -2181,6 +2872,31 @@ The following unit tests have been implemented to verify BDD compliance:
 | 1.7.0 | 2026-02-22 | AI Assistant | **Verification Update**: Verified implementation against BDD. Updated file sorting spec to note natural sort is future enhancement. Added implementation status notes for disk space error handling and status icons. Updated test scenarios checklist with pass/fail status. Added Accessibility Compliance Summary table. Added note about AutomationId for destination ListView. |
 | 1.8.0 | 2026-02-22 | AI Assistant | **Unit Tests Update**: Added comprehensive unit tests covering all BDD scenarios. Added 50+ unit tests in FileViewModelTests.cs (constructor, properties, commands, accessibility). Added 15+ UI integration tests in MainWindowTests.cs (AutomationIds, keyboard shortcuts, settings dialog). Updated CameraCopyTool.Tests.csproj with Moq and test SDK packages. Added Unit Test Coverage section to BDD appendix. Fixed missing AutomationId for DestinationFilesListView in MainWindow.xaml. |
 | 1.9.0 | 2026-02-22 | AI Assistant | **ListView Hover Fix**: Fixed issue where hovering over a selected row made text hard to read. Added Requirement 1.1.1 documenting ListView row state priority (Selected > Hover > Already Copied > Normal). Updated BDD with behavior matrix showing all state combinations. Changed implementation to use MultiTrigger ensuring hover only applies when IsSelected=False. Updated Accessibility Compliance Summary to mark ListView State Priority as Complete. |
+| 2.0.0 | 2026-02-22 | AI Assistant | **Major UI Updates**: Changed Modified Date format from 24-hour (`HH:mm`) to 12-hour (`hh:mm tt`) with AM/PM for better readability. Increased Modified Date column width from 170px to 200px to accommodate longer format. Unified all three ListViews to use `DisplayName` binding with ✅ tick icon prefix for already-copied files. Added `FontFamily="Segoe UI Emoji"` to all ListViews for proper emoji rendering. Restored green background (#4CAF50) for already-copied files (now shows both tick icon AND green background). Updated ListView Styling section with comprehensive styling tables. Updated User Stories 2.1, 2.2, 2.3 with new date format and tick icon behavior. |
+| 2.1.0 | 2026-02-22 | AI Assistant | **Collapsible Already Copied Section**: Changed "Already Copied Files" from GroupBox to Expander control that starts collapsed by default. Updated Source Panel Grid Row 2 from `*` to `Auto` height so New Files section expands when Already Copied is collapsed. Added collapsible section acceptance criteria to User Story 2.2. Updated Main Window Layout section with Grid row specifications. Updated ListView table to show Expander container type. Added Expander Control specification table. Updated Mermaid diagram to reflect collapsible behavior. |
+| 2.2.0 | 2026-02-22 | AI Assistant | **Visual Panel Separation**: Added subtle background colors (#F0F0F0) to Source and Destination panels with thin borders (#D0D0D0) for clearer visual hierarchy. Added Border controls with rounded corners (4px) to separate the three main columns. Updated Main Window Layout section with Visual Separation table. Removed redundant inline Height/Padding/BorderThickness properties from TextBox and Button controls (now using global styles). Fixed Menu overlap issue by adding ZIndex and adjusting margins. |
+| 2.3.0 | 2026-02-22 | AI Assistant | **Copy Button Visibility Improvements**: Increased Copy button height from 50px to 60px with larger font (24px). Changed button color to high-contrast green (#4CAF50) for "go" signal. Added subtle pulse animation (opacity 1.0↔0.7, 1s cycle) when files are ready to copy. Updated Copy Button specification table with detailed properties. Added pulse animation acceptance criteria scenarios to User Story 3.1. |
+| 2.4.0 | 2026-02-22 | AI Assistant | **Copy Button Layout Refinements**: Changed Copy button to two-line layout with "Copy" on first line and "➜" arrow on second line. Increased button height to 80px for better visibility. Updated font sizes (Copy: 22px, Arrow: 32px). Fixed disabled state text color to use standard Windows disabled control colors (#A0A0A0 on #E0E0E0 background) for better readability. Added Foreground binding to button content TextBlocks for proper color inheritance. Updated Copy Button specification table with two-line layout details. |
+| 2.5.0 | 2026-02-22 | AI Assistant | **Progress Bar Visibility Improvements**: Increased progress bar height from 20px to 30px. Added percentage text overlay inside progress bar showing completion percentage (e.g., "45%"). Text is bold, 14px, black color for high contrast. Added ProgressPercentage calculated property to MainViewModel. Updated Progress Bar specification table with detailed properties. Benefits: clearer progress feedback, reduces anxiety during long operations, better accessibility. |
+| 2.6.0 | 2026-02-22 | AI Assistant | **Delete Confirmation Dialog Improvements**: Increased dialog size from 220px to 320px height and 450px to 500px width for better button visibility. Updated button colors: "Yes, Delete" uses red (#F44336) for destructive action, "No, Keep" uses gray (#757575) for cancel action. Increased button height to 55px with padding 20,15. Added MinHeight 70px for button row. Updated Grid margin from 25 to 30 pixels. Added Delete Confirmation Dialog Specifications section to BDD with detailed styling table. Benefits: buttons fully visible, color coding follows UI conventions (red=destructive, gray=neutral), improved accessibility. |
+| 2.7.0 | 2026-02-22 | AI Assistant | **Progress Bar Accuracy Fix**: Fixed progress bar reaching 100% prematurely before file transfer completion. Progress now capped at 95% during copy operations to reserve room for file move operations. Progress bar only shows 100% when ALL files are fully copied AND moved. Progress resets to 0 after success message is displayed (not before). Updated Progress Bar specification with Progress Behavior section documenting accurate progress reporting. Benefits: accurate progress feedback, users can trust 100% indicator means transfer is truly complete, reduces confusion during multi-file transfers. |
+| 2.8.0 | 2026-02-22 | AI Assistant | **ListView Toggle Selection**: Added toggle selection behavior to all three ListViews. Clicking an already selected row now deselects it (toggle behavior). Extended selection mode still supports Ctrl+Click for individual toggles and Shift+Click for range selection. Updated ListView specification with Selection Behavior section documenting toggle, extended, and multi-select support. Benefits: more intuitive selection management, easier to correct accidental selections, consistent with modern UI patterns. |
+| 2.9.0 | 2026-02-22 | AI Assistant | **Color-Coded Section Distinction**: Added distinct color-coded backgrounds to Already Copied and New Files sections for clear visual distinction. Already Copied uses light green background (#E8F5E9) with green border (#81C784) indicating "done/complete/safe". New Files uses light blue background (#E3F2FD) with blue border (#64B5F6) indicating "new/pending/action needed". Both sections have rounded corners (4px) and 1px borders. Added New Files GroupBox Control specification table. Added Section Visual Distinction comparison table. Updated Already Copied Expander Control specification with Visual Styling and Color Rationale properties. Benefits: immediate visual distinction between sections, reduced cognitive load, improved scanability for users with visual or cognitive impairments, semantic color coding (green=done, blue=pending). |
+| 2.10.0 | 2026-02-22 | AI Assistant | **Status Bar Implementation**: Added dedicated status bar at bottom of window (30px height, light gray background #F5F5F5). Displays: current state with icon (Ready ✓, Loading ⏳, Copying 📋, No Source 📁), total source file count, and new file count in blue. Status bar uses ZIndex 100 to stay on top. Added Feature 9: Status Bar with User Story 9.1 and acceptance criteria. Added Status Bar specification table with sections, states, and bindings. Added StatusBarIcon, StatusBarText, SourceFileCountText, NewFileCountText properties to MainViewModel. Benefits: always-visible status information, better situational awareness, professional appearance, color-coded new file count draws attention to actionable items. |
+| 2.11.0 | 2026-02-22 | AI Assistant | **ListView Column Sorting**: Added click-to-sort functionality to all ListView column headers (File Name, Modified Date). Click once for ascending sort, click again for descending (toggle behavior). Cursor changes to hand pointer on hover for visual feedback. Sorting applies to all three ListViews (Already Copied, New Files, Destination). File Name sorts by DisplayName (case-insensitive alphabetical), Modified Date sorts chronologically. Updated ListView Columns table with Sortable column. Added Column Header Sorting specification section. Benefits: easier file navigation, users can quickly find specific files, familiar interaction pattern consistent with Windows Explorer. |
+| 2.12.0 | 2026-02-22 | AI Assistant | **Sort Direction Indicators**: Added visual sort direction indicators (▲/▼ arrows) to column headers. Only the actively sorted column shows the indicator (▲ ascending, ▼ descending, blue #1976D2 color). Other columns do not show indicators for clear sort state. Updated Column Header Sorting specification with Visual Feedback details. Benefits: clear indication of current sort column, users know at a glance which column is sorted and in which direction, improved usability. |
+| 2.13.0 | 2026-02-22 | AI Assistant | **ListView Sorting Unit Tests**: Added comprehensive UI integration tests for ListView sorting functionality. Tests cover: column header click sorting, sort toggle behavior, sort indicators showing only on active column, sorting on all three ListViews. Added ListView_ColumnHeaderClick_SortsAndShowsIndicator, ListView_Sorting_WorksOnAllListViews, ListView_SortIndicator_OnlyShowsOnActiveColumn test methods to MainWindowTests.cs. Updated Unit Test Coverage section with sorting tests documentation. Benefits: automated verification of sorting behavior, regression protection, ensures BDD compliance. |
+| 2.14.0 | 2026-02-22 | AI Assistant | **ListView Header Visual Distinction**: Updated column header styling to be visually distinct from data rows. Headers now have light blue background (#E3F2FD), bold blue text (#1976D2), 2px bottom border (#90CAF9), and hover effects (#BBDEFB background, #64B5F6 border). Added Column Header Styling table to ListView Styling section. Benefits: clear visual hierarchy, headers easily distinguishable from data, improved scanability, professional appearance. |
+| 2.15.0 | 2026-02-22 | AI Assistant | **Recent Folders History**: Added ComboBox dropdowns next to Source and Destination path TextBoxes showing last 10 used folders. Users can click to quickly select recent folders or type custom paths. Recent folders stored in-memory during session. Added RecentSourceFolders and RecentDestinationFolders ObservableCollection properties to MainViewModel. Updated SourcePath and DestinationPath setters to add folders to recent history. Added AddToRecentSourceFolders and AddToRecentDestinationFolders helper methods. Benefits: faster workflow for repeat use, reduces repetitive browsing, better user experience for power users. |
+| 2.16.0 | 2026-02-22 | AI Assistant | **ComboBox Font Size Fix**: Added ComboBox style with FontSize binding to ensure path ComboBoxes respect user's font size setting (14-28px). ComboBox now uses same font family and size as TextBox and Button controls. Benefits: consistent typography across all input controls, proper accessibility support for users with visual impairments. |
+| 2.17.0 | 2026-02-22 | AI Assistant | **Column Resize Functionality**: Added Thumb control to column headers enabling users to drag and resize column widths. Resize grip appears as 2px line on right edge of headers, shows blue line (#64B5F6) on hover and darker blue (#1976D2) while dragging. Sort handler ignores clicks on resize grip to prevent accidental sorting. Benefits: users can customize column widths for better readability, especially for long filenames. |
+| 2.18.0 | 2026-02-22 | AI Assistant | **Help Panel Two-Column Layout with Delete Instructions**: Updated help panel to display instructions in two-column layout (Copy on left, Delete on right). Added delete instructions: "1. Select file(s) to delete in any list", "2. Press Delete key or right-click → Delete", "3. Confirm (⚠️ This is permanent!)". Removed internal header ("How to Copy Your Photos") and toggle button from inside help panel. Increased panel height from 180px to 220px. Updated color legend to simplified format ("Already copied = GREEN", "New files = BLUE"). All font sizes now dynamic (bind to Window.FontSize). Updated User Story 0.2 acceptance criteria, visual styling specs, and animation scenarios. Benefits: more compact layout, delete functionality documented, better use of vertical space, consistent font scaling with settings. |
+| 2.19.0 | 2026-02-22 | AI Assistant | **Help Panel Text Consistency**: Updated help panel text to match actual UI button labels. Changed "Choose Folder…" to "Select Folder…" in help panel instructions. Changed "Click the big green 'Copy Photos' button" to "Click the big green 'Copy' button". Updated color legend text to match implementation. Updated BDD User Stories, Help Panel Instructions table, persona design implications, and functional tests checklist to reflect actual UI text. Updated README.md with consistent terminology. Benefits: documentation matches actual application, reduces user confusion, consistent terminology across all documentation. |
+| 2.20.0 | 2026-02-22 | AI Assistant | **Action Button Bar Layout Swap**: Swapped positions of Refresh and Help buttons in action button bar. Refresh button now on left side, Help and Settings buttons on right side. Updated BDD User Story 0.3 acceptance criteria to reflect new button positions. Benefits: Refresh button more accessible as primary action, logical grouping of help/settings together. |
+| 2.21.0 | 2026-02-22 | AI Assistant | **Settings and Help Button Order**: Swapped order of Settings and How to Use buttons on right side of action bar. Settings button now appears first (left), How to Use button second (right). Benefits: Settings positioned closer to edge follows common UI patterns, visual hierarchy improved. |
+| 2.22.0 | 2026-02-22 | AI Assistant | **Select Folder Button Styling**: Changed Select Folder buttons from default blue action button style to subdued gray styling (#E0E0E0 background, #424242 text, 12px font). Added hover/pressed states with darker grays. Reduced padding to 8,4. Added design rationale: folder selection is infrequent after initial setup, so buttons should be less visually distracting. Updated Browse Source and Browse Destination button specifications in BDD. Benefits: reduced visual clutter, primary action buttons (Copy, Refresh) stand out more, better visual hierarchy. |
+| 2.23.0 | 2026-02-22 | AI Assistant | **Help Panel Text Update**: Changed "To Copy Photos" to "To Copy Videos" and "Select the photos" to "Select the videos" in help panel instructions to accurately reflect application functionality (video file copying). Updated BDD User Story 0.2 and Help Panel Instructions table. Benefits: documentation accuracy, reduces user confusion about supported file types. |
+| 2.24.0 | 2026-02-22 | AI Assistant | **Settings Button Styling**: Changed Settings button from bright orange (#FF9800) to subdued gray (#757575) with darker hover (#616161) and pressed (#424242) states. Added design rationale: Settings is a secondary action, should be less visually distracting than primary actions like Refresh and Copy. Updated BDD Settings Button specification. Benefits: reduced visual clutter, better visual hierarchy, primary action buttons stand out more. |
 
 ---
 

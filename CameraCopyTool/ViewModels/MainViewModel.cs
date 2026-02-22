@@ -87,6 +87,17 @@ public class MainViewModel : ViewModelBase
     private CancellationTokenSource? _cancellationTokenSource;
 
     /// <summary>
+    /// Backing fields for recent folder history.
+    /// </summary>
+    private ObservableCollection<string> _recentSourceFolders = new();
+    private ObservableCollection<string> _recentDestinationFolders = new();
+
+    /// <summary>
+    /// Backing field for help panel visibility.
+    /// </summary>
+    private bool _showHelpPanel = false;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="MainViewModel"/> class.
     /// </summary>
     /// <param name="fileService">Service for file operations.</param>
@@ -106,10 +117,22 @@ public class MainViewModel : ViewModelBase
         NewFiles = new ObservableCollection<FileItem>();
         DestinationFiles = new ObservableCollection<FileItem>();
 
-        // Subscribe to collection changes to update header counts
-        AlreadyCopiedFiles.CollectionChanged += (s, e) => OnPropertyChanged(nameof(AlreadyCopiedFilesHeader));
-        NewFiles.CollectionChanged += (s, e) => OnPropertyChanged(nameof(NewFilesHeader));
-        DestinationFiles.CollectionChanged += (s, e) => OnPropertyChanged(nameof(DestinationFilesHeader));
+        // Subscribe to collection changes to update header counts and status bar
+        AlreadyCopiedFiles.CollectionChanged += (s, e) =>
+        {
+            OnPropertyChanged(nameof(AlreadyCopiedFilesHeader));
+            OnPropertyChanged(nameof(SourceFileCountText));
+        };
+        NewFiles.CollectionChanged += (s, e) =>
+        {
+            OnPropertyChanged(nameof(NewFilesHeader));
+            OnPropertyChanged(nameof(SourceFileCountText));
+            OnPropertyChanged(nameof(NewFileCountText));
+        };
+        DestinationFiles.CollectionChanged += (s, e) =>
+        {
+            OnPropertyChanged(nameof(DestinationFilesHeader));
+        };
 
         // Initialize commands that bind to UI elements (buttons, menu items, key bindings)
         BrowseSourceCommand = new RelayCommand(_ => BrowseSource());
@@ -119,11 +142,16 @@ public class MainViewModel : ViewModelBase
         DeleteCommand = new AsyncRelayCommand(DeleteSelectedAsync);
         OpenCommand = new RelayCommand(OpenSelected);
         OpenSettingsCommand = new RelayCommand(_ => OpenSettings());
+        ToggleHelpCommand = new RelayCommand(_ => ToggleHelpPanel());
 
         // Load saved settings from previous session
         _sourcePath = _settingsService.LastSourceFolder ?? string.Empty;
         _destinationPath = _settingsService.LastDestinationFolder ?? string.Empty;
         _fontSize = _settingsService.FontSize > 0 ? _settingsService.FontSize : 20;
+
+        // Initialize recent folders lists
+        _recentSourceFolders = new ObservableCollection<string>();
+        _recentDestinationFolders = new ObservableCollection<string>();
 
         // Automatically load files if paths were previously configured
         // This enables the app to show files immediately on startup
@@ -138,6 +166,7 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Gets or sets the source path (camera/device folder).
     /// When changed, saves the path to settings and triggers a debounced file load.
+    /// Also adds the path to recent folders history.
     /// </summary>
     public string SourcePath
     {
@@ -147,6 +176,7 @@ public class MainViewModel : ViewModelBase
             if (SetProperty(ref _sourcePath, value))
             {
                 _settingsService.LastSourceFolder = value;
+                AddToRecentSourceFolders(value);
                 DebounceLoadFiles();
             }
         }
@@ -155,6 +185,7 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Gets or sets the destination path (computer folder).
     /// When changed, saves the path to settings and triggers a debounced file load.
+    /// Also adds the path to recent folders history.
     /// </summary>
     public string DestinationPath
     {
@@ -164,10 +195,21 @@ public class MainViewModel : ViewModelBase
             if (SetProperty(ref _destinationPath, value))
             {
                 _settingsService.LastDestinationFolder = value;
+                AddToRecentDestinationFolders(value);
                 DebounceLoadFiles();
             }
         }
     }
+
+    /// <summary>
+    /// Gets the list of recently used source folders for the ComboBox dropdown.
+    /// </summary>
+    public ObservableCollection<string> RecentSourceFolders => _recentSourceFolders;
+
+    /// <summary>
+    /// Gets the list of recently used destination folders for the ComboBox dropdown.
+    /// </summary>
+    public ObservableCollection<string> RecentDestinationFolders => _recentDestinationFolders;
 
     /// <summary>
     /// Gets or sets a value indicating whether files are currently being loaded.
@@ -176,7 +218,14 @@ public class MainViewModel : ViewModelBase
     public bool IsLoading
     {
         get => _isLoading;
-        set => SetProperty(ref _isLoading, value);
+        set
+        {
+            if (SetProperty(ref _isLoading, value))
+            {
+                OnPropertyChanged(nameof(StatusBarIcon));
+                OnPropertyChanged(nameof(StatusBarText));
+            }
+        }
     }
 
     /// <summary>
@@ -192,6 +241,8 @@ public class MainViewModel : ViewModelBase
             {
                 // Notify the Copy command to re-evaluate its CanExecute condition
                 ((AsyncRelayCommand)CopyCommand).RaiseCanExecuteChanged();
+                OnPropertyChanged(nameof(StatusBarIcon));
+                OnPropertyChanged(nameof(StatusBarText));
             }
         }
     }
@@ -203,7 +254,13 @@ public class MainViewModel : ViewModelBase
     public int ProgressValue
     {
         get => _progressValue;
-        set => SetProperty(ref _progressValue, value);
+        set
+        {
+            if (SetProperty(ref _progressValue, value))
+            {
+                OnPropertyChanged(nameof(ProgressPercentage));
+            }
+        }
     }
 
     /// <summary>
@@ -213,7 +270,26 @@ public class MainViewModel : ViewModelBase
     public int ProgressMaximum
     {
         get => _progressMaximum;
-        set => SetProperty(ref _progressMaximum, value);
+        set
+        {
+            if (SetProperty(ref _progressMaximum, value))
+            {
+                OnPropertyChanged(nameof(ProgressPercentage));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the progress percentage for display in the UI.
+    /// Calculated from ProgressValue and ProgressMaximum.
+    /// </summary>
+    public double ProgressPercentage
+    {
+        get
+        {
+            if (ProgressMaximum <= 0) return 0;
+            return (double)ProgressValue / ProgressMaximum * 100;
+        }
     }
 
     /// <summary>
@@ -246,6 +322,61 @@ public class MainViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// Gets the status bar icon (emoji) based on current state.
+    /// </summary>
+    public string StatusBarIcon
+    {
+        get
+        {
+            if (IsLoading) return "⏳";
+            if (IsCopying) return "📋";
+            if (string.IsNullOrEmpty(SourcePath)) return "📁";
+            return "✓";
+        }
+    }
+
+    /// <summary>
+    /// Gets the status bar text based on current state.
+    /// </summary>
+    public string StatusBarText
+    {
+        get
+        {
+            if (IsLoading) return "Loading files...";
+            if (IsCopying) return "Copying files...";
+            if (string.IsNullOrEmpty(SourcePath)) return "Select source folder";
+            return "Ready";
+        }
+    }
+
+    /// <summary>
+    /// Gets the source file count text for the status bar.
+    /// Counts only video files.
+    /// </summary>
+    public string SourceFileCountText
+    {
+        get
+        {
+            int totalVideos = AlreadyCopiedFiles.Count(f => _fileService.IsVideoFile(f.Name)) 
+                            + NewFiles.Count(f => _fileService.IsVideoFile(f.Name));
+            return totalVideos > 0 ? $"{totalVideos} video{(totalVideos != 1 ? "s" : "")} in source" : "No videos in source";
+        }
+    }
+
+    /// <summary>
+    /// Gets the new file count text for the status bar.
+    /// Counts only video files.
+    /// </summary>
+    public string NewFileCountText
+    {
+        get
+        {
+            int newCount = NewFiles.Count(f => _fileService.IsVideoFile(f.Name));
+            return newCount > 0 ? $"{newCount} new video{(newCount != 1 ? "s" : "")}" : "0 new videos";
+        }
+    }
+
+    /// <summary>
     /// Event raised when the Settings window should be opened.
     /// Handled by the View to display the SettingsWindow dialog.
     /// </summary>
@@ -253,21 +384,30 @@ public class MainViewModel : ViewModelBase
 
     /// <summary>
     /// Gets the formatted header text for the Already Copied Files group.
-    /// Format: "Already copied files (count)"
+    /// Format: "Already copied videos (count)" - counts only video files
     /// </summary>
-    public string AlreadyCopiedFilesHeader => $"Already copied files ({AlreadyCopiedFiles.Count})";
+    public string AlreadyCopiedFilesHeader => $"✅ Already Copied Videos ({AlreadyCopiedFiles.Count(f => _fileService.IsVideoFile(f.Name))})";
 
     /// <summary>
     /// Gets the formatted header text for the New Files group.
-    /// Format: "New files (count)"
+    /// Format: "🆕 New Videos to Copy (count)" - counts only video files
     /// </summary>
-    public string NewFilesHeader => $"New files ({NewFiles.Count})";
+    public string NewFilesHeader => $"🆕 New Videos to Copy ({NewFiles.Count(f => _fileService.IsVideoFile(f.Name))})";
 
     /// <summary>
     /// Gets the formatted header text for the Destination Files group.
-    /// Format: "Files in computer (count)"
+    /// Format: "💻 Videos on Your Computer (count)" - counts only video files
     /// </summary>
-    public string DestinationFilesHeader => $"Files in computer ({DestinationFiles.Count})";
+    public string DestinationFilesHeader => $"💻 Videos on Your Computer ({DestinationFiles.Count(f => _fileService.IsVideoFile(f.Name))})";
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the help panel is visible.
+    /// </summary>
+    public bool ShowHelpPanel
+    {
+        get => _showHelpPanel;
+        set => SetProperty(ref _showHelpPanel, value);
+    }
 
     /// <summary>
     /// Gets the collection of files that have already been copied to the destination.
@@ -369,6 +509,12 @@ public class MainViewModel : ViewModelBase
     /// </summary>
     public ICommand OpenSettingsCommand { get; }
 
+    /// <summary>
+    /// Command for toggling the help panel visibility.
+    /// Bound to the "How to Use" button.
+    /// </summary>
+    public ICommand ToggleHelpCommand { get; }
+
     #endregion
 
     #region Command Handlers
@@ -403,12 +549,82 @@ public class MainViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// Adds a folder to the recent source folders list.
+    /// Keeps only the 10 most recent folders, removes duplicates.
+    /// </summary>
+    private void AddToRecentSourceFolders(string folder)
+    {
+        if (string.IsNullOrEmpty(folder)) return;
+        
+        // Remove if already exists
+        if (_recentSourceFolders.Contains(folder))
+        {
+            _recentSourceFolders.Remove(folder);
+        }
+        
+        // Add to beginning of list
+        _recentSourceFolders.Insert(0, folder);
+        
+        // Keep only 10 most recent
+        while (_recentSourceFolders.Count > 10)
+        {
+            _recentSourceFolders.RemoveAt(_recentSourceFolders.Count - 1);
+        }
+        
+        // Save to in-memory settings
+        if (_settingsService is SettingsService ss)
+        {
+            ss.RecentSourceFolders = _recentSourceFolders.ToList();
+        }
+        OnPropertyChanged(nameof(RecentSourceFolders));
+    }
+
+    /// <summary>
+    /// Adds a folder to the recent destination folders list.
+    /// Keeps only the 10 most recent folders, removes duplicates.
+    /// </summary>
+    private void AddToRecentDestinationFolders(string folder)
+    {
+        if (string.IsNullOrEmpty(folder)) return;
+        
+        // Remove if already exists
+        if (_recentDestinationFolders.Contains(folder))
+        {
+            _recentDestinationFolders.Remove(folder);
+        }
+        
+        // Add to beginning of list
+        _recentDestinationFolders.Insert(0, folder);
+        
+        // Keep only 10 most recent
+        while (_recentDestinationFolders.Count > 10)
+        {
+            _recentDestinationFolders.RemoveAt(_recentDestinationFolders.Count - 1);
+        }
+        
+        // Save to in-memory settings
+        if (_settingsService is SettingsService ds)
+        {
+            ds.RecentDestinationFolders = _recentDestinationFolders.ToList();
+        }
+        OnPropertyChanged(nameof(RecentDestinationFolders));
+    }
+
+    /// <summary>
     /// Raises the OpenSettingsRequested event to open the Settings dialog.
     /// The View handles this event by creating and showing the SettingsWindow.
     /// </summary>
     private void OpenSettings()
     {
         OpenSettingsRequested?.Invoke();
+    }
+
+    /// <summary>
+    /// Toggles the visibility of the help panel.
+    /// </summary>
+    private void ToggleHelpPanel()
+    {
+        ShowHelpPanel = !ShowHelpPanel;
     }
 
     /// <summary>
@@ -484,7 +700,7 @@ public class MainViewModel : ViewModelBase
                     destFileItems.Add(new FileItem
                     {
                         Name = f.Name,
-                        ModifiedDate = f.LastWriteTime.ToString("yyyy-MM-dd HH:mm"),
+                        ModifiedDate = f.LastWriteTime.ToString("yyyy-MM-dd hh:mm tt"),
                         IsAlreadyCopied = sourceNames.Contains(f.Name),
                         FileSize = f.Length,
                         FullPath = f.FullName
@@ -499,7 +715,7 @@ public class MainViewModel : ViewModelBase
                     var fileItem = new FileItem
                     {
                         Name = src.Name,
-                        ModifiedDate = src.LastWriteTime.ToString("yyyy-MM-dd HH:mm"),
+                        ModifiedDate = src.LastWriteTime.ToString("yyyy-MM-dd hh:mm tt"),
                         IsAlreadyCopied = existsInDest,
                         FileSize = src.Length,
                         FullPath = src.FullName
@@ -591,13 +807,16 @@ public class MainViewModel : ViewModelBase
         IsCopying = true;
         ProgressValue = 0;
         // Set progress maximum to total bytes to copy
-        ProgressMaximum = (int)filesToCopy.Sum(f => f.FileSize);
+        long totalBytes = filesToCopy.Sum(f => f.FileSize);
+        ProgressMaximum = (int)Math.Min(totalBytes, int.MaxValue);
+        System.Diagnostics.Debug.WriteLine($"Starting copy: {filesToCopy.Count} files, {totalBytes} bytes, ProgressMaximum={ProgressMaximum}");
         StatusMessage = "Copying files...";
 
         try
         {
             int successCount = 0;
             var copiedFiles = new List<FileItem>();
+            long bytesCopiedBeforeCurrentFile = 0;
 
             foreach (var fileItem in filesToCopy)
             {
@@ -620,16 +839,29 @@ public class MainViewModel : ViewModelBase
                             break; // Stop copying all remaining files
 
                         if (choice == OverwriteChoice.No)
-                            continue; // Skip this file, continue with next
+                        {
+                            // Skip this file but add its size to the cumulative progress
+                            bytesCopiedBeforeCurrentFile += fileItem.FileSize;
+                            // Update progress to reflect skipped file
+                            ProgressValue = (int)Math.Min(bytesCopiedBeforeCurrentFile, int.MaxValue);
+                            continue;
+                        }
                     }
 
                     // Clean up any stale temporary files from previous failed operations
                     _fileService.CleanupTempFiles(DestinationPath);
 
                     // Copy file to temporary location with progress reporting
+                    // Capture current file's starting position for cumulative progress
+                    long currentFileStart = bytesCopiedBeforeCurrentFile;
                     var progress = new Progress<long>(bytesRead =>
                     {
-                        ProgressValue = (int)bytesRead;
+                        // Only report progress up to 95% during copy to reserve room for move operation
+                        long cumulativeBytes = currentFileStart + bytesRead;
+                        double progressRatio = (double)cumulativeBytes / totalBytes;
+                        int progressValue = (int)(progressRatio * 0.95 * ProgressMaximum);
+                        System.Diagnostics.Debug.WriteLine($"Progress: {bytesRead} / {fileItem.FileSize} = {progressValue} / {ProgressMaximum} ({progressRatio * 100:F1}%)");
+                        ProgressValue = progressValue;
                     });
 
                     await _fileService.CopyFileAsync(sourcePath, tempDestPath, progress, CancellationToken.None);
@@ -640,6 +872,12 @@ public class MainViewModel : ViewModelBase
 
                     copiedFiles.Add(fileItem);
                     successCount++;
+                    bytesCopiedBeforeCurrentFile += fileItem.FileSize;
+                    
+                    // Update progress after file is fully copied and moved
+                    double completedRatio = (double)bytesCopiedBeforeCurrentFile / totalBytes;
+                    ProgressValue = (int)(completedRatio * 0.95 * ProgressMaximum);
+                    System.Diagnostics.Debug.WriteLine($"File complete: {fileItem.Name}, Progress: {ProgressValue} / {ProgressMaximum}");
                 }
                 catch (OperationCanceledException)
                 {
@@ -668,6 +906,10 @@ public class MainViewModel : ViewModelBase
                 }
             }
 
+            // All files copied successfully - set progress to 100%
+            ProgressValue = ProgressMaximum;
+            System.Diagnostics.Debug.WriteLine($"Copy complete: Progress {ProgressValue} / {ProgressMaximum} (100%)");
+
             // Update UI collections to reflect copied files
             foreach (var fileItem in copiedFiles)
             {
@@ -687,8 +929,6 @@ public class MainViewModel : ViewModelBase
                 }
             }
 
-            ProgressValue = 0;
-
             if (successCount > 0)
             {
                 _dialogService.ShowMessage(
@@ -697,6 +937,9 @@ public class MainViewModel : ViewModelBase
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }
+
+            // Reset progress after showing completion message
+            ProgressValue = 0;
 
             // Refresh file lists to show updated state
             await LoadFilesAsync();

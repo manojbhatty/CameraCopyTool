@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.IO;
 
 namespace CameraCopyTool.Models;
 
@@ -9,6 +10,14 @@ namespace CameraCopyTool.Models;
 /// </summary>
 public class FileItem : INotifyPropertyChanged
 {
+    /// <summary>
+    /// List of supported video file extensions.
+    /// </summary>
+    private static readonly HashSet<string> VideoExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".mp4", ".mov", ".avi", ".mkv", ".wmv", ".flv", ".webm", ".m4v", ".mpeg", ".mpg", ".3gp", ".3g2"
+    };
+
     /// <summary>
     /// Backing field for the file name.
     /// </summary>
@@ -38,6 +47,7 @@ public class FileItem : INotifyPropertyChanged
                 _name = value;
                 OnPropertyChanged(nameof(Name));
                 OnPropertyChanged(nameof(DisplayName));
+                OnPropertyChanged(nameof(IsVideoFile));
             }
         }
     }
@@ -76,6 +86,11 @@ public class FileItem : INotifyPropertyChanged
             }
         }
     }
+
+    /// <summary>
+    /// Gets a value indicating whether this file is a video file based on its extension.
+    /// </summary>
+    public bool IsVideoFile => !string.IsNullOrEmpty(Name) && VideoExtensions.Contains(Path.GetExtension(Name));
 
     /// <summary>
     /// Gets the display name for the file, including a tick icon (✅) if already copied.

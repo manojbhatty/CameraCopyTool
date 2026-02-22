@@ -10,10 +10,19 @@ public interface IFileService
 {
     /// <summary>
     /// Gets all files from the specified directory.
+    /// Returns all file types (not filtered).
     /// </summary>
     /// <param name="directoryPath">The path to the directory to enumerate.</param>
     /// <returns>A collection of <see cref="FileInfo"/> objects representing the files.</returns>
     IEnumerable<FileInfo> GetFiles(string directoryPath);
+
+    /// <summary>
+    /// Determines if a file is a video file based on its extension.
+    /// Video extensions include: mp4, mov, avi, mkv, wmv, flv, webm, m4v, mpeg, mpg, 3gp, 3g2.
+    /// </summary>
+    /// <param name="filePath">The full path to the file.</param>
+    /// <returns>True if the file has a video extension; otherwise, false.</returns>
+    bool IsVideoFile(string filePath);
 
     /// <summary>
     /// Checks if a file exists at the specified path.

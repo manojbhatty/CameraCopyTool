@@ -11,6 +11,14 @@ namespace CameraCopyTool.Services;
 public class FileService : IFileService
 {
     /// <summary>
+    /// List of supported video file extensions.
+    /// </summary>
+    private static readonly HashSet<string> VideoExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".mp4", ".mov", ".avi", ".mkv", ".wmv", ".flv", ".webm", ".m4v", ".mpeg", ".mpg", ".3gp", ".3g2"
+    };
+
+    /// <summary>
     /// Gets all files from the specified directory.
     /// Returns an empty collection if the directory does not exist.
     /// </summary>
@@ -22,6 +30,27 @@ public class FileService : IFileService
             return Enumerable.Empty<FileInfo>();
 
         return Directory.GetFiles(directoryPath).Select(f => new FileInfo(f));
+    }
+
+    /// <summary>
+    /// Determines if a file is a video file based on its extension.
+    /// </summary>
+    /// <param name="filePath">The full path to the file.</param>
+    /// <returns>True if the file has a video extension; otherwise, false.</returns>
+    public bool IsVideoFile(string filePath)
+    {
+        var extension = Path.GetExtension(filePath);
+        return !string.IsNullOrEmpty(extension) && VideoExtensions.Contains(extension);
+    }
+
+    /// <summary>
+    /// Determines if a file is a video file based on its extension.
+    /// </summary>
+    /// <param name="fileInfo">The FileInfo object to check.</param>
+    /// <returns>True if the file has a video extension; otherwise, false.</returns>
+    public bool IsVideoFile(FileInfo fileInfo)
+    {
+        return IsVideoFile(fileInfo.FullName);
     }
 
     /// <summary>
