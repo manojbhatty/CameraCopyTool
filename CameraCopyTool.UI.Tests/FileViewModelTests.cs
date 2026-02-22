@@ -715,28 +715,24 @@ public class MainViewModelTests
     public async Task DeleteCommand_ShowsConfirmationDialog()
     {
         _viewModel.SelectedNewFiles = new List<FileItem> { new FileItem { Name = "test.txt" } };
-        _mockDialogService.Setup(x => x.ShowMessage(
-            It.IsAny<string>(), "Confirm Delete",
-            MessageBoxButton.YesNo, MessageBoxImage.Warning))
-            .Returns(MessageBoxResult.No);
+        _mockDialogService.Setup(x => x.ShowDeleteConfirmation(
+            It.IsAny<string>(), It.IsAny<double>()))
+            .Returns(false);
 
         await ((AsyncRelayCommand)_viewModel.DeleteCommand).ExecuteAsync(null);
 
-        _mockDialogService.Verify(x => x.ShowMessage(
-            It.Is<string>(s => s.Contains("delete")),
-            "Confirm Delete",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning), Times.Once);
+        _mockDialogService.Verify(x => x.ShowDeleteConfirmation(
+            It.Is<string>(s => s.Contains("PERMANENTLY delete")),
+            It.IsAny<double>()), Times.Once);
     }
 
     [Test]
     public async Task DeleteCommand_DoesNotDelete_WhenUserCancels()
     {
         _viewModel.SelectedNewFiles = new List<FileItem> { new FileItem { Name = "test.txt" } };
-        _mockDialogService.Setup(x => x.ShowMessage(
-            It.IsAny<string>(), "Confirm Delete",
-            MessageBoxButton.YesNo, MessageBoxImage.Warning))
-            .Returns(MessageBoxResult.No);
+        _mockDialogService.Setup(x => x.ShowDeleteConfirmation(
+            It.IsAny<string>(), It.IsAny<double>()))
+            .Returns(false);
 
         await ((AsyncRelayCommand)_viewModel.DeleteCommand).ExecuteAsync(null);
 
@@ -750,11 +746,10 @@ public class MainViewModelTests
         _viewModel.SourcePath = "C:\\Source";
         var fileToDelete = new FileItem { Name = "test.txt", FullPath = "C:\\Source\\test.txt" };
         _viewModel.SelectedNewFiles = new List<FileItem> { fileToDelete };
-        
-        _mockDialogService.Setup(x => x.ShowMessage(
-            It.IsAny<string>(), "Confirm Delete",
-            MessageBoxButton.YesNo, MessageBoxImage.Warning))
-            .Returns(MessageBoxResult.Yes);
+
+        _mockDialogService.Setup(x => x.ShowDeleteConfirmation(
+            It.IsAny<string>(), It.IsAny<double>()))
+            .Returns(true);
 
         await ((AsyncRelayCommand)_viewModel.DeleteCommand).ExecuteAsync(null);
 
@@ -768,11 +763,10 @@ public class MainViewModelTests
         _viewModel.SourcePath = "C:\\Source";
         var fileToDelete = new FileItem { Name = "test.txt", FullPath = "C:\\Source\\test.txt" };
         _viewModel.SelectedAlreadyCopiedFiles = new List<FileItem> { fileToDelete };
-        
-        _mockDialogService.Setup(x => x.ShowMessage(
-            It.IsAny<string>(), "Confirm Delete",
-            MessageBoxButton.YesNo, MessageBoxImage.Warning))
-            .Returns(MessageBoxResult.Yes);
+
+        _mockDialogService.Setup(x => x.ShowDeleteConfirmation(
+            It.IsAny<string>(), It.IsAny<double>()))
+            .Returns(true);
 
         await ((AsyncRelayCommand)_viewModel.DeleteCommand).ExecuteAsync(null);
 
@@ -786,11 +780,10 @@ public class MainViewModelTests
         _viewModel.DestinationPath = "D:\\Dest";
         var fileToDelete = new FileItem { Name = "test.txt", FullPath = "D:\\Dest\\test.txt" };
         _viewModel.SelectedDestinationFiles = new List<FileItem> { fileToDelete };
-        
-        _mockDialogService.Setup(x => x.ShowMessage(
-            It.IsAny<string>(), "Confirm Delete",
-            MessageBoxButton.YesNo, MessageBoxImage.Warning))
-            .Returns(MessageBoxResult.Yes);
+
+        _mockDialogService.Setup(x => x.ShowDeleteConfirmation(
+            It.IsAny<string>(), It.IsAny<double>()))
+            .Returns(true);
 
         await ((AsyncRelayCommand)_viewModel.DeleteCommand).ExecuteAsync(null);
 
@@ -802,16 +795,15 @@ public class MainViewModelTests
     {
         // BDD User Story 4.1: Delete multiple files
         _viewModel.SourcePath = "C:\\Source";
-        _viewModel.SelectedNewFiles = new List<FileItem> 
-        { 
+        _viewModel.SelectedNewFiles = new List<FileItem>
+        {
             new FileItem { Name = "file1.txt", FullPath = "C:\\Source\\file1.txt" },
             new FileItem { Name = "file2.txt", FullPath = "C:\\Source\\file2.txt" }
         };
-        
-        _mockDialogService.Setup(x => x.ShowMessage(
-            It.IsAny<string>(), "Confirm Delete",
-            MessageBoxButton.YesNo, MessageBoxImage.Warning))
-            .Returns(MessageBoxResult.Yes);
+
+        _mockDialogService.Setup(x => x.ShowDeleteConfirmation(
+            It.IsAny<string>(), It.IsAny<double>()))
+            .Returns(true);
 
         await ((AsyncRelayCommand)_viewModel.DeleteCommand).ExecuteAsync(null);
 
@@ -823,10 +815,9 @@ public class MainViewModelTests
     public async Task DeleteCommand_ShowsErrorDialog_OnDeleteFailure()
     {
         _viewModel.SelectedNewFiles = new List<FileItem> { new FileItem { Name = "test.txt" } };
-        _mockDialogService.Setup(x => x.ShowMessage(
-            It.IsAny<string>(), "Confirm Delete",
-            MessageBoxButton.YesNo, MessageBoxImage.Warning))
-            .Returns(MessageBoxResult.Yes);
+        _mockDialogService.Setup(x => x.ShowDeleteConfirmation(
+            It.IsAny<string>(), It.IsAny<double>()))
+            .Returns(true);
         _mockFileService.Setup(x => x.DeleteFile(It.IsAny<string>()))
             .Throws(new IOException("File in use"));
 
@@ -843,10 +834,9 @@ public class MainViewModelTests
     public async Task DeleteCommand_RefreshesFileLists_AfterDelete()
     {
         _viewModel.SelectedNewFiles = new List<FileItem> { new FileItem { Name = "test.txt" } };
-        _mockDialogService.Setup(x => x.ShowMessage(
-            It.IsAny<string>(), "Confirm Delete",
-            MessageBoxButton.YesNo, MessageBoxImage.Warning))
-            .Returns(MessageBoxResult.Yes);
+        _mockDialogService.Setup(x => x.ShowDeleteConfirmation(
+            It.IsAny<string>(), It.IsAny<double>()))
+            .Returns(true);
 
         await ((AsyncRelayCommand)_viewModel.DeleteCommand).ExecuteAsync(null);
 

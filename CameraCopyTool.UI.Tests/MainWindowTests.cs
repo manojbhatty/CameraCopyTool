@@ -463,7 +463,7 @@ public class MainWindowTests
         Assert.That(confirmDialog, Is.Not.Null);
 
         var yesButton = confirmDialog
-     .FindFirstDescendant(cf => cf.ByName("Yes"))
+     .FindFirstDescendant(cf => cf.ByName("Yes, Delete"))
      .AsButton();
 
         Assert.That(yesButton, Is.Not.Null);
