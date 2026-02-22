@@ -5,7 +5,7 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 2.8.0 |
+| **Version** | 2.10.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
 | **Last Updated** | 2026-02-22 |
@@ -999,6 +999,29 @@ block-beta
 | **Header Style** | Bold text, clickable |
 | **Expand Direction** | Down (expands downward) |
 | **Layout Behavior** | When collapsed, "New Files" section expands to fill available space (uses `*` row height) |
+| **Visual Styling** | Light green background (#E8F5E9), green border (#81C784), rounded corners (4px) |
+| **Color Rationale** | Green indicates "done", "complete", "safe" - files already backed up |
+
+#### New Files GroupBox Control
+| Property | Value |
+|----------|-------|
+| **Control Type** | `GroupBox` (wrapped in Border for styling) |
+| **Header Binding** | `{Binding NewFilesHeader}` |
+| **Header Style** | Standard weight text |
+| **Visual Styling** | Light blue background (#E3F2FD), blue border (#64B5F6), rounded corners (4px) |
+| **Color Rationale** | Blue indicates "new", "pending", "action needed" - files awaiting backup |
+| **Layout Behavior** | Uses `*` (star) row height to expand and fill available vertical space |
+
+#### Section Visual Distinction
+| Feature | Already Copied | New Files |
+|---------|---------------|-----------|
+| **Background Color** | #E8F5E9 (light green) | #E3F2FD (light blue) |
+| **Border Color** | #81C784 (green) | #64B5F6 (blue) |
+| **Semantic Meaning** | Done, complete, safe | New, pending, action needed |
+| **Corner Radius** | 4px (rounded) | 4px (rounded) |
+| **Border Thickness** | 1px | 1px |
+
+**Purpose**: Color-coded sections provide immediate visual distinction between already-backed-up files and files needing backup, reducing cognitive load and improving scanability for users with visual or cognitive impairments.
 
 #### ListView Columns
 | Column | Header | Width | Alignment | Binding |
@@ -2348,6 +2371,7 @@ The following unit tests have been implemented to verify BDD compliance:
 | 2.6.0 | 2026-02-22 | AI Assistant | **Delete Confirmation Dialog Improvements**: Increased dialog size from 220px to 320px height and 450px to 500px width for better button visibility. Updated button colors: "Yes, Delete" uses red (#F44336) for destructive action, "No, Keep" uses gray (#757575) for cancel action. Increased button height to 55px with padding 20,15. Added MinHeight 70px for button row. Updated Grid margin from 25 to 30 pixels. Added Delete Confirmation Dialog Specifications section to BDD with detailed styling table. Benefits: buttons fully visible, color coding follows UI conventions (red=destructive, gray=neutral), improved accessibility. |
 | 2.7.0 | 2026-02-22 | AI Assistant | **Progress Bar Accuracy Fix**: Fixed progress bar reaching 100% prematurely before file transfer completion. Progress now capped at 95% during copy operations to reserve room for file move operations. Progress bar only shows 100% when ALL files are fully copied AND moved. Progress resets to 0 after success message is displayed (not before). Updated Progress Bar specification with Progress Behavior section documenting accurate progress reporting. Benefits: accurate progress feedback, users can trust 100% indicator means transfer is truly complete, reduces confusion during multi-file transfers. |
 | 2.8.0 | 2026-02-22 | AI Assistant | **ListView Toggle Selection**: Added toggle selection behavior to all three ListViews. Clicking an already selected row now deselects it (toggle behavior). Extended selection mode still supports Ctrl+Click for individual toggles and Shift+Click for range selection. Updated ListView specification with Selection Behavior section documenting toggle, extended, and multi-select support. Benefits: more intuitive selection management, easier to correct accidental selections, consistent with modern UI patterns. |
+| 2.9.0 | 2026-02-22 | AI Assistant | **Color-Coded Section Distinction**: Added distinct color-coded backgrounds to Already Copied and New Files sections for clear visual distinction. Already Copied uses light green background (#E8F5E9) with green border (#81C784) indicating "done/complete/safe". New Files uses light blue background (#E3F2FD) with blue border (#64B5F6) indicating "new/pending/action needed". Both sections have rounded corners (4px) and 1px borders. Added New Files GroupBox Control specification table. Added Section Visual Distinction comparison table. Updated Already Copied Expander Control specification with Visual Styling and Color Rationale properties. Benefits: immediate visual distinction between sections, reduced cognitive load, improved scanability for users with visual or cognitive impairments, semantic color coding (green=done, blue=pending). |
 
 ---
 
