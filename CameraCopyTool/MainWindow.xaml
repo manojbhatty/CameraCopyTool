@@ -46,13 +46,13 @@
                     <Setter Property="Foreground" Value="#FFFFFF"/>
                     <Setter Property="FontWeight" Value="Bold"/>
                 </Trigger>
-                <!-- Mouse over: Subtle but visible highlight (only when NOT selected) -->
+                <!-- Mouse over: High-visibility blue highlight (only when NOT selected) -->
                 <MultiTrigger>
                     <MultiTrigger.Conditions>
                         <Condition Property="IsMouseOver" Value="True"/>
                         <Condition Property="IsSelected" Value="False"/>
                     </MultiTrigger.Conditions>
-                    <Setter Property="Background" Value="#E3F2FD"/>
+                    <Setter Property="Background" Value="#90CAF9"/>
                 </MultiTrigger>
             </Style.Triggers>
         </Style>
@@ -165,6 +165,7 @@
                     </GroupBox.HeaderTemplate>
                     <ListView x:Name="lvAlreadyCopied" SelectionMode="Extended"
                               ItemsSource="{Binding AlreadyCopiedFiles}"
+                              FontFamily="Segoe UI Emoji"
                               AutomationProperties.AutomationId="AlreadyCopiedListView"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch"
@@ -174,11 +175,11 @@
                                 <GridViewColumn Header="File Name">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                            <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="Modified Date" Width="170">
+                                <GridViewColumn Header="Modified Date" Width="200">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding ModifiedDate}" HorizontalAlignment="Right" FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
@@ -199,6 +200,7 @@
                     </GroupBox.HeaderTemplate>
                     <ListView x:Name="lvNewFiles" SelectionMode="Extended"
                               ItemsSource="{Binding NewFiles}"
+                              FontFamily="Segoe UI Emoji"
                               AutomationProperties.AutomationId="NewFilesListView"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch"
@@ -208,11 +210,11 @@
                                 <GridViewColumn Header="File Name">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                            <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="Modified Date" Width="170">
+                                <GridViewColumn Header="Modified Date" Width="200">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding ModifiedDate}" HorizontalAlignment="Right" FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
@@ -284,7 +286,7 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="Modified Date" Width="170">
+                                <GridViewColumn Header="Modified Date" Width="200">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding ModifiedDate}" HorizontalAlignment="Right" FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>

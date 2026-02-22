@@ -484,7 +484,7 @@ public class MainViewModel : ViewModelBase
                     destFileItems.Add(new FileItem
                     {
                         Name = f.Name,
-                        ModifiedDate = f.LastWriteTime.ToString("yyyy-MM-dd HH:mm"),
+                        ModifiedDate = f.LastWriteTime.ToString("yyyy-MM-dd hh:mm tt"),
                         IsAlreadyCopied = sourceNames.Contains(f.Name),
                         FileSize = f.Length,
                         FullPath = f.FullName
@@ -499,7 +499,7 @@ public class MainViewModel : ViewModelBase
                     var fileItem = new FileItem
                     {
                         Name = src.Name,
-                        ModifiedDate = src.LastWriteTime.ToString("yyyy-MM-dd HH:mm"),
+                        ModifiedDate = src.LastWriteTime.ToString("yyyy-MM-dd hh:mm tt"),
                         IsAlreadyCopied = existsInDest,
                         FileSize = src.Length,
                         FullPath = src.FullName

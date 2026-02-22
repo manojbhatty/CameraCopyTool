@@ -5,7 +5,7 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 1.0.0 |
+| **Version** | 1.1.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
 | **Last Updated** | 2026-02-22 |
@@ -228,7 +228,7 @@ Scenario: New files are displayed correctly
     | Field         | Format                     |
     |---------------|----------------------------|
     | Name          | Full filename with extension |
-    | Modified Date | `yyyy-MM-dd HH:mm`         |
+    | Modified Date | `yyyy-MM-dd hh:mm tt` (12-hour format with AM/PM) |
 
   And the section header should display: "New files (count)" where count is the number of new files
 
@@ -237,7 +237,7 @@ Scenario: File comparison logic
   When the file has the same name AND same file size
   Then it should be considered "already copied"
   And should NOT appear in "New files"
-  
+
   When the file has the same name but different size
   Then it should be considered "new" (needs recopy)
 ```
@@ -260,14 +260,15 @@ Scenario: Already copied files are displayed
     | Field         | Format                     |
     |---------------|----------------------------|
     | Name          | Full filename with extension |
-    | Modified Date | `yyyy-MM-dd HH:mm`         |
+    | Modified Date | `yyyy-MM-dd hh:mm tt` (12-hour format with AM/PM) |
 
   And the section header should display: "Already copied files (count)" where count is the number of already copied files
 
 Scenario: Already copied files are visually distinguished
   Given a file is marked as already copied
   When displayed in the ListView
-  Then the background should be high-contrast green (#4CAF50)
+  Then the file name should be prefixed with a tick icon (✅)
+  And the background should be high-contrast green (#4CAF50)
   And the text should be black (#000000)
   And the font weight should be Bold
 ```
@@ -289,7 +290,7 @@ Scenario: Destination files are displayed
     | Field         | Format                                  |
     |---------------|-----------------------------------------|
     | Name          | Filename with ✅ prefix if also in source |
-    | Modified Date | `yyyy-MM-dd HH:mm`                      |
+    | Modified Date | `yyyy-MM-dd hh:mm tt` (12-hour format with AM/PM) |
 
   And the section header should display: "Files in computer (count)" where count is the total number of files in the destination folder
 ```
@@ -918,10 +919,41 @@ block-beta
 #### ListView Columns
 | Column | Header | Width | Alignment | Binding |
 |--------|--------|-------|-----------|---------|
-| File Name | "File Name" | `*` (stretches to fill available space) | Left | `Name` or `DisplayName` |
-| Modified Date | "Modified Date" | `Auto` (sizes to content) | Right | `ModifiedDate` |
+| File Name | "File Name" | `*` (stretches to fill available space) | Left | `DisplayName` (includes ✅ tick icon for already-copied files) |
+| Modified Date | "Modified Date" | `200` pixels (fixed for 12-hour format) | Right | `ModifiedDate` |
 
-**Note**: The File Name column takes all remaining horizontal space, while the Modified Date column sizes automatically to fit its content and is right-aligned for better readability.
+**Note**: The File Name column takes all remaining horizontal space, while the Modified Date column has a fixed width of 200 pixels to accommodate the 12-hour time format with AM/PM. The Modified Date column is right-aligned for better readability.
+
+#### ListView Styling
+
+| Property | Value |
+|----------|-------|
+| **Font Family** | Segoe UI Emoji (for tick icon support) |
+| **Item Container** | ListViewItem with custom triggers |
+| **Border** | 1px bottom border, color #E0E0E0 |
+| **Padding** | 5,8 pixels |
+
+**Already Copied File Styling** (via DataTrigger on `IsAlreadyCopied = True`):
+| Property | Value |
+|----------|-------|
+| Background | #4CAF50 (high-contrast green) |
+| Foreground | #000000 (black) |
+| FontWeight | Bold |
+| DisplayName Prefix | ✅ (tick emoji) |
+
+**Selected Item Styling** (via Trigger on `IsSelected = True`):
+| Property | Value |
+|----------|-------|
+| Background | #1976D2 (blue) |
+| Foreground | #FFFFFF (white) |
+| FontWeight | Bold |
+
+**Mouse Over Styling** (via MultiTrigger when `IsMouseOver = True` AND `IsSelected = False`):
+| Property | Value |
+|----------|-------|
+| Background | #90CAF9 (high-visibility blue) |
+
+**Note**: The tick icon (✅) is displayed via the `DisplayName` property, which prepends "✅ " to the file name when `IsAlreadyCopied` is true. All three ListViews (Already Copied, New Files, and Destination Files) use the same styling for consistency.
 
 ### Settings Dialog Layout
 
@@ -2181,6 +2213,7 @@ The following unit tests have been implemented to verify BDD compliance:
 | 1.7.0 | 2026-02-22 | AI Assistant | **Verification Update**: Verified implementation against BDD. Updated file sorting spec to note natural sort is future enhancement. Added implementation status notes for disk space error handling and status icons. Updated test scenarios checklist with pass/fail status. Added Accessibility Compliance Summary table. Added note about AutomationId for destination ListView. |
 | 1.8.0 | 2026-02-22 | AI Assistant | **Unit Tests Update**: Added comprehensive unit tests covering all BDD scenarios. Added 50+ unit tests in FileViewModelTests.cs (constructor, properties, commands, accessibility). Added 15+ UI integration tests in MainWindowTests.cs (AutomationIds, keyboard shortcuts, settings dialog). Updated CameraCopyTool.Tests.csproj with Moq and test SDK packages. Added Unit Test Coverage section to BDD appendix. Fixed missing AutomationId for DestinationFilesListView in MainWindow.xaml. |
 | 1.9.0 | 2026-02-22 | AI Assistant | **ListView Hover Fix**: Fixed issue where hovering over a selected row made text hard to read. Added Requirement 1.1.1 documenting ListView row state priority (Selected > Hover > Already Copied > Normal). Updated BDD with behavior matrix showing all state combinations. Changed implementation to use MultiTrigger ensuring hover only applies when IsSelected=False. Updated Accessibility Compliance Summary to mark ListView State Priority as Complete. |
+| 2.0.0 | 2026-02-22 | AI Assistant | **Major UI Updates**: Changed Modified Date format from 24-hour (`HH:mm`) to 12-hour (`hh:mm tt`) with AM/PM for better readability. Increased Modified Date column width from 170px to 200px to accommodate longer format. Unified all three ListViews to use `DisplayName` binding with ✅ tick icon prefix for already-copied files. Added `FontFamily="Segoe UI Emoji"` to all ListViews for proper emoji rendering. Restored green background (#4CAF50) for already-copied files (now shows both tick icon AND green background). Updated ListView Styling section with comprehensive styling tables. Updated User Stories 2.1, 2.2, 2.3 with new date format and tick icon behavior. |
 
 ---
 
