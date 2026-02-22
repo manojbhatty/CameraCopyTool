@@ -5,7 +5,7 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 2.18.0 |
+| **Version** | 2.19.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
 | **Last Updated** | 2026-02-22 |
@@ -63,16 +63,18 @@ The primary purpose of CameraCopyTool is to provide a user-friendly interface fo
 
 ### Core Capabilities
 
-1. Browse and select source folder (camera/device)
-2. Browse and select destination folder (computer)
-3. Display files in three categories:
+1. **Visible Action Buttons**: Clear, prominent buttons for common actions (Help, Refresh, Settings)
+2. **Collapsible Help Panel**: Step-by-step instructions for first-time users
+3. Browse and select source folder (camera/device)
+4. Browse and select destination folder (computer)
+5. Display files in three categories:
    - New files (not yet copied)
    - Already copied files
    - Files in destination
-4. Copy selected files or all new files
-5. Delete files from any location
-6. Open files with default applications
-7. Configure font size for accessibility
+6. Copy selected files or all new files
+7. Delete files from any location
+8. Open files with default applications
+9. Configure font size for accessibility
 
 ---
 
@@ -123,10 +125,186 @@ The primary purpose of CameraCopyTool is to provide a user-friendly interface fo
 | Large buttons | Minimum 50px height, bold text, high-contrast colors |
 | Visible borders | 1px borders between list items, dark button borders |
 | Never color-only | Status uses icon + color + text together |
+| No hidden menus | Action buttons with clear labels: "How to Use", "Refresh (F5)", "Settings" |
+| Step-by-step help | Collapsible help panel with numbered instructions |
+| Clear color coding | Green = already copied, Blue = new files (explained in help panel) |
 
 ---
 
 ## Feature Specifications
+
+### Feature 0: Action Buttons and Help Panel
+
+#### User Story 0.1: Visible Action Buttons
+
+**As a** first-time user
+**I want to** see clear, obvious buttons for common actions
+**So that** I don't have to search through hidden menus
+
+**Acceptance Criteria:**
+
+```gherkin
+Scenario: Action buttons are visible at all times
+  Given the application is open
+  When viewing the main window
+  Then three action buttons should be visible at the top of the window:
+    | Button | Icon | Label | Color | Purpose |
+    |--------|------|-------|-------|---------|
+    | Help | ❓ | "How to Use" | Blue (#2196F3) | Toggle help panel visibility |
+    | Refresh | 🔄 | "Refresh (F5)" | Green (#4CAF50) | Reload file lists |
+    | Settings | ⚙️ | "Settings" | Orange (#FF9800) | Open settings dialog |
+  And each button should have large, bold text
+  And each button should have a minimum height of 35 pixels
+  And each button should have a minimum width of 120 pixels
+
+Scenario: Action buttons have hover effects
+  Given the mouse pointer is over an action button
+  When hovering
+  Then the button background should darken to indicate interactivity
+  And the cursor should change to a hand pointer
+
+Scenario: Help button toggles help panel
+  Given the help panel is currently hidden
+  When the user clicks the "How to Use" button
+  Then the help panel should become visible
+  And the button text should change to "Hide Instructions ▲"
+
+Scenario: Help button hides help panel
+  Given the help panel is currently visible
+  When the user clicks the "Hide Instructions ▲" button
+  Then the help panel should collapse
+  And the button text should change to "Show Instructions ▼"
+
+Scenario: Refresh button reloads files
+  Given the application has loaded files
+  When the user clicks the "Refresh (F5)" button
+  Then the file lists should reload from source and destination folders
+  And a loading indicator should appear during refresh
+  And the status bar should show "Loading files..."
+
+Scenario: Refresh via F5 keyboard shortcut
+  Given the application is open
+  When the user presses F5
+  Then the file lists should reload (same as clicking Refresh button)
+
+Scenario: Settings button opens settings dialog
+  Given the application is open
+  When the user clicks the "Settings" button
+  Then the Settings dialog should open
+  And the dialog should be centered on the main window
+```
+
+#### User Story 0.2: Collapsible Help Panel
+
+**As a** first-time user
+**I want to** see step-by-step instructions
+**So that** I know how to use the application without reading external documentation
+
+**Acceptance Criteria:**
+
+```gherkin
+Scenario: Help panel is collapsed by default on first run
+  Given the application is started for the first time
+  When the main window loads
+  Then the help panel should be collapsed by default
+  And the "How to Use" button should be visible at the top
+  And clicking "How to Use" should expand the help panel
+
+Scenario: Help panel displays instructions
+  Given the help panel is visible
+  When viewing the panel
+  Then it should display the following content:
+    | Element | Content |
+    |---------|---------|
+    | Header | "❓ How to Copy Your Photos" |
+    | Step 1 | "Select your camera folder using 'Choose Folder…'" |
+    | Step 2 | "Select your computer folder using 'Choose Folder…'" |
+    | Step 3 | "Select the photos you want to copy (click on them)" |
+    | Step 4 | "Click the big green 'Copy Photos' button" |
+    | Legend 1 | "✓ Photos already copied are shown in GREEN" |
+    | Legend 2 | "✓ New photos ready to copy are shown in BLUE" |
+
+Scenario: Help panel has collapsible header
+  Given the help panel is visible
+  When viewing the panel
+  Then it should have a header with:
+    - Title: "❓ How to Copy Your Photos"
+    - Toggle button: "Hide Instructions ▲" or "Show Instructions ▼"
+  And clicking the toggle button should collapse/expand the panel
+
+Scenario: Help panel visual styling
+  Given the help panel is visible
+  When viewing the panel
+  Then it should have:
+    | Property | Value |
+    |----------|-------|
+    | Background | Light blue (#E3F2FD) |
+    | Border | Blue (#90CAF9) |
+    | Border Thickness | 1px bottom only |
+    | Height (expanded) | 180 pixels |
+    | Height (collapsed) | 0 pixels |
+    | Header Font Size | 18 pixels, Bold |
+    | Instruction Font Size | 14 pixels |
+
+Scenario: Help panel color legend
+  Given the help panel is visible
+  When viewing the color legend
+  Then it should display:
+    - Green checkmark (✓) with text "Photos already copied are shown in GREEN" in green (#2E7D32)
+    - Blue checkmark (✓) with text "New photos ready to copy are shown in BLUE" in blue (#1565C0)
+
+Scenario: Help panel remembers user preference
+  Given the user has hidden the help panel
+  When the application is closed and reopened
+  Then the help panel should remain hidden (preference persisted)
+
+Scenario: Main content slides when help panel toggles
+  Given the help panel is currently visible
+  And the main content area is displayed below the help panel
+  When the user clicks "How to Use" to hide the help panel
+  Then the help panel should collapse smoothly (height animates from 180 to 0)
+  And the main content area should slide up to fill the space
+  And the status bar should move up accordingly
+
+Scenario: Main content slides down when help panel expands
+  Given the help panel is currently hidden
+  And the main content area is displayed at the top
+  When the user clicks "How to Use" to show the help panel
+  Then the help panel should expand smoothly (height animates from 0 to 180)
+  And the main content area should slide down
+  And the status bar should move down accordingly
+```
+
+#### User Story 0.3: Action Button Bar Layout
+
+**As a** user
+**I want** action buttons to be positioned consistently
+**So that** I can find them quickly
+
+**Acceptance Criteria:**
+
+```gherkin
+Scenario: Action button bar layout
+  Given the application is open
+  When viewing the action button bar
+  Then it should have:
+    | Property | Value |
+    |----------|-------|
+    | Position | Top of window, below title bar |
+    | Height | 50 pixels |
+    | Background | Light gray (#F5F5F5) |
+    | Border | Bottom: 1px #E0E0E0 |
+    | Help Button Position | Left side |
+    | Refresh/Settings Position | Right side |
+
+Scenario: Action button bar is always visible
+  Given the application is in any state
+  When viewing the window
+  Then the action button bar should always be visible
+  And should not be obscured by other UI elements
+```
+
+---
 
 ### Feature 1: Folder Selection
 
@@ -907,18 +1085,32 @@ The main window uses a three-column layout with source panel on the left, copy c
 
 **Note**: Row 2 (Already Copied) uses `Auto` height so when the Expander collapses, the section shrinks and Row 3 (New Files) expands to fill the available vertical space.
 
+**Main Window Grid Rows:**
+| Row | Height | Content | Behavior |
+|-----|--------|---------|----------|
+| 0 | Auto (50px) | Action Button Bar | Fixed position |
+| 1 | Auto (180px/0px) | Help Panel | Collapses/expands, pushes main content |
+| 2 | * (star) | Main Content Area | Takes remaining space, slides up/down |
+| 3 | Auto (30px) | Status Bar | Fixed at bottom |
+
+**Note**: When the Help Panel collapses (Row 1 = 0px), the Main Content Area (Row 2) expands to fill the space. When the Help Panel expands (Row 1 = 180px), the Main Content Area shrinks accordingly. This creates a smooth sliding animation effect.
+
 ```mermaid
 block-beta
     columns 1
-    block:MenuBar["Menu Bar"]
+    block:ActionBar["Action Button Bar (Top of Window)"]
+        columns 3
+        HelpBtn["❓ How to Use (Blue)"]
+        Space[" "]
+        RefreshBtn["🔄 Refresh (F5) (Green)"]
+        SettingsBtn["⚙️ Settings (Orange)"]
+    end
+    block:HelpPanel["Help Panel (Collapsible - Visible by Default)"]
         columns 1
-        Tools["Tools ▼"]
-        block:ToolsMenu[" "]
-            columns 1
-            Refresh["Update File List (F5)"]
-            Separator["─────"]
-            Settings["Settings..."]
-        end
+        HelpHeader["❓ How to Copy Your Photos"]
+        HelpToggle["[Hide Instructions ▲]"]
+        HelpSteps["Step 1: Select camera folder\nStep 2: Select computer folder\nStep 3: Select photos (click)\nStep 4: Click 'Copy Photos'"]
+        HelpLegend["✓ GREEN = Already copied\n✓ BLUE = New files"]
     end
     block:MainContent["Main Content Area"]
         columns 3
@@ -973,6 +1165,99 @@ block-beta
 - **Binding**: Two-way to `SourcePath` property
 - **Height**: 28 pixels
 - **Behavior**: Triggers file load on text change (debounced 300ms)
+
+#### Action Button Bar
+| Property | Value |
+|----------|-------|
+| **Position** | Top of window, below title bar |
+| **Height** | 50 pixels |
+| **Background** | #F5F5F5 (light gray) |
+| **Border** | Bottom: 1px #E0E0E0 |
+| **Layout** | Three-column grid (Help left, spacer, Refresh/Settings right) |
+
+#### Help Button ("How to Use")
+| Property | Value |
+|----------|-------|
+| **Content** | "❓ How to Use" |
+| **Command** | `ToggleHelpCommand` |
+| **Style** | `HelpButtonStyle` (Based on `ActionButtonStyle`) |
+| **Font Family** | System message font |
+| **Font Size** | Bound to `FontSize` property (same as user setting) |
+| **Background** | #2196F3 (blue) |
+| **Hover Background** | #1976D2 (darker blue) |
+| **Pressed Background** | #1565C0 (deep blue) |
+| **Foreground** | #FFFFFF (white) |
+| **Font Weight** | Bold |
+| **Padding** | 15,8 pixels |
+| **Min Width** | 120 pixels |
+| **Min Height** | 35 pixels |
+
+#### Refresh Button
+| Property | Value |
+|----------|-------|
+| **Content** | "🔄 Refresh (F5)" |
+| **Command** | `RefreshCommand` |
+| **Style** | `RefreshButtonStyle` (Based on `ActionButtonStyle`) |
+| **Font Family** | System message font |
+| **Font Size** | Bound to `FontSize` property (same as user setting) |
+| **Background** | #4CAF50 (green) |
+| **Hover Background** | #43A047 (darker green) |
+| **Pressed Background** | #388E3C (deep green) |
+| **Foreground** | #FFFFFF (white) |
+| **Font Weight** | Bold |
+| **Padding** | 15,8 pixels |
+| **Min Width** | 120 pixels |
+| **Min Height** | 35 pixels |
+
+#### Settings Button
+| Property | Value |
+|----------|-------|
+| **Content** | "⚙️ Settings" |
+| **Command** | `OpenSettingsCommand` |
+| **Style** | `SettingsButtonStyle` (Based on `ActionButtonStyle`) |
+| **Font Family** | System message font |
+| **Font Size** | Bound to `FontSize` property (same as user setting) |
+| **Background** | #FF9800 (orange) |
+| **Hover Background** | #F57C00 (darker orange) |
+| **Pressed Background** | #E65100 (deep orange) |
+| **Foreground** | #FFFFFF (white) |
+| **Font Weight** | Bold |
+| **Padding** | 15,8 pixels |
+| **Min Width** | 120 pixels |
+| **Min Height** | 35 pixels |
+
+#### Help Panel
+| Property | Value |
+|----------|-------|
+| **Visibility** | Bound to `ShowHelpPanel` property (default: False) |
+| **Background** | #E3F2FD (light blue) |
+| **Border** | #90CAF9 (blue), bottom only, 1px |
+| **Height (Expanded)** | 180 pixels |
+| **Height (Collapsed)** | 0 pixels |
+| **Animation** | Collapses/expands via Height property |
+| **Layout Behavior** | Main content area slides down when expanded, slides up when collapsed |
+| **Grid Row** | Row 1 (between Action Button Bar and Main Content) |
+| **Default State** | Collapsed (hidden) on first run |
+
+#### Help Panel Header
+| Property | Value |
+|----------|-------|
+| **Title** | "❓ How to Copy Your Photos" |
+| **Font Size** | 18 pixels |
+| **Font Weight** | Bold |
+| **Toggle Button** | "Hide Instructions ▲" / "Show Instructions ▼" |
+| **Toggle Command** | `ToggleHelpCommand` |
+| **Toggle Foreground** | #1976D2 (blue) |
+
+#### Help Panel Instructions
+| Element | Content | Font Size |
+|---------|---------|-----------|
+| Step 1 | "Select your camera folder using 'Choose Folder…'" | 14px |
+| Step 2 | "Select your computer folder using 'Choose Folder…'" | 14px |
+| Step 3 | "Select the photos you want to copy (click on them)" | 14px |
+| Step 4 | "Click the big green 'Copy Photos' button" | 14px |
+| Legend 1 | "✓ Photos already copied are shown in GREEN" | 14px, Bold, #2E7D32 |
+| Legend 2 | "✓ New photos ready to copy are shown in BLUE" | 14px, Bold, #1565C0 |
 
 #### Destination Path TextBox
 - **AutomationId**: `DestinationPathTextBox`

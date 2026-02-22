@@ -93,6 +93,11 @@ public class MainViewModel : ViewModelBase
     private ObservableCollection<string> _recentDestinationFolders = new();
 
     /// <summary>
+    /// Backing field for help panel visibility.
+    /// </summary>
+    private bool _showHelpPanel = false;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="MainViewModel"/> class.
     /// </summary>
     /// <param name="fileService">Service for file operations.</param>
@@ -137,6 +142,7 @@ public class MainViewModel : ViewModelBase
         DeleteCommand = new AsyncRelayCommand(DeleteSelectedAsync);
         OpenCommand = new RelayCommand(OpenSelected);
         OpenSettingsCommand = new RelayCommand(_ => OpenSettings());
+        ToggleHelpCommand = new RelayCommand(_ => ToggleHelpPanel());
 
         // Load saved settings from previous session
         _sourcePath = _settingsService.LastSourceFolder ?? string.Empty;
@@ -392,6 +398,15 @@ public class MainViewModel : ViewModelBase
     public string DestinationFilesHeader => $"Files in computer ({DestinationFiles.Count})";
 
     /// <summary>
+    /// Gets or sets a value indicating whether the help panel is visible.
+    /// </summary>
+    public bool ShowHelpPanel
+    {
+        get => _showHelpPanel;
+        set => SetProperty(ref _showHelpPanel, value);
+    }
+
+    /// <summary>
     /// Gets the collection of files that have already been copied to the destination.
     /// Displayed in the "Already copied files" ListView.
     /// </summary>
@@ -490,6 +505,12 @@ public class MainViewModel : ViewModelBase
     /// Bound to the Tools > Settings menu item.
     /// </summary>
     public ICommand OpenSettingsCommand { get; }
+
+    /// <summary>
+    /// Command for toggling the help panel visibility.
+    /// Bound to the "How to Use" button.
+    /// </summary>
+    public ICommand ToggleHelpCommand { get; }
 
     #endregion
 
@@ -593,6 +614,14 @@ public class MainViewModel : ViewModelBase
     private void OpenSettings()
     {
         OpenSettingsRequested?.Invoke();
+    }
+
+    /// <summary>
+    /// Toggles the visibility of the help panel.
+    /// </summary>
+    private void ToggleHelpPanel()
+    {
+        ShowHelpPanel = !ShowHelpPanel;
     }
 
     /// <summary>
