@@ -13,6 +13,13 @@
             <MenuItem Header="Delete" Click="Menu_Delete_Click"/>
         </ContextMenu>
 
+        <!-- Pulse animation for Copy button -->
+        <Storyboard x:Key="CopyButtonPulse" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                             From="1.0" To="0.7" Duration="0:0:1"
+                             AutoReverse="True"/>
+        </Storyboard>
+
         <!-- Context menu styling - matches application font size -->
         <Style TargetType="ContextMenu">
             <Setter Property="FontFamily" Value="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
@@ -234,11 +241,40 @@
 
             <!-- CENTER PANEL -->
             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                <Button Content="Copy ➜" Height="50" Margin="10"
+                <Button x:Name="CopyButton" Height="90" Margin="10"
                         Command="{Binding CopyCommand}"
                         FontWeight="Bold"
-                        FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
-                        AutomationProperties.AutomationId="CopyButton"/>
+                        Background="#4CAF50"
+                        BorderThickness="2"
+                        BorderBrush="#388E3C"
+                        Padding="20,10"
+                        AutomationProperties.AutomationId="CopyButton">
+                    <Button.Content>
+                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="Copy" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                            <TextBlock Text="➜" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,6,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                        </StackPanel>
+                    </Button.Content>
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="FontFamily" Value="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
+                            <Setter Property="Foreground" Value="#FFFFFF"/>
+                            <Setter Property="Cursor" Value="Hand"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#43A047"/>
+                                    <Setter Property="BorderBrush" Value="#2E7D32"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Background" Value="#E0E0E0"/>
+                                    <Setter Property="Foreground" Value="#A0A0A0"/>
+                                    <Setter Property="BorderBrush" Value="#C0C0C0"/>
+                                    <Setter Property="Cursor" Value="Arrow"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
                 <ProgressBar Height="20" Margin="10,5"
                              Minimum="0" Maximum="{Binding ProgressMaximum}"
                              Value="{Binding ProgressValue}"/>

@@ -5,7 +5,7 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 2.2.0 |
+| **Version** | 2.4.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
 | **Last Updated** | 2026-02-22 |
@@ -369,6 +369,19 @@ Scenario: Copy button is disabled when inappropriate
   Or files are currently loading
   When viewing the Copy button
   Then it should be disabled (grayed out)
+
+Scenario: Copy button has pulse animation when ready
+  Given there are files in the "New files" list
+  And at least one file is selected
+  When viewing the Copy button
+  Then it should display a subtle pulse animation (opacity cycling between 1.0 and 0.7)
+  And the animation should repeat continuously until selection changes
+
+Scenario: Copy button pulse animation stops when no files selected
+  Given the Copy button was pulsing
+  When the user deselects all files
+  Then the pulse animation should stop
+  And the button should remain static (but still enabled if files exist)
 ```
 
 #### User Story 3.2: Safe Copy with Temporary Files
@@ -922,11 +935,24 @@ block-beta
 
 #### Copy Button
 - **AutomationId**: `CopyButton`
-- **Content**: "Copy ➜"
-- **Height**: 50 pixels
-- **FontSize**: Dynamic (user-configurable)
-- **FontWeight**: Bold
-- **Enabled**: When not copying, not loading, and files selected
+- **Content**: Two-line layout with "Copy" text and "➜" arrow
+  - Line 1: "Copy" (FontSize: 22, FontWeight: Bold)
+  - Line 2: "➜" right arrow emoji (FontSize: 32, FontWeight: Bold)
+- **Height**: 80 pixels (large, prominent)
+- **Background**: #4CAF50 (high-contrast green for "go")
+- **Border**: 2px #388E3C (darker green border)
+- **Padding**: 20,10 pixels
+- **Enabled**: When not copying, not loading, and at least one file selected in "New Files"
+- **Foreground Colors**:
+  - Enabled: #FFFFFF (white text)
+  - Disabled: #A0A0A0 (light gray text - standard Windows disabled control color)
+- **Disabled State**:
+  - Background: #E0E0E0 (light gray)
+  - Border: #C0C0C0 (medium gray)
+- **Pulse Animation**: Subtle opacity pulse (1.0 ↔ 0.7, 1 second cycle) when files are ready to copy
+  - Starts when: New Files list has items AND at least one file is selected
+  - Stops when: No files selected or copy operation begins
+  - Purpose: Draws attention to primary action for users with cognitive or attention difficulties
 
 #### Progress Bar
 - **Binding**: 
@@ -2253,7 +2279,9 @@ The following unit tests have been implemented to verify BDD compliance:
 | 1.9.0 | 2026-02-22 | AI Assistant | **ListView Hover Fix**: Fixed issue where hovering over a selected row made text hard to read. Added Requirement 1.1.1 documenting ListView row state priority (Selected > Hover > Already Copied > Normal). Updated BDD with behavior matrix showing all state combinations. Changed implementation to use MultiTrigger ensuring hover only applies when IsSelected=False. Updated Accessibility Compliance Summary to mark ListView State Priority as Complete. |
 | 2.0.0 | 2026-02-22 | AI Assistant | **Major UI Updates**: Changed Modified Date format from 24-hour (`HH:mm`) to 12-hour (`hh:mm tt`) with AM/PM for better readability. Increased Modified Date column width from 170px to 200px to accommodate longer format. Unified all three ListViews to use `DisplayName` binding with ✅ tick icon prefix for already-copied files. Added `FontFamily="Segoe UI Emoji"` to all ListViews for proper emoji rendering. Restored green background (#4CAF50) for already-copied files (now shows both tick icon AND green background). Updated ListView Styling section with comprehensive styling tables. Updated User Stories 2.1, 2.2, 2.3 with new date format and tick icon behavior. |
 | 2.1.0 | 2026-02-22 | AI Assistant | **Collapsible Already Copied Section**: Changed "Already Copied Files" from GroupBox to Expander control that starts collapsed by default. Updated Source Panel Grid Row 2 from `*` to `Auto` height so New Files section expands when Already Copied is collapsed. Added collapsible section acceptance criteria to User Story 2.2. Updated Main Window Layout section with Grid row specifications. Updated ListView table to show Expander container type. Added Expander Control specification table. Updated Mermaid diagram to reflect collapsible behavior. |
-| 2.2.0 | 2026-02-22 | AI Assistant | **Visual Panel Separation**: Added subtle background colors (#F9F9F9) to Source and Destination panels with thin borders (#E0E0E0) for clearer visual hierarchy. Added Border controls with rounded corners (4px) to separate the three main columns. Updated Main Window Layout section with Visual Separation table. Removed redundant inline Height/Padding/BorderThickness properties from TextBox and Button controls (now using global styles). |
+| 2.2.0 | 2026-02-22 | AI Assistant | **Visual Panel Separation**: Added subtle background colors (#F0F0F0) to Source and Destination panels with thin borders (#D0D0D0) for clearer visual hierarchy. Added Border controls with rounded corners (4px) to separate the three main columns. Updated Main Window Layout section with Visual Separation table. Removed redundant inline Height/Padding/BorderThickness properties from TextBox and Button controls (now using global styles). Fixed Menu overlap issue by adding ZIndex and adjusting margins. |
+| 2.3.0 | 2026-02-22 | AI Assistant | **Copy Button Visibility Improvements**: Increased Copy button height from 50px to 60px with larger font (24px). Changed button color to high-contrast green (#4CAF50) for "go" signal. Added subtle pulse animation (opacity 1.0↔0.7, 1s cycle) when files are ready to copy. Updated Copy Button specification table with detailed properties. Added pulse animation acceptance criteria scenarios to User Story 3.1. |
+| 2.4.0 | 2026-02-22 | AI Assistant | **Copy Button Layout Refinements**: Changed Copy button to two-line layout with "Copy" on first line and "➜" arrow on second line. Increased button height to 80px for better visibility. Updated font sizes (Copy: 22px, Arrow: 32px). Fixed disabled state text color to use standard Windows disabled control colors (#A0A0A0 on #E0E0E0 background) for better readability. Added Foreground binding to button content TextBlocks for proper color inheritance. Updated Copy Button specification table with two-line layout details. |
 
 ---
 

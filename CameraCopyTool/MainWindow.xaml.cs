@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 using CameraCopyTool.Commands;
 using CameraCopyTool.Models;
 using CameraCopyTool.ViewModels;
@@ -63,6 +64,41 @@ namespace CameraCopyTool
             lvAlreadyCopied.SizeChanged += ListView_SizeChanged;
             lvNewFiles.SizeChanged += ListView_SizeChanged;
             lvDestinationFiles.SizeChanged += ListView_SizeChanged;
+
+            // Subscribe to ViewModel property changes for Copy button animation
+            _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+        }
+
+        /// <summary>
+        /// Handles ViewModel property changes to update UI elements.
+        /// Starts/stops Copy button pulse animation when files are ready to copy.
+        /// </summary>
+        private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(MainViewModel.NewFiles) ||
+                e.PropertyName == nameof(MainViewModel.SelectedNewFiles))
+            {
+                UpdateCopyButtonAnimation();
+            }
+        }
+
+        /// <summary>
+        /// Updates the Copy button pulse animation based on whether files are ready to copy.
+        /// Animation plays when there are new files and at least one is selected.
+        /// </summary>
+        private void UpdateCopyButtonAnimation()
+        {
+            var storyboard = FindResource("CopyButtonPulse") as Storyboard;
+            bool shouldAnimate = _viewModel.NewFiles.Count > 0 && _viewModel.SelectedNewFiles.Count > 0;
+
+            if (shouldAnimate && storyboard != null)
+            {
+                CopyButton.BeginStoryboard(storyboard, HandoffBehavior.Compose, true);
+            }
+            else if (storyboard != null)
+            {
+                storyboard.Remove(CopyButton);
+            }
         }
 
         /// <summary>
