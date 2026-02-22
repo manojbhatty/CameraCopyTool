@@ -5,7 +5,7 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 1.1.0 |
+| **Version** | 2.1.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
 | **Last Updated** | 2026-02-22 |
@@ -271,6 +271,15 @@ Scenario: Already copied files are visually distinguished
   And the background should be high-contrast green (#4CAF50)
   And the text should be black (#000000)
   And the font weight should be Bold
+
+Scenario: Already copied section is collapsible
+  Given the application is open
+  When viewing the "Already copied files" section
+  Then it should be displayed as a collapsible Expander control
+  And it should start in a collapsed state by default
+  And clicking the section header should expand to show the ListView
+  And clicking the header again should collapse the ListView
+  And the "New files" section should expand to fill the space when collapsed
 ```
 
 #### User Story 2.3: Display Destination Files
@@ -819,6 +828,16 @@ Scenario: Loading completes
 
 The main window uses a three-column layout with source panel on the left, copy controls in the center, and destination panel on the right.
 
+**Source Panel Grid Rows:**
+| Row | Height | Content |
+|-----|--------|---------|
+| 0 | Auto | "Source - Camera" title |
+| 1 | Auto | Source path TextBox and "Choose Folder…" button |
+| 2 | Auto | "Already Copied Files" Expander (collapsible) |
+| 3 | * (star) | "New Files" ListView (expands to fill remaining space) |
+
+**Note**: Row 2 (Already Copied) uses `Auto` height so when the Expander collapses, the section shrinks and Row 3 (New Files) expands to fill the available vertical space.
+
 ```mermaid
 block-beta
     columns 1
@@ -838,12 +857,12 @@ block-beta
             columns 1
             SourceTitle["SOURCE - CAMERA"]
             SourcePath["[Source Path TextBox] [Choose Folder…]"]
-            block:AlreadyCopied["Already Copied Files"]
+            block:AlreadyCopied["Already Copied Files (Collapsible Expander - Starts Collapsed)"]
                 columns 1
-                ACHeader["Already copied files (X)"]
+                ACHeader["▶ Already copied files (X) (Click to Expand)"]
                 ACList["File Name | Modified Date"]
             end
-            block:NewFiles["New Files"]
+            block:NewFiles["New Files (Expands when Already Copied is Collapsed)"]
                 columns 1
                 NFHeader["New files (X)"]
                 NFList["File Name | Modified Date"]
@@ -908,13 +927,23 @@ block-beta
 - **Mode**: Determinate during copy
 
 #### ListViews
-| ListView | AutomationId | ItemsSource | SelectionMode |
-|----------|--------------|-------------|---------------|
-| Already Copied | `AlreadyCopiedListView` | `AlreadyCopiedFiles` | Extended |
-| New Files | `NewFilesListView` | `NewFiles` | Extended |
-| Destination | `DestinationFilesListView` | `DestinationFiles` | Extended |
+| ListView | AutomationId | ItemsSource | SelectionMode | Container |
+|----------|--------------|-------------|---------------|-----------|
+| Already Copied | `AlreadyCopiedListView` | `AlreadyCopiedFiles` | Extended | Expander (collapsible, starts collapsed) |
+| New Files | `NewFilesListView` | `NewFiles` | Extended | GroupBox |
+| Destination | `DestinationFilesListView` | `DestinationFiles` | Extended | GroupBox |
 
 **Note**: AutomationIds are set on the ListView elements for screen reader accessibility.
+
+#### Already Copied Expander Control
+| Property | Value |
+|----------|-------|
+| **Control Type** | `Expander` |
+| **Default State** | Collapsed (`IsExpanded="False"`) |
+| **Header Binding** | `{Binding AlreadyCopiedFilesHeader}` |
+| **Header Style** | Bold text, clickable |
+| **Expand Direction** | Down (expands downward) |
+| **Layout Behavior** | When collapsed, "New Files" section expands to fill available space (uses `*` row height) |
 
 #### ListView Columns
 | Column | Header | Width | Alignment | Binding |
@@ -2214,6 +2243,7 @@ The following unit tests have been implemented to verify BDD compliance:
 | 1.8.0 | 2026-02-22 | AI Assistant | **Unit Tests Update**: Added comprehensive unit tests covering all BDD scenarios. Added 50+ unit tests in FileViewModelTests.cs (constructor, properties, commands, accessibility). Added 15+ UI integration tests in MainWindowTests.cs (AutomationIds, keyboard shortcuts, settings dialog). Updated CameraCopyTool.Tests.csproj with Moq and test SDK packages. Added Unit Test Coverage section to BDD appendix. Fixed missing AutomationId for DestinationFilesListView in MainWindow.xaml. |
 | 1.9.0 | 2026-02-22 | AI Assistant | **ListView Hover Fix**: Fixed issue where hovering over a selected row made text hard to read. Added Requirement 1.1.1 documenting ListView row state priority (Selected > Hover > Already Copied > Normal). Updated BDD with behavior matrix showing all state combinations. Changed implementation to use MultiTrigger ensuring hover only applies when IsSelected=False. Updated Accessibility Compliance Summary to mark ListView State Priority as Complete. |
 | 2.0.0 | 2026-02-22 | AI Assistant | **Major UI Updates**: Changed Modified Date format from 24-hour (`HH:mm`) to 12-hour (`hh:mm tt`) with AM/PM for better readability. Increased Modified Date column width from 170px to 200px to accommodate longer format. Unified all three ListViews to use `DisplayName` binding with ✅ tick icon prefix for already-copied files. Added `FontFamily="Segoe UI Emoji"` to all ListViews for proper emoji rendering. Restored green background (#4CAF50) for already-copied files (now shows both tick icon AND green background). Updated ListView Styling section with comprehensive styling tables. Updated User Stories 2.1, 2.2, 2.3 with new date format and tick icon behavior. |
+| 2.1.0 | 2026-02-22 | AI Assistant | **Collapsible Already Copied Section**: Changed "Already Copied Files" from GroupBox to Expander control that starts collapsed by default. Updated Source Panel Grid Row 2 from `*` to `Auto` height so New Files section expands when Already Copied is collapsed. Added collapsible section acceptance criteria to User Story 2.2. Updated Main Window Layout section with Grid row specifications. Updated ListView table to show Expander container type. Added Expander Control specification table. Updated Mermaid diagram to reflect collapsible behavior. |
 
 ---
 

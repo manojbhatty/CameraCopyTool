@@ -135,7 +135,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
@@ -148,21 +148,22 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <TextBox Grid.Column="0" Height="28"
+                    <TextBox Grid.Column="0"
                              Text="{Binding SourcePath, UpdateSourceTrigger=PropertyChanged}"
                              AutomationProperties.AutomationId="SourcePathTextBox"/>
-                    <Button Grid.Column="1" Content="Choose Folder…" Margin="5,0,0,0" Height="28" Padding="10,3" BorderThickness="1"
+                    <Button Grid.Column="1" Content="Choose Folder…" Margin="5,0,0,0"
                             Command="{Binding BrowseSourceCommand}"/>
                 </Grid>
 
-                <!-- Already Copied -->
-                <GroupBox Header="{Binding AlreadyCopiedFilesHeader}"
-                          Margin="0,10,0,5" Grid.Row="2">
-                    <GroupBox.HeaderTemplate>
+                <!-- Already Copied (Collapsible) -->
+                <Expander Header="{Binding AlreadyCopiedFilesHeader}"
+                          Margin="0,10,0,5" Grid.Row="2"
+                          IsExpanded="False">
+                    <Expander.HeaderTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding}" FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                            <TextBlock Text="{Binding}" FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}" FontWeight="Bold"/>
                         </DataTemplate>
-                    </GroupBox.HeaderTemplate>
+                    </Expander.HeaderTemplate>
                     <ListView x:Name="lvAlreadyCopied" SelectionMode="Extended"
                               ItemsSource="{Binding AlreadyCopiedFiles}"
                               FontFamily="Segoe UI Emoji"
@@ -189,7 +190,7 @@
                             </GridView>
                         </ListView.View>
                     </ListView>
-                </GroupBox>
+                </Expander>
 
                 <!-- New Files -->
                 <GroupBox Header="{Binding NewFilesHeader}" Grid.Row="3">
