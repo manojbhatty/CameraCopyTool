@@ -110,7 +110,7 @@
                 <!-- Non-video files: Less prominent but still readable (black text at 75% opacity) -->
                 <DataTrigger Binding="{Binding IsVideoFile}" Value="False">
                     <Setter Property="Foreground" Value="#000000"/>
-                    <Setter Property="Opacity" Value="0.75"/>
+                    <Setter Property="Opacity" Value="0.70"/>
                 </DataTrigger>
                 <!-- Video files: Full prominence (black text, 100% opacity) -->
                 <DataTrigger Binding="{Binding IsVideoFile}" Value="True">
