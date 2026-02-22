@@ -111,25 +111,74 @@
             <Setter Property="FontFamily" Value="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
             <Setter Property="FontSize" Value="{Binding FontSize, Mode=OneWay}"/>
         </Style>
+        <!-- Base style for sortable column headers - uses default template for resize support -->
         <Style x:Key="SortableGridViewColumnHeader" TargetType="GridViewColumnHeader">
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#1976D2"/>
+            <Setter Property="Background" Value="#E3F2FD"/>
+            <Setter Property="BorderBrush" Value="#90CAF9"/>
+            <Setter Property="BorderThickness" Value="0,0,1,2"/>
+            <Setter Property="Padding" Value="8,6"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="GridViewColumnHeader">
                         <Grid>
-                            <Border Background="Transparent" Padding="5,3">
-                                <StackPanel Orientation="Horizontal">
-                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
-                                    <TextBlock x:Name="SortIndicator" Text="▲" 
-                                               FontSize="10" 
+                            <Border x:Name="HeaderBorder"
+                                    Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Padding="{TemplateBinding Padding}">
+                                <Grid>
+                                    <ContentPresenter x:Name="HeaderContent"
+                                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                      VerticalAlignment="Center"
+                                                      Margin="0,0,25,0"/>
+                                    <TextBlock x:Name="SortIndicator"
+                                               Text="▲"
+                                               FontSize="10"
                                                Foreground="#1976D2"
+                                               FontWeight="Bold"
                                                VerticalAlignment="Center"
-                                               Margin="5,0,0,0"
-                                               Visibility="Collapsed"/>
-                                </StackPanel>
+                                               Visibility="Collapsed"
+                                               HorizontalAlignment="Right"
+                                               Margin="0,0,10,0"/>
+                                </Grid>
                             </Border>
+                            <!-- Resize thumb - MUST be at Grid level, not inside Border -->
+                            <Thumb x:Name="PART_HeaderGrip" 
+                                   HorizontalAlignment="Right"
+                                   Width="16"
+                                   Cursor="SizeWE"
+                                   PreviewMouseLeftButtonDown="Thumb_PreviewMouseLeftButtonDown">
+                                <Thumb.Template>
+                                    <ControlTemplate TargetType="Thumb">
+                                        <Grid Width="16" HorizontalAlignment="Right">
+                                            <!-- Visual indicator line -->
+                                            <Border x:Name="ResizeLine" 
+                                                    Width="2" 
+                                                    Background="Transparent"
+                                                    HorizontalAlignment="Center"/>
+                                        </Grid>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="ResizeLine" Property="Background" Value="#64B5F6"/>
+                                            </Trigger>
+                                            <Trigger Property="IsDragging" Value="True">
+                                                <Setter TargetName="ResizeLine" Property="Background" Value="#1976D2"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Thumb.Template>
+                            </Thumb>
                         </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="HeaderBorder" Property="Background" Value="#BBDEFB"/>
+                                <Setter TargetName="HeaderBorder" Property="BorderBrush" Value="#64B5F6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>

@@ -5,7 +5,7 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 2.14.0 |
+| **Version** | 2.15.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
 | **Last Updated** | 2026-02-22 |
@@ -1129,6 +1129,18 @@ block-beta
 | **Item Container** | ListViewItem with custom triggers |
 | **Border** | 1px bottom border, color #E0E0E0 |
 | **Padding** | 5,8 pixels |
+
+**Column Header Styling** (SortableGridViewColumnHeader):
+| Property | Value | Purpose |
+|----------|-------|---------|
+| **Background** | #E3F2FD (light blue) | Distinct from white data rows |
+| **Foreground** | #1976D2 (blue text) | Clearly different from black data text |
+| **FontWeight** | Bold | Emphasizes header vs data |
+| **Border** | 2px bottom (#90CAF9) | Visual separation from data rows |
+| **Padding** | 8,6 pixels | More spacious than data rows |
+| **Hover Background** | #BBDEFB (darker blue) | Interactive feedback |
+| **Hover Border** | #64B5F6 | Enhanced hover effect |
+| **Cursor** | Hand | Indicates clickability for sorting |
 
 **Already Copied File Styling** (via DataTrigger on `IsAlreadyCopied = True`):
 | Property | Value |
@@ -2474,6 +2486,7 @@ The following unit tests have been implemented to verify BDD compliance:
 | 2.11.0 | 2026-02-22 | AI Assistant | **ListView Column Sorting**: Added click-to-sort functionality to all ListView column headers (File Name, Modified Date). Click once for ascending sort, click again for descending (toggle behavior). Cursor changes to hand pointer on hover for visual feedback. Sorting applies to all three ListViews (Already Copied, New Files, Destination). File Name sorts by DisplayName (case-insensitive alphabetical), Modified Date sorts chronologically. Updated ListView Columns table with Sortable column. Added Column Header Sorting specification section. Benefits: easier file navigation, users can quickly find specific files, familiar interaction pattern consistent with Windows Explorer. |
 | 2.12.0 | 2026-02-22 | AI Assistant | **Sort Direction Indicators**: Added visual sort direction indicators (▲/▼ arrows) to column headers. Only the actively sorted column shows the indicator (▲ ascending, ▼ descending, blue #1976D2 color). Other columns do not show indicators for clear sort state. Updated Column Header Sorting specification with Visual Feedback details. Benefits: clear indication of current sort column, users know at a glance which column is sorted and in which direction, improved usability. |
 | 2.13.0 | 2026-02-22 | AI Assistant | **ListView Sorting Unit Tests**: Added comprehensive UI integration tests for ListView sorting functionality. Tests cover: column header click sorting, sort toggle behavior, sort indicators showing only on active column, sorting on all three ListViews. Added ListView_ColumnHeaderClick_SortsAndShowsIndicator, ListView_Sorting_WorksOnAllListViews, ListView_SortIndicator_OnlyShowsOnActiveColumn test methods to MainWindowTests.cs. Updated Unit Test Coverage section with sorting tests documentation. Benefits: automated verification of sorting behavior, regression protection, ensures BDD compliance. |
+| 2.14.0 | 2026-02-22 | AI Assistant | **ListView Header Visual Distinction**: Updated column header styling to be visually distinct from data rows. Headers now have light blue background (#E3F2FD), bold blue text (#1976D2), 2px bottom border (#90CAF9), and hover effects (#BBDEFB background, #64B5F6 border). Added Column Header Styling table to ListView Styling section. Benefits: clear visual hierarchy, headers easily distinguishable from data, improved scanability, professional appearance. |
 
 ---
 

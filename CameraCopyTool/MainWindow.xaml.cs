@@ -2,6 +2,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
@@ -232,9 +233,17 @@ namespace CameraCopyTool
         /// <summary>
         /// Handles click on GridView column headers for sorting.
         /// Toggles between ascending and descending sort order.
+        /// Ignores clicks on the resize Thumb (PART_HeaderGrip).
         /// </summary>
         private void GridViewColumnHeader_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            // Ignore clicks on the resize Thumb - let it handle dragging
+            // Check if click was on the Thumb (resize grip)
+            if (e.OriginalSource is Thumb || FindParent<Thumb>(e.OriginalSource as DependencyObject) != null)
+            {
+                return;
+            }
+
             if (sender is GridViewColumnHeader header && header.Column != null)
             {
                 string sortBy = header.Column.Header?.ToString() ?? "";
@@ -357,6 +366,30 @@ namespace CameraCopyTool
                 "Modified Date" => nameof(FileItem.ModifiedDate),
                 _ => header
             };
+        }
+
+        /// <summary>
+        /// Handles mouse down on resize thumb - prevents sort from triggering.
+        /// </summary>
+        private void Thumb_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // Mark as handled to prevent sort from triggering when clicking the resize grip
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// Finds a parent element of the specified type in the visual tree.
+        /// </summary>
+        private static T? FindParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            DependencyObject? parent = System.Windows.Media.VisualTreeHelper.GetParent(child);
+            while (parent != null)
+            {
+                if (parent is T typedParent)
+                    return typedParent;
+                parent = System.Windows.Media.VisualTreeHelper.GetParent(parent);
+            }
+            return null;
         }
 
         /// <summary>
