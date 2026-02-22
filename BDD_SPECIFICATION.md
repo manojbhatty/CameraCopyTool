@@ -5,7 +5,7 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 2.19.0 |
+| **Version** | 2.18.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
 | **Last Updated** | 2026-02-22 |
@@ -213,24 +213,30 @@ Scenario: Help panel is collapsed by default on first run
 Scenario: Help panel displays instructions
   Given the help panel is visible
   When viewing the panel
-  Then it should display the following content:
+  Then it should display the following content in a two-column layout:
+    
+    **Left Column - Copy Instructions:**
     | Element | Content |
     |---------|---------|
-    | Header | "❓ How to Copy Your Photos" |
-    | Step 1 | "Select your camera folder using 'Choose Folder…'" |
-    | Step 2 | "Select your computer folder using 'Choose Folder…'" |
-    | Step 3 | "Select the photos you want to copy (click on them)" |
-    | Step 4 | "Click the big green 'Copy Photos' button" |
-    | Legend 1 | "✓ Photos already copied are shown in GREEN" |
-    | Legend 2 | "✓ New photos ready to copy are shown in BLUE" |
-
-Scenario: Help panel has collapsible header
-  Given the help panel is visible
-  When viewing the panel
-  Then it should have a header with:
-    - Title: "❓ How to Copy Your Photos"
-    - Toggle button: "Hide Instructions ▲" or "Show Instructions ▼"
-  And clicking the toggle button should collapse/expand the panel
+    | Header | "📋 To Copy Photos:" |
+    | Step 1 | "1. Select your camera folder using 'Choose Folder…'" |
+    | Step 2 | "2. Select your computer folder using 'Choose Folder…'" |
+    | Step 3 | "3. Select the photos you want to copy (click on them)" |
+    | Step 4 | "4. Click the big green 'Copy Photos' button" |
+    
+    **Right Column - Delete Instructions:**
+    | Element | Content |
+    |---------|---------|
+    | Header | "🗑️ To Delete Files:" |
+    | Step 1 | "1. Select file(s) to delete in any list" |
+    | Step 2 | "2. Press Delete key or right-click → Delete" |
+    | Step 3 | "3. Confirm (⚠️ This is permanent!)" |
+    
+    **Bottom - Color Legend:**
+    | Element | Content |
+    |---------|---------|
+    | Legend 1 | "✓ Already copied = GREEN" (green #2E7D32) |
+    | Legend 2 | "✓ New files = BLUE" (blue #1565C0) |
 
 Scenario: Help panel visual styling
   Given the help panel is visible
@@ -241,17 +247,18 @@ Scenario: Help panel visual styling
     | Background | Light blue (#E3F2FD) |
     | Border | Blue (#90CAF9) |
     | Border Thickness | 1px bottom only |
-    | Height (expanded) | 180 pixels |
+    | Height (expanded) | 220 pixels |
     | Height (collapsed) | 0 pixels |
-    | Header Font Size | 18 pixels, Bold |
-    | Instruction Font Size | 14 pixels |
+    | Layout | Two-column (Copy on left, Delete on right) |
+    | Font Size | Dynamic (binds to Window.FontSize property) |
 
 Scenario: Help panel color legend
   Given the help panel is visible
-  When viewing the color legend
+  When viewing the color legend at the bottom of the panel
   Then it should display:
-    - Green checkmark (✓) with text "Photos already copied are shown in GREEN" in green (#2E7D32)
-    - Blue checkmark (✓) with text "New photos ready to copy are shown in BLUE" in blue (#1565C0)
+    - Green checkmark (✓) with text "Already copied = GREEN" in green (#2E7D32), bold
+    - Blue checkmark (✓) with text "New files = BLUE" in blue (#1565C0), bold
+  And the legend should be horizontally aligned at the bottom of the help panel
 
 Scenario: Help panel remembers user preference
   Given the user has hidden the help panel
@@ -262,7 +269,7 @@ Scenario: Main content slides when help panel toggles
   Given the help panel is currently visible
   And the main content area is displayed below the help panel
   When the user clicks "How to Use" to hide the help panel
-  Then the help panel should collapse smoothly (height animates from 180 to 0)
+  Then the help panel should collapse smoothly (height animates from 220 to 0)
   And the main content area should slide up to fill the space
   And the status bar should move up accordingly
 
@@ -270,7 +277,7 @@ Scenario: Main content slides down when help panel expands
   Given the help panel is currently hidden
   And the main content area is displayed at the top
   When the user clicks "How to Use" to show the help panel
-  Then the help panel should expand smoothly (height animates from 0 to 180)
+  Then the help panel should expand smoothly (height animates from 0 to 220)
   And the main content area should slide down
   And the status bar should move down accordingly
 ```
@@ -2859,6 +2866,7 @@ The following unit tests have been implemented to verify BDD compliance:
 | 2.15.0 | 2026-02-22 | AI Assistant | **Recent Folders History**: Added ComboBox dropdowns next to Source and Destination path TextBoxes showing last 10 used folders. Users can click to quickly select recent folders or type custom paths. Recent folders stored in-memory during session. Added RecentSourceFolders and RecentDestinationFolders ObservableCollection properties to MainViewModel. Updated SourcePath and DestinationPath setters to add folders to recent history. Added AddToRecentSourceFolders and AddToRecentDestinationFolders helper methods. Benefits: faster workflow for repeat use, reduces repetitive browsing, better user experience for power users. |
 | 2.16.0 | 2026-02-22 | AI Assistant | **ComboBox Font Size Fix**: Added ComboBox style with FontSize binding to ensure path ComboBoxes respect user's font size setting (14-28px). ComboBox now uses same font family and size as TextBox and Button controls. Benefits: consistent typography across all input controls, proper accessibility support for users with visual impairments. |
 | 2.17.0 | 2026-02-22 | AI Assistant | **Column Resize Functionality**: Added Thumb control to column headers enabling users to drag and resize column widths. Resize grip appears as 2px line on right edge of headers, shows blue line (#64B5F6) on hover and darker blue (#1976D2) while dragging. Sort handler ignores clicks on resize grip to prevent accidental sorting. Benefits: users can customize column widths for better readability, especially for long filenames. |
+| 2.18.0 | 2026-02-22 | AI Assistant | **Help Panel Two-Column Layout with Delete Instructions**: Updated help panel to display instructions in two-column layout (Copy on left, Delete on right). Added delete instructions: "1. Select file(s) to delete in any list", "2. Press Delete key or right-click → Delete", "3. Confirm (⚠️ This is permanent!)". Removed internal header ("How to Copy Your Photos") and toggle button from inside help panel. Increased panel height from 180px to 220px. Updated color legend to simplified format ("Already copied = GREEN", "New files = BLUE"). All font sizes now dynamic (bind to Window.FontSize). Updated User Story 0.2 acceptance criteria, visual styling specs, and animation scenarios. Benefits: more compact layout, delete functionality documented, better use of vertical space, consistent font scaling with settings. |
 
 ---
 

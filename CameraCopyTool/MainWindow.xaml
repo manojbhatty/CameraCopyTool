@@ -319,7 +319,7 @@
         <Border Grid.Row="1" Background="#E3F2FD" BorderBrush="#90CAF9" BorderThickness="0,0,0,1">
             <Border.Style>
                 <Style TargetType="Border">
-                    <Setter Property="Height" Value="180"/>
+                    <Setter Property="Height" Value="220"/>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding ShowHelpPanel}" Value="False">
                             <Setter Property="Height" Value="0"/>
@@ -329,51 +329,68 @@
             </Border.Style>
             <Grid Margin="20,15" Visibility="{Binding ShowHelpPanel, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                
-                <!-- Help header with toggle button -->
-                <Grid Grid.Row="0">
+
+                <!-- Instructions - Two Column Layout -->
+                <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    
-                    <TextBlock Grid.Column="0" Text="❓ How to Copy Your Photos" 
-                               FontSize="18" FontWeight="Bold" 
-                               VerticalAlignment="Center"/>
-                    
-                    <Button Grid.Column="1" 
-                            Content="{Binding ShowHelpPanel, Converter={StaticResource BooleanToTextConverter}}"
-                            Command="{Binding ToggleHelpCommand}"
-                            Background="Transparent"
-                            Foreground="#1976D2"
-                            FontWeight="Bold"
-                            Padding="10,5"
-                            BorderThickness="0"/>
-                </Grid>
-                
-                <!-- Instructions -->
-                <StackPanel Grid.Row="1" Margin="0,10,0,0">
-                    <TextBlock Text="Step 1: Select your camera folder using &quot;Choose Folder…&quot;" 
-                               FontSize="14" Margin="0,2"/>
-                    <TextBlock Text="Step 2: Select your computer folder using &quot;Choose Folder…&quot;" 
-                               FontSize="14" Margin="0,2"/>
-                    <TextBlock Text="Step 3: Select the photos you want to copy (click on them)" 
-                               FontSize="14" Margin="0,2"/>
-                    <TextBlock Text="Step 4: Click the big green &quot;Copy Photos&quot; button" 
-                               FontSize="14" Margin="0,2"/>
-                    
-                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-                        <TextBlock Text="✓ " Foreground="#4CAF50" FontWeight="Bold" FontSize="14"/>
-                        <TextBlock Text="Photos already copied are shown in GREEN" 
-                                   FontSize="14" FontWeight="Bold" Foreground="#2E7D32"/>
+
+                    <!-- Left Column: Copy Instructions -->
+                    <StackPanel Grid.Column="0">
+                        <TextBlock FontWeight="Bold" 
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   Margin="0,0,0,5">📋 To Copy Photos:</TextBlock>
+                        <TextBlock Text="1. Select your camera folder using &quot;Choose Folder…&quot;"
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   Margin="0,2"/>
+                        <TextBlock Text="2. Select your computer folder using &quot;Choose Folder…&quot;"
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   Margin="0,2"/>
+                        <TextBlock Text="3. Select the photos you want to copy (click on them)"
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   Margin="0,2"/>
+                        <TextBlock Text="4. Click the big green &quot;Copy Photos&quot; button"
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   Margin="0,2"/>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                        <TextBlock Text="✓ " Foreground="#1976D2" FontWeight="Bold" FontSize="14"/>
-                        <TextBlock Text="New photos ready to copy are shown in BLUE" 
-                                   FontSize="14" FontWeight="Bold" Foreground="#1565C0"/>
+
+                    <!-- Right Column: Delete Instructions -->
+                    <StackPanel Grid.Column="2">
+                        <TextBlock FontWeight="Bold"
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   Margin="0,0,0,5">🗑️ To Delete Files:</TextBlock>
+                        <TextBlock Text="1. Select file(s) to delete in any list"
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   Margin="0,2"/>
+                        <TextBlock Text="2. Press Delete key or right-click → Delete"
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   Margin="0,2"/>
+                        <TextBlock Text="3. Confirm (⚠️ This is permanent!)"
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   Margin="0,2"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Color Legend - Bottom -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,20,0">
+                        <TextBlock Text="✓ " Foreground="#4CAF50" FontWeight="Bold"
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                        <TextBlock Text="Already copied = GREEN"
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   FontWeight="Bold" Foreground="#2E7D32"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="✓ " Foreground="#1976D2" FontWeight="Bold"
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                        <TextBlock Text="New files = BLUE"
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   FontWeight="Bold" Foreground="#1565C0"/>
                     </StackPanel>
                 </StackPanel>
             </Grid>
