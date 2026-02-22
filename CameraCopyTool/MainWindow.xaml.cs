@@ -166,6 +166,43 @@ namespace CameraCopyTool
             {
                 _viewModel.SelectedDestinationFiles = lvDestinationFiles.SelectedItems.Cast<FileItem>().ToList();
             };
+
+            // Add toggle selection behavior - clicking selected item deselects it
+            lvNewFiles.PreviewMouseLeftButtonDown += ListView_PreviewMouseLeftButtonDown;
+            lvAlreadyCopied.PreviewMouseLeftButtonDown += ListView_PreviewMouseLeftButtonDown;
+            lvDestinationFiles.PreviewMouseLeftButtonDown += ListView_PreviewMouseLeftButtonDown;
+        }
+
+        /// <summary>
+        /// Handles mouse click on ListView items to enable toggle selection.
+        /// Clicking an already selected item will deselect it.
+        /// </summary>
+        private void ListView_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is ListView listView)
+            {
+                var item = FindAncestor<ListViewItem>(e.OriginalSource as DependencyObject);
+                if (item != null && item.IsSelected)
+                {
+                    // Item is already selected - clicking will deselect it
+                    item.IsSelected = false;
+                    e.Handled = true; // Prevent default selection behavior
+                }
+            }
+        }
+
+        /// <summary>
+        /// Finds the first ancestor of the specified type in the visual tree.
+        /// </summary>
+        private static T? FindAncestor<T>(DependencyObject? child) where T : DependencyObject
+        {
+            while (child != null)
+            {
+                if (child is T typedChild)
+                    return typedChild;
+                child = System.Windows.Media.VisualTreeHelper.GetParent(child);
+            }
+            return null;
         }
 
         /// <summary>

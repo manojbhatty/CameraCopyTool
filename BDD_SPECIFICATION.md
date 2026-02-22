@@ -5,7 +5,7 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 2.7.0 |
+| **Version** | 2.8.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
 | **Last Updated** | 2026-02-22 |
@@ -983,6 +983,12 @@ block-beta
 | Destination | `DestinationFilesListView` | `DestinationFiles` | Extended | GroupBox |
 
 **Note**: AutomationIds are set on the ListView elements for screen reader accessibility.
+
+**Selection Behavior:**
+- **Extended Selection**: Users can select multiple files using Ctrl+Click or Shift+Click
+- **Toggle Selection**: Clicking an already selected row will deselect it (toggle behavior)
+- **Multi-select Support**: Ctrl+Click toggles individual items, Shift+Click selects ranges
+- **Selection Applies To**: All three ListViews (Already Copied, New Files, Destination)
 
 #### Already Copied Expander Control
 | Property | Value |
@@ -2341,6 +2347,7 @@ The following unit tests have been implemented to verify BDD compliance:
 | 2.5.0 | 2026-02-22 | AI Assistant | **Progress Bar Visibility Improvements**: Increased progress bar height from 20px to 30px. Added percentage text overlay inside progress bar showing completion percentage (e.g., "45%"). Text is bold, 14px, black color for high contrast. Added ProgressPercentage calculated property to MainViewModel. Updated Progress Bar specification table with detailed properties. Benefits: clearer progress feedback, reduces anxiety during long operations, better accessibility. |
 | 2.6.0 | 2026-02-22 | AI Assistant | **Delete Confirmation Dialog Improvements**: Increased dialog size from 220px to 320px height and 450px to 500px width for better button visibility. Updated button colors: "Yes, Delete" uses red (#F44336) for destructive action, "No, Keep" uses gray (#757575) for cancel action. Increased button height to 55px with padding 20,15. Added MinHeight 70px for button row. Updated Grid margin from 25 to 30 pixels. Added Delete Confirmation Dialog Specifications section to BDD with detailed styling table. Benefits: buttons fully visible, color coding follows UI conventions (red=destructive, gray=neutral), improved accessibility. |
 | 2.7.0 | 2026-02-22 | AI Assistant | **Progress Bar Accuracy Fix**: Fixed progress bar reaching 100% prematurely before file transfer completion. Progress now capped at 95% during copy operations to reserve room for file move operations. Progress bar only shows 100% when ALL files are fully copied AND moved. Progress resets to 0 after success message is displayed (not before). Updated Progress Bar specification with Progress Behavior section documenting accurate progress reporting. Benefits: accurate progress feedback, users can trust 100% indicator means transfer is truly complete, reduces confusion during multi-file transfers. |
+| 2.8.0 | 2026-02-22 | AI Assistant | **ListView Toggle Selection**: Added toggle selection behavior to all three ListViews. Clicking an already selected row now deselects it (toggle behavior). Extended selection mode still supports Ctrl+Click for individual toggles and Shift+Click for range selection. Updated ListView specification with Selection Behavior section documenting toggle, extended, and multi-select support. Benefits: more intuitive selection management, easier to correct accidental selections, consistent with modern UI patterns. |
 
 ---
 
