@@ -912,10 +912,11 @@ Scenario: Video files are visually distinguished from non-video files
   And non-video files should have:
     | Property | Value |
     |----------|-------|
-    | Text Color | Gray (#666666) |
-    | Opacity | 60% (0.6) |
+    | Text Color | Black (#000000) |
+    | Opacity | 75% (0.75) |
   And both should remain clearly readable
   And the distinction should help users quickly identify video content
+  And non-video files should be easier to read while still appearing less prominent
 
 Scenario: Already copied files use high-contrast styling
   Given a file is marked as already copied
@@ -1418,10 +1419,11 @@ block-beta
   - Opacity: 100% (1.0)
   - Purpose: Draw attention to primary content (videos are the focus of this app)
   
-- **Non-Video Files** (less prominent, still readable):
-  - Text Color: Gray (#666666)
-  - Opacity: 60% (0.6)
-  - Purpose: Visible but subdued, indicating secondary importance
+- **Non-Video Files** (less prominent, still clearly readable):
+  - Text Color: Black (#000000) - maintains color accuracy for better readability
+  - Opacity: 75% (0.75) - subdued but easy to read
+  - Purpose: Visible and readable while indicating secondary importance
+  - Accessibility: Black text maintains maximum contrast, better for users with visual impairments
   
 - **Overrides** (all files become fully prominent):
   - Selected: Blue background, white text, 100% opacity
