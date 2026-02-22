@@ -390,8 +390,8 @@ Scenario: Application starts with empty paths (first run)
 
 #### User Story 2.1: Display New Files
 
-**As a** user  
-**I want to** see files that haven't been copied yet  
+**As a** user
+**I want to** see files that haven't been copied yet
 **So that** I know which files need to be transferred
 
 **Acceptance Criteria:**
@@ -408,7 +408,27 @@ Scenario: New files are displayed correctly
     | Name          | Full filename with extension |
     | Modified Date | `yyyy-MM-dd hh:mm tt` (12-hour format with AM/PM) |
 
-  And the section header should display: "🆕 New Videos to Copy (count)" where count is the number of new files
+  And the section header should display: "🆕 New Videos to Copy (count)" where count is the number of NEW VIDEO files only
+
+Scenario: Video file filtering for counts
+  Given files exist in the source folder
+  When counting files for headers and status bar
+  Then only video files should be counted
+  And supported video extensions include:
+    | Extension | Format |
+    |-----------|--------|
+    | .mp4, .m4v | MPEG-4 Video |
+    | .mov | QuickTime Movie |
+    | .avi | Audio Video Interleave |
+    | .mkv | Matroska Video |
+    | .wmv | Windows Media Video |
+    | .flv | Flash Video |
+    | .webm | WebM Video |
+    | .mpeg, .mpg | MPEG Video |
+    | .3gp, .3g2 | 3GPP Video |
+
+  And non-video files (photos, documents, etc.) should still appear in the ListView
+  But should NOT be included in the count
 
 Scenario: File comparison logic
   Given a file exists in both source and destination
@@ -440,7 +460,7 @@ Scenario: Already copied files are displayed
     | Name          | Full filename with extension |
     | Modified Date | `yyyy-MM-dd hh:mm tt` (12-hour format with AM/PM) |
 
-  And the section header should display: "✅ Already Copied Videos (count)" where count is the number of already copied files
+  And the section header should display: "✅ Already Copied Videos (count)" where count is the number of already copied VIDEO files only
 
 Scenario: Already copied files are visually distinguished
   Given a file is marked as already copied
@@ -452,12 +472,12 @@ Scenario: Already copied files are visually distinguished
 
 Scenario: Already copied section is collapsible
   Given the application is open
-  When viewing the "Already copied files" section
+  When viewing the "✅ Already Copied Videos" section
   Then it should be displayed as a collapsible Expander control
   And it should start in a collapsed state by default
   And clicking the section header should expand to show the ListView
   And clicking the header again should collapse the ListView
-  And the "New files" section should expand to fill the space when collapsed
+  And the "🆕 New Videos to Copy" section should expand to fill the space when collapsed
 ```
 
 #### User Story 2.3: Display Destination Files
@@ -479,7 +499,7 @@ Scenario: Destination files are displayed
     | Name          | Filename with ✅ prefix if also in source |
     | Modified Date | `yyyy-MM-dd hh:mm tt` (12-hour format with AM/PM) |
 
-  And the section header should display: "💻 Videos on Your Computer (count)" where count is the total number of files in the destination folder
+  And the section header should display: "💻 Videos on Your Computer (count)" where count is the total number of VIDEO files in the destination folder
 ```
 
 #### User Story 2.4: File List Refresh
@@ -881,12 +901,29 @@ Scenario: Font size persists across sessions
 **Acceptance Criteria:**
 
 ```gherkin
+Scenario: Video files are visually distinguished from non-video files
+  Given files of different types are displayed in any ListView
+  When viewing the files
+  Then video files should have:
+    | Property | Value |
+    |----------|-------|
+    | Text Color | Black (#000000) |
+    | Opacity | 100% (1.0) |
+  And non-video files should have:
+    | Property | Value |
+    |----------|-------|
+    | Text Color | Gray (#666666) |
+    | Opacity | 60% (0.6) |
+  And both should remain clearly readable
+  And the distinction should help users quickly identify video content
+
 Scenario: Already copied files use high-contrast styling
   Given a file is marked as already copied
   When displayed in the ListView
   Then the background should be a high-contrast color (e.g., #4CAF50 green)
   And the text should be bold
   And the text color should be high-contrast (black or dark gray)
+  And the opacity should be 100% (overrides file type styling)
 
 Scenario: Status indicators use color + icon + text
   Given a status needs to be communicated (success, warning, error)
@@ -1047,9 +1084,11 @@ Scenario: Status bar shows file counts
   Given files are loaded
   When viewing the status bar
   Then it should display:
-    - Total files in source (e.g., "150 files in source")
-    - New file count in blue (e.g., "45 new files")
+    - Total VIDEO files in source (e.g., "15 videos in source")
+    - New VIDEO file count in blue (e.g., "5 new videos")
+  And counts should include ONLY video files (mp4, mov, avi, mkv, wmv, flv, webm, m4v, mpeg, mpg, 3gp, 3g2)
   And new file count should use bold blue text (#1976D2)
+  And non-video files (photos, documents) should NOT be included in the count
 
 Scenario: Status bar updates during operations
   Given a copy operation is in progress
@@ -1363,6 +1402,31 @@ block-beta
 | 💻 Videos on Your Computer | `DestinationFilesListView` | `DestinationFiles` | Extended | GroupBox |
 
 **Note**: AutomationIds are set on the ListView elements for screen reader accessibility.
+
+**File Display Behavior:**
+- **All File Types Shown**: ListViews display ALL files (videos, photos, documents, etc.)
+- **Video Count Only**: Header counts and status bar counts include ONLY video files
+- **Supported Video Formats**: .mp4, .m4v, .mov, .avi, .mkv, .wmv, .flv, .webm, .mpeg, .mpg, .3gp, .3g2
+- **Example**: If folder has 10 files (3 videos + 7 photos):
+  - ListView shows: all 10 files
+  - Header shows: "🆕 New Videos to Copy (3)"
+  - Status bar shows: "3 videos in source"
+
+**Visual Distinction - Video vs Non-Video Files:**
+- **Video Files** (full prominence):
+  - Text Color: Black (#000000)
+  - Opacity: 100% (1.0)
+  - Purpose: Draw attention to primary content (videos are the focus of this app)
+  
+- **Non-Video Files** (less prominent, still readable):
+  - Text Color: Gray (#666666)
+  - Opacity: 60% (0.6)
+  - Purpose: Visible but subdued, indicating secondary importance
+  
+- **Overrides** (all files become fully prominent):
+  - Selected: Blue background, white text, 100% opacity
+  - Already Copied: Green background, black text, 100% opacity
+  - Mouse Over: Light blue background, 100% opacity
 
 **Selection Behavior:**
 - **Extended Selection**: Users can select multiple files using Ctrl+Click or Shift+Click

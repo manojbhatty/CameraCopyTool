@@ -195,37 +195,37 @@ public class MainViewModelTests
     [Test]
     public void AlreadyCopiedFilesHeader_IncludesCountInParentheses()
     {
-        // BDD v1.6: Header format "Already copied files (X)"
+        // BDD v2.19: Header format "✅ Already Copied Videos (X)"
         _viewModel.AlreadyCopiedFiles.Add(new FileItem { Name = "file1.jpg" });
         _viewModel.AlreadyCopiedFiles.Add(new FileItem { Name = "file2.jpg" });
-        
+
         var header = _viewModel.AlreadyCopiedFilesHeader;
-        
-        Assert.That(header, Is.EqualTo("Already copied files (2)"));
+
+        Assert.That(header, Is.EqualTo("✅ Already Copied Videos (2)"));
     }
 
     [Test]
     public void NewFilesHeader_IncludesCountInParentheses()
     {
-        // BDD v1.6: Header format "New files (X)"
+        // BDD v2.19: Header format "🆕 New Videos to Copy (X)"
         _viewModel.NewFiles.Add(new FileItem { Name = "file1.jpg" });
         _viewModel.NewFiles.Add(new FileItem { Name = "file2.jpg" });
         _viewModel.NewFiles.Add(new FileItem { Name = "file3.jpg" });
-        
+
         var header = _viewModel.NewFilesHeader;
-        
-        Assert.That(header, Is.EqualTo("New files (3)"));
+
+        Assert.That(header, Is.EqualTo("🆕 New Videos to Copy (3)"));
     }
 
     [Test]
     public void DestinationFilesHeader_IncludesCountInParentheses()
     {
-        // BDD v1.6: Header format "Files in computer (X)"
+        // BDD v2.19: Header format "💻 Videos on Your Computer (X)"
         _viewModel.DestinationFiles.Add(new FileItem { Name = "file1.jpg" });
-        
+
         var header = _viewModel.DestinationFilesHeader;
-        
-        Assert.That(header, Is.EqualTo("Files in computer (1)"));
+
+        Assert.That(header, Is.EqualTo("💻 Videos on Your Computer (1)"));
     }
 
     [Test]
@@ -240,9 +240,9 @@ public class MainViewModelTests
         };
 
         _viewModel.NewFiles.Add(new FileItem { Name = "file1.jpg" });
-        
+
         Assert.That(headerChanged, Is.True);
-        Assert.That(_viewModel.NewFilesHeader, Is.EqualTo("New files (1)"));
+        Assert.That(_viewModel.NewFilesHeader, Is.EqualTo("🆕 New Videos to Copy (1)"));
     }
 
     #endregion

@@ -106,17 +106,29 @@
             <Setter Property="BorderThickness" Value="0,0,0,1"/>
             <Setter Property="BorderBrush" Value="#E0E0E0"/>
             <Style.Triggers>
+                <!-- Non-video files: Less prominent (lighter gray, reduced opacity) -->
+                <DataTrigger Binding="{Binding IsVideoFile}" Value="False">
+                    <Setter Property="Foreground" Value="#666666"/>
+                    <Setter Property="Opacity" Value="0.6"/>
+                </DataTrigger>
+                <!-- Video files: Full prominence (black text, full opacity) -->
+                <DataTrigger Binding="{Binding IsVideoFile}" Value="True">
+                    <Setter Property="Foreground" Value="#000000"/>
+                    <Setter Property="Opacity" Value="1.0"/>
+                </DataTrigger>
                 <!-- Already copied: High-contrast green with black text -->
                 <DataTrigger Binding="{Binding IsAlreadyCopied}" Value="True">
                     <Setter Property="Background" Value="#4CAF50"/>
                     <Setter Property="Foreground" Value="#000000"/>
                     <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Opacity" Value="1.0"/>
                 </DataTrigger>
                 <!-- Selected state: Prominent blue highlight with white text -->
                 <Trigger Property="IsSelected" Value="True">
                     <Setter Property="Background" Value="#1976D2"/>
                     <Setter Property="Foreground" Value="#FFFFFF"/>
                     <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Opacity" Value="1.0"/>
                 </Trigger>
                 <!-- Mouse over: High-visibility blue highlight (only when NOT selected) -->
                 <MultiTrigger>
@@ -125,6 +137,7 @@
                         <Condition Property="IsSelected" Value="False"/>
                     </MultiTrigger.Conditions>
                     <Setter Property="Background" Value="#90CAF9"/>
+                    <Setter Property="Opacity" Value="1.0"/>
                 </MultiTrigger>
             </Style.Triggers>
         </Style>

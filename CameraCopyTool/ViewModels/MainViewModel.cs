@@ -351,25 +351,28 @@ public class MainViewModel : ViewModelBase
 
     /// <summary>
     /// Gets the source file count text for the status bar.
+    /// Counts only video files.
     /// </summary>
     public string SourceFileCountText
     {
         get
         {
-            int totalFiles = AlreadyCopiedFiles.Count + NewFiles.Count;
-            return totalFiles > 0 ? $"{totalFiles} files in source" : "No source files";
+            int totalVideos = AlreadyCopiedFiles.Count(f => _fileService.IsVideoFile(f.Name)) 
+                            + NewFiles.Count(f => _fileService.IsVideoFile(f.Name));
+            return totalVideos > 0 ? $"{totalVideos} video{(totalVideos != 1 ? "s" : "")} in source" : "No videos in source";
         }
     }
 
     /// <summary>
     /// Gets the new file count text for the status bar.
+    /// Counts only video files.
     /// </summary>
     public string NewFileCountText
     {
         get
         {
-            int newCount = NewFiles.Count;
-            return newCount > 0 ? $"{newCount} new file{(newCount != 1 ? "s" : "")}" : "0 new files";
+            int newCount = NewFiles.Count(f => _fileService.IsVideoFile(f.Name));
+            return newCount > 0 ? $"{newCount} new video{(newCount != 1 ? "s" : "")}" : "0 new videos";
         }
     }
 
@@ -381,21 +384,21 @@ public class MainViewModel : ViewModelBase
 
     /// <summary>
     /// Gets the formatted header text for the Already Copied Files group.
-    /// Format: "Already copied files (count)"
+    /// Format: "Already copied videos (count)" - counts only video files
     /// </summary>
-    public string AlreadyCopiedFilesHeader => $"✅ Already Copied Videos ({AlreadyCopiedFiles.Count})";
+    public string AlreadyCopiedFilesHeader => $"✅ Already Copied Videos ({AlreadyCopiedFiles.Count(f => _fileService.IsVideoFile(f.Name))})";
 
     /// <summary>
     /// Gets the formatted header text for the New Files group.
-    /// Format: "🆕 New Videos to Copy (count)"
+    /// Format: "🆕 New Videos to Copy (count)" - counts only video files
     /// </summary>
-    public string NewFilesHeader => $"🆕 New Videos to Copy ({NewFiles.Count})";
+    public string NewFilesHeader => $"🆕 New Videos to Copy ({NewFiles.Count(f => _fileService.IsVideoFile(f.Name))})";
 
     /// <summary>
     /// Gets the formatted header text for the Destination Files group.
-    /// Format: "💻 Videos on Your Computer (count)"
+    /// Format: "💻 Videos on Your Computer (count)" - counts only video files
     /// </summary>
-    public string DestinationFilesHeader => $"💻 Videos on Your Computer ({DestinationFiles.Count})";
+    public string DestinationFilesHeader => $"💻 Videos on Your Computer ({DestinationFiles.Count(f => _fileService.IsVideoFile(f.Name))})";
 
     /// <summary>
     /// Gets or sets a value indicating whether the help panel is visible.

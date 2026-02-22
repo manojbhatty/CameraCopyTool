@@ -318,19 +318,19 @@ public class MainWindowTests
     [Test]
     public void SectionHeaders_ShowCountInParentheses()
     {
-        // BDD v1.6: Headers use format "Section name (X)"
+        // BDD v2.19: Headers use format "🆕 New Videos to Copy (X)", "✅ Already Copied Videos (X)", "💻 Videos on Your Computer (X)"
         var window = _app.GetMainWindow(_automation);
 
         Retry.WhileFalse(
-           () => window.FindAllDescendants().Any(e => e.Name != null && e.Name.Contains("New files (")),
+           () => window.FindAllDescendants().Any(e => e.Name != null && e.Name.Contains("🆕 New Videos to Copy (")),
            TimeSpan.FromSeconds(5)
        );
 
         var allNames = window.FindAllDescendants().Where(e => e.Name != null).Select(e => e.Name).ToList();
-        
-        Assert.That(allNames.Any(t => t.StartsWith("Already copied files (")), Is.True);
-        Assert.That(allNames.Any(t => t.StartsWith("New files (")), Is.True);
-        Assert.That(allNames.Any(t => t.StartsWith("Files in computer (")), Is.True);
+
+        Assert.That(allNames.Any(t => t.StartsWith("✅ Already Copied Videos (")), Is.True);
+        Assert.That(allNames.Any(t => t.StartsWith("🆕 New Videos to Copy (")), Is.True);
+        Assert.That(allNames.Any(t => t.StartsWith("💻 Videos on Your Computer (")), Is.True);
     }
 
     [Test]
@@ -381,22 +381,13 @@ public class MainWindowTests
     {
         var window = _app.GetMainWindow(_automation);
 
-        // Open parent menu
-        var toolsMenu = window.FindFirstDescendant(cf =>
-            cf.ByAutomationId("ToolsMenu")).AsMenuItem();
+        // Use the new Refresh button instead of old menu
+        var refreshButton = window.FindFirstDescendant(cf =>
+            cf.ByText("🔄 Refresh (F5)")).AsButton();
 
-        Assert.That(toolsMenu, Is.Not.Null);
+        Assert.That(refreshButton, Is.Not.Null);
 
-        toolsMenu.Expand(); // 👈 NOT Invoke()
-
-        // Find Refresh menu item
-        var refreshMenu = window.FindFirstDescendant(cf =>
-            cf.ByAutomationId("RefreshMenu")).AsMenuItem();
-
-        Assert.That(refreshMenu, Is.Not.Null);
-
-        // Click instead of Invoke
-        refreshMenu.Click();
+        refreshButton.Invoke();
 
         Assert.Pass();
     }
@@ -407,16 +398,12 @@ public class MainWindowTests
         // BDD User Story 6.1: Settings dialog opens
         var window = _app.GetMainWindow(_automation);
 
-        var toolsMenu = window.FindFirstDescendant(cf =>
-            cf.ByAutomationId("ToolsMenu")).AsMenuItem();
-        
-        Assert.That(toolsMenu, Is.Not.Null);
-        toolsMenu.Expand();
+        // Use the new Settings button instead of old menu
+        var settingsButton = window.FindFirstDescendant(cf =>
+            cf.ByText("⚙️ Settings")).AsButton();
 
-        var settingsMenu = window.FindFirstDescendant(cf => cf.ByName("Settings..."));
-        Assert.That(settingsMenu, Is.Not.Null);
-        
-        settingsMenu.Click();
+        Assert.That(settingsButton, Is.Not.Null);
+        settingsButton.Invoke();
 
         // Wait for Settings window with longer timeout
         var settingsWindowFound = Retry.WhileFalse(
@@ -434,12 +421,10 @@ public class MainWindowTests
         // BDD v1.4: Font size slider 14-28px
         var window = _app.GetMainWindow(_automation);
 
-        var toolsMenu = window.FindFirstDescendant(cf =>
-            cf.ByAutomationId("ToolsMenu")).AsMenuItem();
-        toolsMenu.Expand();
-
-        var settingsMenu = window.FindFirstDescendant(cf => cf.ByName("Settings..."));
-        settingsMenu.Click();
+        // Use the new Settings button instead of old menu
+        var settingsButton = window.FindFirstDescendant(cf =>
+            cf.ByText("⚙️ Settings")).AsButton();
+        settingsButton.Invoke();
 
         // Wait for Settings window
         var settingsWindowFound = Retry.WhileFalse(
@@ -455,9 +440,9 @@ public class MainWindowTests
 
         var settingsWindow = window.ModalWindows.First(w => w.Title == "Settings");
         var slider = settingsWindow.FindFirstDescendant(cf => cf.ByControlType(FlaUI.Core.Definitions.ControlType.Slider));
-        
+
         Assert.That(slider, Is.Not.Null);
-        
+
         // Verify slider range via RangeValue pattern
         var rangePattern = slider.Patterns.RangeValue.Pattern;
         Assert.Multiple(() =>
@@ -476,13 +461,10 @@ public class MainWindowTests
 
         var window = _app.GetMainWindow(_automation);
 
-        var toolsMenu = window.FindFirstDescendant(cf =>
-            cf.ByAutomationId("ToolsMenu")).AsMenuItem();
-        toolsMenu.Expand();
-
-        var refreshMenu = window.FindFirstDescendant(cf =>
-            cf.ByAutomationId("RefreshMenu")).AsMenuItem();
-        refreshMenu.Click();
+        // Use the new Refresh button instead of old menu
+        var refreshButton = window.FindFirstDescendant(cf =>
+            cf.ByText("🔄 Refresh (F5)")).AsButton();
+        refreshButton.Invoke();
 
         Retry.WhileTrue(
             () => File.Exists(tempFile),
@@ -500,13 +482,10 @@ public class MainWindowTests
 
         var window = _app.GetMainWindow(_automation);
 
-        var toolsMenu = window.FindFirstDescendant(cf =>
-            cf.ByAutomationId("ToolsMenu")).AsMenuItem();
-        toolsMenu.Expand();
-
-        var refreshMenu = window.FindFirstDescendant(cf =>
-            cf.ByAutomationId("RefreshMenu")).AsMenuItem();
-        refreshMenu.Click();
+        // Use the new Refresh button instead of old menu
+        var refreshButton = window.FindFirstDescendant(cf =>
+            cf.ByText("🔄 Refresh (F5)")).AsButton();
+        refreshButton.Invoke();
 
         Retry.WhileTrue(
             () => File.Exists(tempFile),
