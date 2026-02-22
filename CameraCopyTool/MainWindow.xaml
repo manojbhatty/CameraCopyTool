@@ -151,7 +151,7 @@
                     <TextBox Grid.Column="0" Height="28"
                              Text="{Binding SourcePath, UpdateSourceTrigger=PropertyChanged}"
                              AutomationProperties.AutomationId="SourcePathTextBox"/>
-                    <Button Grid.Column="1" Content="Choose Folder…" Margin="5,0,0,0"
+                    <Button Grid.Column="1" Content="Choose Folder…" Margin="5,0,0,0" Height="28" Padding="10,3" BorderThickness="1"
                             Command="{Binding BrowseSourceCommand}"/>
                 </Grid>
 
@@ -259,7 +259,7 @@
                     <TextBox Grid.Column="0" Height="28"
                              Text="{Binding DestinationPath, UpdateSourceTrigger=PropertyChanged}"
                              AutomationProperties.AutomationId="DestinationPathTextBox"/>
-                    <Button Grid.Column="1" Content="Choose Folder…" Margin="5,0,0,0"
+                    <Button Grid.Column="1" Content="Choose Folder…" Margin="5,0,0,0" Height="28" Padding="10,3" BorderThickness="1"
                             Command="{Binding BrowseDestinationCommand}"/>
                 </Grid>
 
