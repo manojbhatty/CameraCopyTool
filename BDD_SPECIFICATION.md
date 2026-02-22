@@ -5,7 +5,7 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 2.6.0 |
+| **Version** | 2.7.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
 | **Last Updated** | 2026-02-22 |
@@ -967,7 +967,13 @@ block-beta
   - **Font Size**: 14 pixels
   - **Font Weight**: Bold
   - **Color**: #000000 (black text for high contrast)
+- **Progress Behavior**:
+  - **During Copy**: Progress capped at 95% to account for file move operations
+  - **After Each File**: Progress updates to reflect completed copy + move
+  - **At Completion**: Progress shows 100% only when ALL files are fully transferred
+  - **After Completion**: Progress resets to 0 after success message is shown
 - **Purpose**: Provides clear visual feedback during copy operations, reduces user anxiety during long transfers
+- **Accuracy**: Progress bar only reaches 100% when transfer is fully complete (not during intermediate copy operations)
 
 #### ListViews
 | ListView | AutomationId | ItemsSource | SelectionMode | Container |
@@ -2334,6 +2340,7 @@ The following unit tests have been implemented to verify BDD compliance:
 | 2.4.0 | 2026-02-22 | AI Assistant | **Copy Button Layout Refinements**: Changed Copy button to two-line layout with "Copy" on first line and "➜" arrow on second line. Increased button height to 80px for better visibility. Updated font sizes (Copy: 22px, Arrow: 32px). Fixed disabled state text color to use standard Windows disabled control colors (#A0A0A0 on #E0E0E0 background) for better readability. Added Foreground binding to button content TextBlocks for proper color inheritance. Updated Copy Button specification table with two-line layout details. |
 | 2.5.0 | 2026-02-22 | AI Assistant | **Progress Bar Visibility Improvements**: Increased progress bar height from 20px to 30px. Added percentage text overlay inside progress bar showing completion percentage (e.g., "45%"). Text is bold, 14px, black color for high contrast. Added ProgressPercentage calculated property to MainViewModel. Updated Progress Bar specification table with detailed properties. Benefits: clearer progress feedback, reduces anxiety during long operations, better accessibility. |
 | 2.6.0 | 2026-02-22 | AI Assistant | **Delete Confirmation Dialog Improvements**: Increased dialog size from 220px to 320px height and 450px to 500px width for better button visibility. Updated button colors: "Yes, Delete" uses red (#F44336) for destructive action, "No, Keep" uses gray (#757575) for cancel action. Increased button height to 55px with padding 20,15. Added MinHeight 70px for button row. Updated Grid margin from 25 to 30 pixels. Added Delete Confirmation Dialog Specifications section to BDD with detailed styling table. Benefits: buttons fully visible, color coding follows UI conventions (red=destructive, gray=neutral), improved accessibility. |
+| 2.7.0 | 2026-02-22 | AI Assistant | **Progress Bar Accuracy Fix**: Fixed progress bar reaching 100% prematurely before file transfer completion. Progress now capped at 95% during copy operations to reserve room for file move operations. Progress bar only shows 100% when ALL files are fully copied AND moved. Progress resets to 0 after success message is displayed (not before). Updated Progress Bar specification with Progress Behavior section documenting accurate progress reporting. Benefits: accurate progress feedback, users can trust 100% indicator means transfer is truly complete, reduces confusion during multi-file transfers. |
 
 ---
 

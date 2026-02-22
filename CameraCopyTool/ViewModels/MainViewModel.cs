@@ -651,6 +651,8 @@ public class MainViewModel : ViewModelBase
                         {
                             // Skip this file but add its size to the cumulative progress
                             bytesCopiedBeforeCurrentFile += fileItem.FileSize;
+                            // Update progress to reflect skipped file
+                            ProgressValue = (int)Math.Min(bytesCopiedBeforeCurrentFile, int.MaxValue);
                             continue;
                         }
                     }
@@ -663,9 +665,11 @@ public class MainViewModel : ViewModelBase
                     long currentFileStart = bytesCopiedBeforeCurrentFile;
                     var progress = new Progress<long>(bytesRead =>
                     {
+                        // Only report progress up to 95% during copy to reserve room for move operation
                         long cumulativeBytes = currentFileStart + bytesRead;
-                        int progressValue = (int)Math.Min(cumulativeBytes, int.MaxValue);
-                        System.Diagnostics.Debug.WriteLine($"Progress: {bytesRead} / {fileItem.FileSize} = {progressValue} / {ProgressMaximum}");
+                        double progressRatio = (double)cumulativeBytes / totalBytes;
+                        int progressValue = (int)(progressRatio * 0.95 * ProgressMaximum);
+                        System.Diagnostics.Debug.WriteLine($"Progress: {bytesRead} / {fileItem.FileSize} = {progressValue} / {ProgressMaximum} ({progressRatio * 100:F1}%)");
                         ProgressValue = progressValue;
                     });
 
@@ -678,6 +682,11 @@ public class MainViewModel : ViewModelBase
                     copiedFiles.Add(fileItem);
                     successCount++;
                     bytesCopiedBeforeCurrentFile += fileItem.FileSize;
+                    
+                    // Update progress after file is fully copied and moved
+                    double completedRatio = (double)bytesCopiedBeforeCurrentFile / totalBytes;
+                    ProgressValue = (int)(completedRatio * 0.95 * ProgressMaximum);
+                    System.Diagnostics.Debug.WriteLine($"File complete: {fileItem.Name}, Progress: {ProgressValue} / {ProgressMaximum}");
                 }
                 catch (OperationCanceledException)
                 {
@@ -706,6 +715,10 @@ public class MainViewModel : ViewModelBase
                 }
             }
 
+            // All files copied successfully - set progress to 100%
+            ProgressValue = ProgressMaximum;
+            System.Diagnostics.Debug.WriteLine($"Copy complete: Progress {ProgressValue} / {ProgressMaximum} (100%)");
+
             // Update UI collections to reflect copied files
             foreach (var fileItem in copiedFiles)
             {
@@ -725,8 +738,6 @@ public class MainViewModel : ViewModelBase
                 }
             }
 
-            ProgressValue = 0;
-
             if (successCount > 0)
             {
                 _dialogService.ShowMessage(
@@ -735,6 +746,9 @@ public class MainViewModel : ViewModelBase
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }
+
+            // Reset progress after showing completion message
+            ProgressValue = 0;
 
             // Refresh file lists to show updated state
             await LoadFilesAsync();
