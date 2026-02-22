@@ -87,6 +87,12 @@ public class MainViewModel : ViewModelBase
     private CancellationTokenSource? _cancellationTokenSource;
 
     /// <summary>
+    /// Backing fields for recent folder history.
+    /// </summary>
+    private ObservableCollection<string> _recentSourceFolders = new();
+    private ObservableCollection<string> _recentDestinationFolders = new();
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="MainViewModel"/> class.
     /// </summary>
     /// <param name="fileService">Service for file operations.</param>
@@ -137,6 +143,10 @@ public class MainViewModel : ViewModelBase
         _destinationPath = _settingsService.LastDestinationFolder ?? string.Empty;
         _fontSize = _settingsService.FontSize > 0 ? _settingsService.FontSize : 20;
 
+        // Initialize recent folders lists
+        _recentSourceFolders = new ObservableCollection<string>();
+        _recentDestinationFolders = new ObservableCollection<string>();
+
         // Automatically load files if paths were previously configured
         // This enables the app to show files immediately on startup
         if (!string.IsNullOrEmpty(_sourcePath) || !string.IsNullOrEmpty(_destinationPath))
@@ -150,6 +160,7 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Gets or sets the source path (camera/device folder).
     /// When changed, saves the path to settings and triggers a debounced file load.
+    /// Also adds the path to recent folders history.
     /// </summary>
     public string SourcePath
     {
@@ -159,6 +170,7 @@ public class MainViewModel : ViewModelBase
             if (SetProperty(ref _sourcePath, value))
             {
                 _settingsService.LastSourceFolder = value;
+                AddToRecentSourceFolders(value);
                 DebounceLoadFiles();
             }
         }
@@ -167,6 +179,7 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Gets or sets the destination path (computer folder).
     /// When changed, saves the path to settings and triggers a debounced file load.
+    /// Also adds the path to recent folders history.
     /// </summary>
     public string DestinationPath
     {
@@ -176,10 +189,21 @@ public class MainViewModel : ViewModelBase
             if (SetProperty(ref _destinationPath, value))
             {
                 _settingsService.LastDestinationFolder = value;
+                AddToRecentDestinationFolders(value);
                 DebounceLoadFiles();
             }
         }
     }
+
+    /// <summary>
+    /// Gets the list of recently used source folders for the ComboBox dropdown.
+    /// </summary>
+    public ObservableCollection<string> RecentSourceFolders => _recentSourceFolders;
+
+    /// <summary>
+    /// Gets the list of recently used destination folders for the ComboBox dropdown.
+    /// </summary>
+    public ObservableCollection<string> RecentDestinationFolders => _recentDestinationFolders;
 
     /// <summary>
     /// Gets or sets a value indicating whether files are currently being loaded.
@@ -498,6 +522,68 @@ public class MainViewModel : ViewModelBase
         var path = _dialogService.PickFolder(DestinationPath);
         if (!string.IsNullOrEmpty(path))
             DestinationPath = path;
+    }
+
+    /// <summary>
+    /// Adds a folder to the recent source folders list.
+    /// Keeps only the 10 most recent folders, removes duplicates.
+    /// </summary>
+    private void AddToRecentSourceFolders(string folder)
+    {
+        if (string.IsNullOrEmpty(folder)) return;
+        
+        // Remove if already exists
+        if (_recentSourceFolders.Contains(folder))
+        {
+            _recentSourceFolders.Remove(folder);
+        }
+        
+        // Add to beginning of list
+        _recentSourceFolders.Insert(0, folder);
+        
+        // Keep only 10 most recent
+        while (_recentSourceFolders.Count > 10)
+        {
+            _recentSourceFolders.RemoveAt(_recentSourceFolders.Count - 1);
+        }
+        
+        // Save to in-memory settings
+        if (_settingsService is SettingsService ss)
+        {
+            ss.RecentSourceFolders = _recentSourceFolders.ToList();
+        }
+        OnPropertyChanged(nameof(RecentSourceFolders));
+    }
+
+    /// <summary>
+    /// Adds a folder to the recent destination folders list.
+    /// Keeps only the 10 most recent folders, removes duplicates.
+    /// </summary>
+    private void AddToRecentDestinationFolders(string folder)
+    {
+        if (string.IsNullOrEmpty(folder)) return;
+        
+        // Remove if already exists
+        if (_recentDestinationFolders.Contains(folder))
+        {
+            _recentDestinationFolders.Remove(folder);
+        }
+        
+        // Add to beginning of list
+        _recentDestinationFolders.Insert(0, folder);
+        
+        // Keep only 10 most recent
+        while (_recentDestinationFolders.Count > 10)
+        {
+            _recentDestinationFolders.RemoveAt(_recentDestinationFolders.Count - 1);
+        }
+        
+        // Save to in-memory settings
+        if (_settingsService is SettingsService ds)
+        {
+            ds.RecentDestinationFolders = _recentDestinationFolders.ToList();
+        }
+        OnPropertyChanged(nameof(RecentDestinationFolders));
     }
 
     /// <summary>

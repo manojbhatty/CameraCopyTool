@@ -80,6 +80,10 @@
             <Setter Property="FontFamily" Value="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
             <Setter Property="FontSize" Value="{Binding FontSize, Mode=OneWay}"/>
         </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="FontFamily" Value="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
+            <Setter Property="FontSize" Value="{Binding FontSize, Mode=OneWay}"/>
+        </Style>
         <Style TargetType="Button">
             <Setter Property="FontFamily" Value="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
             <Setter Property="FontSize" Value="{Binding FontSize, Mode=OneWay}"/>
@@ -263,9 +267,18 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <TextBox Grid.Column="0"
-                             Text="{Binding SourcePath, UpdateSourceTrigger=PropertyChanged}"
-                             AutomationProperties.AutomationId="SourcePathTextBox"/>
+                    <ComboBox Grid.Column="0"
+                              ItemsSource="{Binding RecentSourceFolders}"
+                              Text="{Binding SourcePath, UpdateSourceTrigger=PropertyChanged}"
+                              IsEditable="True"
+                              IsTextSearchEnabled="False"
+                              StaysOpenOnEdit="True"
+                              AutomationProperties.AutomationId="SourcePathTextBox"
+                              MaxDropDownHeight="200">
+                        <ComboBox.ToolTip>
+                            <ToolTip Content="Select from recent folders or type a path"/>
+                        </ComboBox.ToolTip>
+                    </ComboBox>
                     <Button Grid.Column="1" Content="Choose Folder…" Margin="5,0,0,0"
                             Command="{Binding BrowseSourceCommand}"/>
                 </Grid>
@@ -439,9 +452,18 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <TextBox Grid.Column="0"
-                             Text="{Binding DestinationPath, UpdateSourceTrigger=PropertyChanged}"
-                             AutomationProperties.AutomationId="DestinationPathTextBox"/>
+                    <ComboBox Grid.Column="0"
+                              ItemsSource="{Binding RecentDestinationFolders}"
+                              Text="{Binding DestinationPath, UpdateSourceTrigger=PropertyChanged}"
+                              IsEditable="True"
+                              IsTextSearchEnabled="False"
+                              StaysOpenOnEdit="True"
+                              AutomationProperties.AutomationId="DestinationPathTextBox"
+                              MaxDropDownHeight="200">
+                        <ComboBox.ToolTip>
+                            <ToolTip Content="Select from recent folders or type a path"/>
+                        </ComboBox.ToolTip>
+                    </ComboBox>
                     <Button Grid.Column="1" Content="Choose Folder…" Margin="5,0,0,0"
                             Command="{Binding BrowseDestinationCommand}"/>
                 </Grid>

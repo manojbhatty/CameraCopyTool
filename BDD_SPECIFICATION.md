@@ -5,7 +5,7 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 2.15.0 |
+| **Version** | 2.18.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
 | **Last Updated** | 2026-02-22 |
@@ -2487,6 +2487,9 @@ The following unit tests have been implemented to verify BDD compliance:
 | 2.12.0 | 2026-02-22 | AI Assistant | **Sort Direction Indicators**: Added visual sort direction indicators (▲/▼ arrows) to column headers. Only the actively sorted column shows the indicator (▲ ascending, ▼ descending, blue #1976D2 color). Other columns do not show indicators for clear sort state. Updated Column Header Sorting specification with Visual Feedback details. Benefits: clear indication of current sort column, users know at a glance which column is sorted and in which direction, improved usability. |
 | 2.13.0 | 2026-02-22 | AI Assistant | **ListView Sorting Unit Tests**: Added comprehensive UI integration tests for ListView sorting functionality. Tests cover: column header click sorting, sort toggle behavior, sort indicators showing only on active column, sorting on all three ListViews. Added ListView_ColumnHeaderClick_SortsAndShowsIndicator, ListView_Sorting_WorksOnAllListViews, ListView_SortIndicator_OnlyShowsOnActiveColumn test methods to MainWindowTests.cs. Updated Unit Test Coverage section with sorting tests documentation. Benefits: automated verification of sorting behavior, regression protection, ensures BDD compliance. |
 | 2.14.0 | 2026-02-22 | AI Assistant | **ListView Header Visual Distinction**: Updated column header styling to be visually distinct from data rows. Headers now have light blue background (#E3F2FD), bold blue text (#1976D2), 2px bottom border (#90CAF9), and hover effects (#BBDEFB background, #64B5F6 border). Added Column Header Styling table to ListView Styling section. Benefits: clear visual hierarchy, headers easily distinguishable from data, improved scanability, professional appearance. |
+| 2.15.0 | 2026-02-22 | AI Assistant | **Recent Folders History**: Added ComboBox dropdowns next to Source and Destination path TextBoxes showing last 10 used folders. Users can click to quickly select recent folders or type custom paths. Recent folders stored in-memory during session. Added RecentSourceFolders and RecentDestinationFolders ObservableCollection properties to MainViewModel. Updated SourcePath and DestinationPath setters to add folders to recent history. Added AddToRecentSourceFolders and AddToRecentDestinationFolders helper methods. Benefits: faster workflow for repeat use, reduces repetitive browsing, better user experience for power users. |
+| 2.16.0 | 2026-02-22 | AI Assistant | **ComboBox Font Size Fix**: Added ComboBox style with FontSize binding to ensure path ComboBoxes respect user's font size setting (14-28px). ComboBox now uses same font family and size as TextBox and Button controls. Benefits: consistent typography across all input controls, proper accessibility support for users with visual impairments. |
+| 2.17.0 | 2026-02-22 | AI Assistant | **Column Resize Functionality**: Added Thumb control to column headers enabling users to drag and resize column widths. Resize grip appears as 2px line on right edge of headers, shows blue line (#64B5F6) on hover and darker blue (#1976D2) while dragging. Sort handler ignores clicks on resize grip to prevent accidental sorting. Benefits: users can customize column widths for better readability, especially for long filenames. |
 
 ---
 

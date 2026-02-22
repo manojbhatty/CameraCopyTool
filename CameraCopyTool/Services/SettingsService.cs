@@ -39,6 +39,26 @@ public class SettingsService : ISettingsService
     }
 
     /// <summary>
+    /// In-memory storage for recent source folders (not persisted across sessions).
+    /// </summary>
+    private System.Collections.Generic.List<string>? _recentSourceFolders;
+    public System.Collections.Generic.List<string>? RecentSourceFolders
+    {
+        get => _recentSourceFolders;
+        set => _recentSourceFolders = value;
+    }
+
+    /// <summary>
+    /// In-memory storage for recent destination folders (not persisted across sessions).
+    /// </summary>
+    private System.Collections.Generic.List<string>? _recentDestinationFolders;
+    public System.Collections.Generic.List<string>? RecentDestinationFolders
+    {
+        get => _recentDestinationFolders;
+        set => _recentDestinationFolders = value;
+    }
+
+    /// <summary>
     /// Saves all pending settings changes to persistent storage.
     /// Should be called when the application closes or when settings are modified.
     /// </summary>
