@@ -61,13 +61,14 @@
         
         <!-- Settings button specific style -->
         <Style x:Key="SettingsButtonStyle" BasedOn="{StaticResource ActionButtonStyle}" TargetType="Button">
-            <Setter Property="Background" Value="#FF9800"/>
+            <Setter Property="Background" Value="#757575"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#F57C00"/>
+                    <Setter Property="Background" Value="#616161"/>
                 </Trigger>
                 <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="#E65100"/>
+                    <Setter Property="Background" Value="#424242"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -294,23 +295,23 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Left side: Help button -->
+                <!-- Left side: Refresh button -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="❓ How to Use"
-                            Command="{Binding ToggleHelpCommand}"
-                            Style="{StaticResource HelpButtonStyle}"
-                            Margin="0,0,10,0"/>
-                </StackPanel>
-
-                <!-- Right side: Refresh and Settings buttons -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Content="🔄 Refresh (F5)"
                             Command="{Binding RefreshCommand}"
                             Style="{StaticResource RefreshButtonStyle}"
                             Margin="0,0,10,0"/>
+                </StackPanel>
+
+                <!-- Right side: Settings and Help buttons -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Content="⚙️ Settings"
                             Command="{Binding OpenSettingsCommand}"
-                            Style="{StaticResource SettingsButtonStyle}"/>
+                            Style="{StaticResource SettingsButtonStyle}"
+                            Margin="0,0,10,0"/>
+                    <Button Content="❓ How to Use"
+                            Command="{Binding ToggleHelpCommand}"
+                            Style="{StaticResource HelpButtonStyle}"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -344,17 +345,17 @@
                     <StackPanel Grid.Column="0">
                         <TextBlock FontWeight="Bold" 
                                    FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
-                                   Margin="0,0,0,5">📋 To Copy Photos:</TextBlock>
-                        <TextBlock Text="1. Select your camera folder using &quot;Choose Folder…&quot;"
+                                   Margin="0,0,0,5">📋 To Copy Videos:</TextBlock>
+                        <TextBlock Text="1. Select your camera folder using 'Select Folder…'"
                                    FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
                                    Margin="0,2"/>
-                        <TextBlock Text="2. Select your computer folder using &quot;Choose Folder…&quot;"
+                        <TextBlock Text="2. Select your computer folder using 'Select Folder…'"
                                    FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
                                    Margin="0,2"/>
                         <TextBlock Text="3. Select the photos you want to copy (click on them)"
                                    FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
                                    Margin="0,2"/>
-                        <TextBlock Text="4. Click the big green &quot;Copy Photos&quot; button"
+                        <TextBlock Text="4. Click the big green 'Copy' button"
                                    FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
                                    Margin="0,2"/>
                     </StackPanel>
@@ -471,7 +472,28 @@
                         </ComboBox.ToolTip>
                     </ComboBox>
                     <Button Grid.Column="1" Content="📁 Select Folder…" Margin="5,0,0,0"
-                            Command="{Binding BrowseSourceCommand}"/>
+                            Command="{Binding BrowseSourceCommand}"
+                            Background="#E0E0E0"
+                            Foreground="#424242"
+                            FontSize="12"
+                            Padding="8,4"
+                            BorderThickness="1"
+                            BorderBrush="#BDBDBD">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Cursor" Value="Hand"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#BDBDBD"/>
+                                        <Setter Property="BorderBrush" Value="#9E9E9E"/>
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter Property="Background" Value="#9E9E9E"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                 </Grid>
 
                 <!-- Already Copied (Collapsible) -->
@@ -656,7 +678,28 @@
                         </ComboBox.ToolTip>
                     </ComboBox>
                     <Button Grid.Column="1" Content="📁 Select Folder…" Margin="5,0,0,0"
-                            Command="{Binding BrowseDestinationCommand}"/>
+                            Command="{Binding BrowseDestinationCommand}"
+                            Background="#E0E0E0"
+                            Foreground="#424242"
+                            FontSize="12"
+                            Padding="8,4"
+                            BorderThickness="1"
+                            BorderBrush="#BDBDBD">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Cursor" Value="Hand"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#BDBDBD"/>
+                                        <Setter Property="BorderBrush" Value="#9E9E9E"/>
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter Property="Background" Value="#9E9E9E"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                 </Grid>
 
                 <GroupBox Header="{Binding DestinationFilesHeader}"

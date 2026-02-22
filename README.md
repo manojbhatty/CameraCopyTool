@@ -6,8 +6,8 @@ A Windows desktop application that simplifies copying photos and videos from a c
 
 ### Copying Files
 
-1. **Select your camera folder** using the "Choose Folder…" button next to the source path
-2. **Select your computer folder** using the "Choose Folder…" button next to the destination path
+1. **Select your camera folder** using the "Select Folder…" button next to the source path
+2. **Select your computer folder** using the "Select Folder…" button next to the destination path
 3. **Select the files you want to copy** by clicking on them in the "🆕 New Videos to Copy" list
    - Use `Ctrl+Click` to select multiple individual files
    - Use `Shift+Click` to select a range of files

@@ -5,7 +5,7 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 2.18.0 |
+| **Version** | 2.24.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
 | **Last Updated** | 2026-02-22 |
@@ -120,7 +120,7 @@ The primary purpose of CameraCopyTool is to provide a user-friendly interface fo
 | High contrast | Green (#4CAF50) for "already copied", blue (#1976D2) for selected |
 | Clear selection | Bold white text on blue background when selected |
 | Obvious hover | Light blue highlight when mouse is over items |
-| Simple language | "Copy Photos" not "Execute Transfer", "Choose Folder" not "Browse" |
+| Simple language | "Copy" not "Execute Transfer", "Select Folder…" not "Browse" |
 | Reassurance | Clear success messages: "✓ Copied 15 photos successfully!" |
 | Large buttons | Minimum 50px height, bold text, high-contrast colors |
 | Visible borders | 1px borders between list items, dark button borders |
@@ -218,11 +218,11 @@ Scenario: Help panel displays instructions
     **Left Column - Copy Instructions:**
     | Element | Content |
     |---------|---------|
-    | Header | "📋 To Copy Photos:" |
-    | Step 1 | "1. Select your camera folder using 'Choose Folder…'" |
-    | Step 2 | "2. Select your computer folder using 'Choose Folder…'" |
-    | Step 3 | "3. Select the photos you want to copy (click on them)" |
-    | Step 4 | "4. Click the big green 'Copy Photos' button" |
+    | Header | "📋 To Copy Videos:" |
+    | Step 1 | "1. Select your camera folder using 'Select Folder…'" |
+    | Step 2 | "2. Select your computer folder using 'Select Folder…'" |
+    | Step 3 | "3. Select the videos you want to copy (click on them)" |
+    | Step 4 | "4. Click the big green 'Copy' button" |
     
     **Right Column - Delete Instructions:**
     | Element | Content |
@@ -301,8 +301,8 @@ Scenario: Action button bar layout
     | Height | 50 pixels |
     | Background | Light gray (#F5F5F5) |
     | Border | Bottom: 1px #E0E0E0 |
-    | Help Button Position | Left side |
-    | Refresh/Settings Position | Right side |
+    | Refresh Button Position | Left side |
+    | Help/Settings Position | Right side |
 
 Scenario: Action button bar is always visible
   Given the application is in any state
@@ -326,7 +326,7 @@ Scenario: Action button bar is always visible
 ```gherkin
 Scenario: User selects a valid source folder
   Given the application is open
-  When the user clicks the "Choose Folder…" button next to the source path
+  When the user clicks the "Select Folder…" button next to the source path
   And selects a valid folder from the dialog
   Then the source path textbox should display the selected folder path
   And the file lists should refresh to show files from that folder
@@ -356,7 +356,7 @@ Scenario: User enters source path manually
 ```gherkin
 Scenario: User selects a valid destination folder
   Given the application is open
-  When the user clicks the "Choose Folder…" button next to the destination path
+  When the user clicks the "Select Folder…" button next to the destination path
   And selects a valid folder from the dialog
   Then the destination path textbox should display the selected folder path
   And the file lists should refresh to show files from that folder
@@ -1221,6 +1221,15 @@ block-beta
 | **Command** | `BrowseSourceCommand` |
 | **Position** | Right of Source Path ComboBox |
 | **Action** | Opens folder picker dialog |
+| **Background** | #E0E0E0 (light gray, subdued) |
+| **Foreground** | #424242 (dark gray) |
+| **Font Size** | 12px (smaller than action buttons) |
+| **Padding** | 8,4 pixels |
+| **Border** | 1px #BDBDBD (light gray border) |
+| **Hover Background** | #BDBDBD (medium gray) |
+| **Hover Border** | #9E9E9E (darker gray) |
+| **Pressed Background** | #9E9E9E (medium-dark gray) |
+| **Design Rationale** | Subdued styling since folder selection is infrequent after initial setup; less visually distracting than primary action buttons |
 
 #### Action Button Bar
 | Property | Value |
@@ -1273,14 +1282,15 @@ block-beta
 | **Style** | `SettingsButtonStyle` (Based on `ActionButtonStyle`) |
 | **Font Family** | System message font |
 | **Font Size** | Bound to `FontSize` property (same as user setting) |
-| **Background** | #FF9800 (orange) |
-| **Hover Background** | #F57C00 (darker orange) |
-| **Pressed Background** | #E65100 (deep orange) |
+| **Background** | #757575 (subdued gray) |
+| **Hover Background** | #616161 (darker gray) |
+| **Pressed Background** | #424242 (deep gray) |
 | **Foreground** | #FFFFFF (white) |
 | **Font Weight** | Bold |
 | **Padding** | 15,8 pixels |
 | **Min Width** | 120 pixels |
 | **Min Height** | 35 pixels |
+| **Design Rationale** | Subdued gray styling to be less visually distracting; Settings is a secondary action compared to primary actions like Refresh and Copy |
 
 #### Help Panel
 | Property | Value |
@@ -1308,12 +1318,17 @@ block-beta
 #### Help Panel Instructions
 | Element | Content | Font Size |
 |---------|---------|-----------|
-| Step 1 | "Select your camera folder using 'Choose Folder…'" | 14px |
-| Step 2 | "Select your computer folder using 'Choose Folder…'" | 14px |
-| Step 3 | "Select the photos you want to copy (click on them)" | 14px |
-| Step 4 | "Click the big green 'Copy Photos' button" | 14px |
-| Legend 1 | "✓ Photos already copied are shown in GREEN" | 14px, Bold, #2E7D32 |
-| Legend 2 | "✓ New photos ready to copy are shown in BLUE" | 14px, Bold, #1565C0 |
+| Header | "📋 To Copy Videos:" | 14px, Bold |
+| Step 1 | "1. Select your camera folder using 'Select Folder…'" | 14px |
+| Step 2 | "2. Select your computer folder using 'Select Folder…'" | 14px |
+| Step 3 | "3. Select the videos you want to copy (click on them)" | 14px |
+| Step 4 | "4. Click the big green 'Copy' button" | 14px |
+| Header | "🗑️ To Delete Files:" | 14px, Bold |
+| Step 1 | "1. Select file(s) to delete in any list" | 14px |
+| Step 2 | "2. Press Delete key or right-click → Delete" | 14px |
+| Step 3 | "3. Confirm (⚠️ This is permanent!)" | 14px |
+| Legend 1 | "✓ Already copied = GREEN" | 14px, Bold, #2E7D32 |
+| Legend 2 | "✓ New files = BLUE" | 14px, Bold, #1565C0 |
 
 #### Destination Path ComboBox
 - **AutomationId**: `DestinationPathTextBox`
@@ -1329,6 +1344,15 @@ block-beta
 | **Command** | `BrowseDestinationCommand` |
 | **Position** | Right of Destination Path ComboBox |
 | **Action** | Opens folder picker dialog |
+| **Background** | #E0E0E0 (light gray, subdued) |
+| **Foreground** | #424242 (dark gray) |
+| **Font Size** | 12px (smaller than action buttons) |
+| **Padding** | 8,4 pixels |
+| **Border** | 1px #BDBDBD (light gray border) |
+| **Hover Background** | #BDBDBD (medium gray) |
+| **Hover Border** | #9E9E9E (darker gray) |
+| **Pressed Background** | #9E9E9E (medium-dark gray) |
+| **Design Rationale** | Subdued styling since folder selection is infrequent after initial setup; less visually distracting than primary action buttons |
 
 #### Copy Button
 - **AutomationId**: `CopyButton`
@@ -2723,9 +2747,9 @@ The following unit tests have been implemented to verify BDD compliance:
 
 ### Functional Tests
 
-- [x] Source folder selection via Choose Folder… button
+- [x] Source folder selection via Select Folder… button
 - [x] Source folder selection via manual path entry
-- [x] Destination folder selection via Choose Folder… button
+- [x] Destination folder selection via Select Folder… button
 - [x] Destination folder selection via manual path entry
 - [x] Path persistence across application restart
 - [x] Automatic file loading on startup with saved paths
@@ -2867,6 +2891,12 @@ The following unit tests have been implemented to verify BDD compliance:
 | 2.16.0 | 2026-02-22 | AI Assistant | **ComboBox Font Size Fix**: Added ComboBox style with FontSize binding to ensure path ComboBoxes respect user's font size setting (14-28px). ComboBox now uses same font family and size as TextBox and Button controls. Benefits: consistent typography across all input controls, proper accessibility support for users with visual impairments. |
 | 2.17.0 | 2026-02-22 | AI Assistant | **Column Resize Functionality**: Added Thumb control to column headers enabling users to drag and resize column widths. Resize grip appears as 2px line on right edge of headers, shows blue line (#64B5F6) on hover and darker blue (#1976D2) while dragging. Sort handler ignores clicks on resize grip to prevent accidental sorting. Benefits: users can customize column widths for better readability, especially for long filenames. |
 | 2.18.0 | 2026-02-22 | AI Assistant | **Help Panel Two-Column Layout with Delete Instructions**: Updated help panel to display instructions in two-column layout (Copy on left, Delete on right). Added delete instructions: "1. Select file(s) to delete in any list", "2. Press Delete key or right-click → Delete", "3. Confirm (⚠️ This is permanent!)". Removed internal header ("How to Copy Your Photos") and toggle button from inside help panel. Increased panel height from 180px to 220px. Updated color legend to simplified format ("Already copied = GREEN", "New files = BLUE"). All font sizes now dynamic (bind to Window.FontSize). Updated User Story 0.2 acceptance criteria, visual styling specs, and animation scenarios. Benefits: more compact layout, delete functionality documented, better use of vertical space, consistent font scaling with settings. |
+| 2.19.0 | 2026-02-22 | AI Assistant | **Help Panel Text Consistency**: Updated help panel text to match actual UI button labels. Changed "Choose Folder…" to "Select Folder…" in help panel instructions. Changed "Click the big green 'Copy Photos' button" to "Click the big green 'Copy' button". Updated color legend text to match implementation. Updated BDD User Stories, Help Panel Instructions table, persona design implications, and functional tests checklist to reflect actual UI text. Updated README.md with consistent terminology. Benefits: documentation matches actual application, reduces user confusion, consistent terminology across all documentation. |
+| 2.20.0 | 2026-02-22 | AI Assistant | **Action Button Bar Layout Swap**: Swapped positions of Refresh and Help buttons in action button bar. Refresh button now on left side, Help and Settings buttons on right side. Updated BDD User Story 0.3 acceptance criteria to reflect new button positions. Benefits: Refresh button more accessible as primary action, logical grouping of help/settings together. |
+| 2.21.0 | 2026-02-22 | AI Assistant | **Settings and Help Button Order**: Swapped order of Settings and How to Use buttons on right side of action bar. Settings button now appears first (left), How to Use button second (right). Benefits: Settings positioned closer to edge follows common UI patterns, visual hierarchy improved. |
+| 2.22.0 | 2026-02-22 | AI Assistant | **Select Folder Button Styling**: Changed Select Folder buttons from default blue action button style to subdued gray styling (#E0E0E0 background, #424242 text, 12px font). Added hover/pressed states with darker grays. Reduced padding to 8,4. Added design rationale: folder selection is infrequent after initial setup, so buttons should be less visually distracting. Updated Browse Source and Browse Destination button specifications in BDD. Benefits: reduced visual clutter, primary action buttons (Copy, Refresh) stand out more, better visual hierarchy. |
+| 2.23.0 | 2026-02-22 | AI Assistant | **Help Panel Text Update**: Changed "To Copy Photos" to "To Copy Videos" and "Select the photos" to "Select the videos" in help panel instructions to accurately reflect application functionality (video file copying). Updated BDD User Story 0.2 and Help Panel Instructions table. Benefits: documentation accuracy, reduces user confusion about supported file types. |
+| 2.24.0 | 2026-02-22 | AI Assistant | **Settings Button Styling**: Changed Settings button from bright orange (#FF9800) to subdued gray (#757575) with darker hover (#616161) and pressed (#424242) states. Added design rationale: Settings is a secondary action, should be less visually distracting than primary actions like Refresh and Copy. Updated BDD Settings Button specification. Benefits: reduced visual clutter, better visual hierarchy, primary action buttons stand out more. |
 
 ---
 
