@@ -400,7 +400,7 @@ Scenario: Application starts with empty paths (first run)
 Scenario: New files are displayed correctly
   Given valid source and destination folders are selected
   When files exist in the source that don't exist in the destination
-  Then those files should appear in the "New files" section
+  Then those files should appear in the "🆕 New Videos to Copy" section
   And each file should display:
 
     | Field         | Format                     |
@@ -408,7 +408,7 @@ Scenario: New files are displayed correctly
     | Name          | Full filename with extension |
     | Modified Date | `yyyy-MM-dd hh:mm tt` (12-hour format with AM/PM) |
 
-  And the section header should display: "New files (count)" where count is the number of new files
+  And the section header should display: "🆕 New Videos to Copy (count)" where count is the number of new files
 
 Scenario: File comparison logic
   Given a file exists in both source and destination
@@ -432,7 +432,7 @@ Scenario: File comparison logic
 Scenario: Already copied files are displayed
   Given files in the source also exist in the destination
   When the file lists are loaded
-  Then those files should appear in the "Already copied files" section
+  Then those files should appear in the "✅ Already Copied Videos" section
   And each file should display:
 
     | Field         | Format                     |
@@ -440,7 +440,7 @@ Scenario: Already copied files are displayed
     | Name          | Full filename with extension |
     | Modified Date | `yyyy-MM-dd hh:mm tt` (12-hour format with AM/PM) |
 
-  And the section header should display: "Already copied files (count)" where count is the number of already copied files
+  And the section header should display: "✅ Already Copied Videos (count)" where count is the number of already copied files
 
 Scenario: Already copied files are visually distinguished
   Given a file is marked as already copied
@@ -471,7 +471,7 @@ Scenario: Already copied section is collapsible
 ```gherkin
 Scenario: Destination files are displayed
   When the file lists are loaded
-  Then all files in the destination folder should appear in the "Files in destination" section
+  Then all files in the destination folder should appear in the "💻 Videos on Your Computer" section
   And each file should display:
 
     | Field         | Format                                  |
@@ -479,7 +479,7 @@ Scenario: Destination files are displayed
     | Name          | Filename with ✅ prefix if also in source |
     | Modified Date | `yyyy-MM-dd hh:mm tt` (12-hour format with AM/PM) |
 
-  And the section header should display: "Files in computer (count)" where count is the total number of files in the destination folder
+  And the section header should display: "💻 Videos on Your Computer (count)" where count is the total number of files in the destination folder
 ```
 
 #### User Story 2.4: File List Refresh
@@ -715,7 +715,7 @@ Scenario: Delete multiple files
   And all selected files should be deleted when confirmed
 
 Scenario: Delete from Destination list
-  Given one or more files are selected in "Files in destination"
+  Given one or more files are selected in "💻 Videos on Your Computer"
   When the user presses the Delete key
   Or selects Delete from the context menu
   Then a custom confirmation dialog should appear (matching application styling)
@@ -761,7 +761,7 @@ Scenario: Delete from Already Copied list
   And the lists should refresh
 
 Scenario: Delete from Destination list
-  Given files are selected in "Files in destination"
+  Given files are selected in "💻 Videos on Your Computer"
   When the user initiates delete
   Then those files should be deleted from the destination folder
   And the lists should refresh
@@ -1078,10 +1078,10 @@ The main window uses a three-column layout with source panel on the left, copy c
 **Source Panel Grid Rows:**
 | Row | Height | Content |
 |-----|--------|---------|
-| 0 | Auto | "Source - Camera" title |
-| 1 | Auto | Source path TextBox and "Choose Folder…" button |
-| 2 | Auto | "Already Copied Files" Expander (collapsible) |
-| 3 | * (star) | "New Files" ListView (expands to fill remaining space) |
+| 0 | Auto | "📷 Your Camera Videos" title |
+| 1 | Auto | Source path ComboBox and "📁 Select Folder…" button |
+| 2 | Auto | "✅ Already Copied Videos" Expander (collapsible) |
+| 3 | * (star) | "🆕 New Videos to Copy" ListView (expands to fill remaining space) |
 
 **Note**: Row 2 (Already Copied) uses `Auto` height so when the Expander collapses, the section shrinks and Row 3 (New Files) expands to fill the available vertical space.
 
@@ -1116,16 +1116,16 @@ block-beta
         columns 3
         block:SourcePanel["Source Panel"]
             columns 1
-            SourceTitle["SOURCE - CAMERA"]
-            SourcePath["[Source Path TextBox] [Choose Folder…]"]
-            block:AlreadyCopied["Already Copied Files (Collapsible Expander - Starts Collapsed)"]
+            SourceTitle["📷 Your Camera Videos"]
+            SourcePath["[Source Path ComboBox] [📁 Select Folder…]"]
+            block:AlreadyCopied["✅ Already Copied Videos (Collapsible Expander - Starts Collapsed)"]
                 columns 1
-                ACHeader["▶ Already copied files (X) (Click to Expand)"]
+                ACHeader["▶ ✅ Already Copied Videos (X) (Click to Expand)"]
                 ACList["File Name | Modified Date"]
             end
-            block:NewFiles["New Files (Expands when Already Copied is Collapsed)"]
+            block:NewFiles["🆕 New Videos to Copy (Expands when Already Copied is Collapsed)"]
                 columns 1
-                NFHeader["New files (X)"]
+                NFHeader["🆕 New Videos to Copy (X)"]
                 NFList["File Name | Modified Date"]
             end
         end
@@ -1136,11 +1136,11 @@ block-beta
         end
         block:DestPanel["Destination Panel"]
             columns 1
-            DestTitle["DESTINATION - COMPUTER"]
-            DestPath["[Destination Path TextBox] [Choose Folder…]"]
-            block:DestFiles["Files in Destination"]
+            DestTitle["💻 Your Computer Videos"]
+            DestPath["[Destination Path ComboBox] [📁 Select Folder…]"]
+            block:DestFiles["Videos on Your Computer"]
                 columns 1
-                DFHeader["Files in computer (X)"]
+                DFHeader["💻 Videos on Your Computer (X)"]
                 DFList["File Name | Modified Date"]
             end
         end
@@ -1160,11 +1160,20 @@ block-beta
 
 ### Control Specifications
 
-#### Source Path TextBox
+#### Source Path ComboBox
 - **AutomationId**: `SourcePathTextBox`
 - **Binding**: Two-way to `SourcePath` property
 - **Height**: 28 pixels
 - **Behavior**: Triggers file load on text change (debounced 300ms)
+- **Features**: Displays recent folders dropdown, editable text field
+
+#### Browse Source Button
+| Property | Value |
+|----------|-------|
+| **Content** | "📁 Select Folder…" |
+| **Command** | `BrowseSourceCommand` |
+| **Position** | Right of Source Path ComboBox |
+| **Action** | Opens folder picker dialog |
 
 #### Action Button Bar
 | Property | Value |
@@ -1259,11 +1268,20 @@ block-beta
 | Legend 1 | "✓ Photos already copied are shown in GREEN" | 14px, Bold, #2E7D32 |
 | Legend 2 | "✓ New photos ready to copy are shown in BLUE" | 14px, Bold, #1565C0 |
 
-#### Destination Path TextBox
+#### Destination Path ComboBox
 - **AutomationId**: `DestinationPathTextBox`
 - **Binding**: Two-way to `DestinationPath` property
 - **Height**: 28 pixels
 - **Behavior**: Triggers file load on text change (debounced 300ms)
+- **Features**: Displays recent folders dropdown, editable text field
+
+#### Browse Destination Button
+| Property | Value |
+|----------|-------|
+| **Content** | "📁 Select Folder…" |
+| **Command** | `BrowseDestinationCommand` |
+| **Position** | Right of Destination Path ComboBox |
+| **Action** | Opens folder picker dialog |
 
 #### Copy Button
 - **AutomationId**: `CopyButton`
@@ -1340,9 +1358,9 @@ block-beta
 #### ListViews
 | ListView | AutomationId | ItemsSource | SelectionMode | Container |
 |----------|--------------|-------------|---------------|-----------|
-| Already Copied | `AlreadyCopiedListView` | `AlreadyCopiedFiles` | Extended | Expander (collapsible, starts collapsed) |
-| New Files | `NewFilesListView` | `NewFiles` | Extended | GroupBox |
-| Destination | `DestinationFilesListView` | `DestinationFiles` | Extended | GroupBox |
+| ✅ Already Copied Videos | `AlreadyCopiedListView` | `AlreadyCopiedFiles` | Extended | Expander (collapsible, starts collapsed) |
+| 🆕 New Videos to Copy | `NewFilesListView` | `NewFiles` | Extended | GroupBox |
+| 💻 Videos on Your Computer | `DestinationFilesListView` | `DestinationFiles` | Extended | GroupBox |
 
 **Note**: AutomationIds are set on the ListView elements for screen reader accessibility.
 
@@ -1350,9 +1368,9 @@ block-beta
 - **Extended Selection**: Users can select multiple files using Ctrl+Click or Shift+Click
 - **Toggle Selection**: Clicking an already selected row will deselect it (toggle behavior)
 - **Multi-select Support**: Ctrl+Click toggles individual items, Shift+Click selects ranges
-- **Selection Applies To**: All three ListViews (Already Copied, New Files, Destination)
+- **Selection Applies To**: All three ListViews (✅ Already Copied Videos, 🆕 New Videos to Copy, 💻 Videos on Your Computer)
 
-#### Already Copied Expander Control
+#### ✅ Already Copied Videos Expander Control
 | Property | Value |
 |----------|-------|
 | **Control Type** | `Expander` |
@@ -1360,11 +1378,11 @@ block-beta
 | **Header Binding** | `{Binding AlreadyCopiedFilesHeader}` |
 | **Header Style** | Bold text, clickable |
 | **Expand Direction** | Down (expands downward) |
-| **Layout Behavior** | When collapsed, "New Files" section expands to fill available space (uses `*` row height) |
+| **Layout Behavior** | When collapsed, "🆕 New Videos to Copy" section expands to fill available space (uses `*` row height) |
 | **Visual Styling** | Light green background (#E8F5E9), green border (#81C784), rounded corners (4px) |
 | **Color Rationale** | Green indicates "done", "complete", "safe" - files already backed up |
 
-#### New Files GroupBox Control
+#### 🆕 New Videos to Copy GroupBox Control
 | Property | Value |
 |----------|-------|
 | **Control Type** | `GroupBox` (wrapped in Border for styling) |
@@ -1375,7 +1393,7 @@ block-beta
 | **Layout Behavior** | Uses `*` (star) row height to expand and fill available vertical space |
 
 #### Section Visual Distinction
-| Feature | Already Copied | New Files |
+| Feature | ✅ Already Copied Videos | 🆕 New Videos to Copy |
 |---------|---------------|-----------|
 | **Background Color** | #E8F5E9 (light green) | #E3F2FD (light blue) |
 | **Border Color** | #81C784 (green) | #64B5F6 (blue) |

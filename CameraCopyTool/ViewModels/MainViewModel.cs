@@ -383,19 +383,19 @@ public class MainViewModel : ViewModelBase
     /// Gets the formatted header text for the Already Copied Files group.
     /// Format: "Already copied files (count)"
     /// </summary>
-    public string AlreadyCopiedFilesHeader => $"Already copied files ({AlreadyCopiedFiles.Count})";
+    public string AlreadyCopiedFilesHeader => $"✅ Already Copied Videos ({AlreadyCopiedFiles.Count})";
 
     /// <summary>
     /// Gets the formatted header text for the New Files group.
-    /// Format: "New files (count)"
+    /// Format: "🆕 New Videos to Copy (count)"
     /// </summary>
-    public string NewFilesHeader => $"New files ({NewFiles.Count})";
+    public string NewFilesHeader => $"🆕 New Videos to Copy ({NewFiles.Count})";
 
     /// <summary>
     /// Gets the formatted header text for the Destination Files group.
-    /// Format: "Files in computer (count)"
+    /// Format: "💻 Videos on Your Computer (count)"
     /// </summary>
-    public string DestinationFilesHeader => $"Files in computer ({DestinationFiles.Count})";
+    public string DestinationFilesHeader => $"💻 Videos on Your Computer ({DestinationFiles.Count})";
 
     /// <summary>
     /// Gets or sets a value indicating whether the help panel is visible.
