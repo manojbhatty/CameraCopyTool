@@ -129,8 +129,40 @@
             </MenuItem>
         </Menu>
 
+        <!-- STATUS BAR (bottom layer) -->
+        <StatusBar VerticalAlignment="Bottom" Height="30" Panel.ZIndex="100"
+                   Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+            <StatusBarItem Grid.Column="0" Padding="10,5">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding StatusBarIcon}" FontSize="14" Margin="0,0,8,0"/>
+                    <TextBlock Text="{Binding StatusBarText}" FontSize="13" FontWeight="Medium"/>
+                </StackPanel>
+            </StatusBarItem>
+            <Separator Grid.Column="1" Width="1" Margin="5,5"/>
+            <StatusBarItem Grid.Column="2" Padding="10,5">
+                <TextBlock Text="{Binding SourceFileCountText}" FontSize="13"/>
+            </StatusBarItem>
+            <Separator Grid.Column="3" Width="1" Margin="5,5"/>
+            <StatusBarItem Grid.Column="4" Padding="10,5">
+                <TextBlock Text="{Binding NewFileCountText}" FontSize="13" FontWeight="Bold" Foreground="#1976D2"/>
+            </StatusBarItem>
+        </StatusBar>
+
         <!-- MAIN CONTENT GRID (with visual separators) -->
-        <Grid Margin="20,50,20,20">
+        <Grid Margin="20,50,20,50">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="120" />

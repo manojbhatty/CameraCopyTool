@@ -5,7 +5,7 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 2.10.0 |
+| **Version** | 2.11.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
 | **Last Updated** | 2026-02-22 |
@@ -835,6 +835,53 @@ Scenario: Loading completes
 
 ---
 
+### Feature 9: Status Bar
+
+#### User Story 9.1: Status Bar Display
+
+**As a** user
+**I want to** see application status at all times
+**So that** I have situational awareness of the application state
+
+**Acceptance Criteria:**
+
+```gherkin
+Scenario: Status bar is always visible
+  Given the application is open
+  When viewing the window
+  Then a status bar should be visible at the bottom of the window
+  With height of 30 pixels
+  And light gray background (#F5F5F5)
+  And top border (#E0E0E0) for separation
+
+Scenario: Status bar shows current state icon and text
+  Given the application is in different states
+  When viewing the status bar
+  Then it should display:
+    | State     | Icon | Text                |
+    |-----------|------|---------------------|
+    | Ready     | ✓    | "Ready"             |
+    | Loading   | ⏳    | "Loading files..."  |
+    | Copying   | 📋   | "Copying files..."  |
+    | No Source | 📁   | "Select source folder" |
+
+Scenario: Status bar shows file counts
+  Given files are loaded
+  When viewing the status bar
+  Then it should display:
+    - Total files in source (e.g., "150 files in source")
+    - New file count in blue (e.g., "45 new files")
+  And new file count should use bold blue text (#1976D2)
+
+Scenario: Status bar updates during operations
+  Given a copy operation is in progress
+  When viewing the status bar
+  Then it should show the copying icon and text
+  And update in real-time as the operation progresses
+```
+
+---
+
 ## User Interface Specifications
 
 ### Main Window Layout
@@ -974,6 +1021,36 @@ block-beta
   - **After Completion**: Progress resets to 0 after success message is shown
 - **Purpose**: Provides clear visual feedback during copy operations, reduces user anxiety during long transfers
 - **Accuracy**: Progress bar only reaches 100% when transfer is fully complete (not during intermediate copy operations)
+
+#### Status Bar
+| Property | Value |
+|----------|-------|
+| **Position** | Bottom of window (VerticalAlignment: Bottom) |
+| **Height** | 30 pixels |
+| **Background** | #F5F5F5 (light gray) |
+| **Border** | Top: 1px #E0E0E0 (light gray) |
+| **ZIndex** | 100 (top layer) |
+
+**Status Bar Sections:**
+| Section | Content | Binding | Styling |
+|---------|---------|---------|---------|
+| **Status (Left)** | Icon + Text | `StatusBarIcon`, `StatusBarText` | Icon: 14px, Text: 13px Medium |
+| **Source Count** | Total files in source | `SourceFileCountText` | 13px |
+| **New Count** | New file count | `NewFileCountText` | 13px Bold, #1976D2 Blue |
+
+**Status States:**
+| State | Icon | Text | Trigger |
+|-------|------|------|---------|
+| **Ready** | ✓ | "Ready" | Default state |
+| **Loading** | ⏳ | "Loading files..." | IsLoading = True |
+| **Copying** | 📋 | "Copying files..." | IsCopying = True |
+| **No Source** | 📁 | "Select source folder" | SourcePath is empty |
+
+**Benefits:**
+- Always-visible status information improves situational awareness
+- Color-coded new file count (blue) draws attention to actionable items
+- Professional appearance with standardized status bar pattern
+- Icons provide quick visual state recognition
 
 #### ListViews
 | ListView | AutomationId | ItemsSource | SelectionMode | Container |
@@ -2372,6 +2449,7 @@ The following unit tests have been implemented to verify BDD compliance:
 | 2.7.0 | 2026-02-22 | AI Assistant | **Progress Bar Accuracy Fix**: Fixed progress bar reaching 100% prematurely before file transfer completion. Progress now capped at 95% during copy operations to reserve room for file move operations. Progress bar only shows 100% when ALL files are fully copied AND moved. Progress resets to 0 after success message is displayed (not before). Updated Progress Bar specification with Progress Behavior section documenting accurate progress reporting. Benefits: accurate progress feedback, users can trust 100% indicator means transfer is truly complete, reduces confusion during multi-file transfers. |
 | 2.8.0 | 2026-02-22 | AI Assistant | **ListView Toggle Selection**: Added toggle selection behavior to all three ListViews. Clicking an already selected row now deselects it (toggle behavior). Extended selection mode still supports Ctrl+Click for individual toggles and Shift+Click for range selection. Updated ListView specification with Selection Behavior section documenting toggle, extended, and multi-select support. Benefits: more intuitive selection management, easier to correct accidental selections, consistent with modern UI patterns. |
 | 2.9.0 | 2026-02-22 | AI Assistant | **Color-Coded Section Distinction**: Added distinct color-coded backgrounds to Already Copied and New Files sections for clear visual distinction. Already Copied uses light green background (#E8F5E9) with green border (#81C784) indicating "done/complete/safe". New Files uses light blue background (#E3F2FD) with blue border (#64B5F6) indicating "new/pending/action needed". Both sections have rounded corners (4px) and 1px borders. Added New Files GroupBox Control specification table. Added Section Visual Distinction comparison table. Updated Already Copied Expander Control specification with Visual Styling and Color Rationale properties. Benefits: immediate visual distinction between sections, reduced cognitive load, improved scanability for users with visual or cognitive impairments, semantic color coding (green=done, blue=pending). |
+| 2.10.0 | 2026-02-22 | AI Assistant | **Status Bar Implementation**: Added dedicated status bar at bottom of window (30px height, light gray background #F5F5F5). Displays: current state with icon (Ready ✓, Loading ⏳, Copying 📋, No Source 📁), total source file count, and new file count in blue. Status bar uses ZIndex 100 to stay on top. Added Feature 9: Status Bar with User Story 9.1 and acceptance criteria. Added Status Bar specification table with sections, states, and bindings. Added StatusBarIcon, StatusBarText, SourceFileCountText, NewFileCountText properties to MainViewModel. Benefits: always-visible status information, better situational awareness, professional appearance, color-coded new file count draws attention to actionable items. |
 
 ---
 

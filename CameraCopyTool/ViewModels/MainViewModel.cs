@@ -106,10 +106,22 @@ public class MainViewModel : ViewModelBase
         NewFiles = new ObservableCollection<FileItem>();
         DestinationFiles = new ObservableCollection<FileItem>();
 
-        // Subscribe to collection changes to update header counts
-        AlreadyCopiedFiles.CollectionChanged += (s, e) => OnPropertyChanged(nameof(AlreadyCopiedFilesHeader));
-        NewFiles.CollectionChanged += (s, e) => OnPropertyChanged(nameof(NewFilesHeader));
-        DestinationFiles.CollectionChanged += (s, e) => OnPropertyChanged(nameof(DestinationFilesHeader));
+        // Subscribe to collection changes to update header counts and status bar
+        AlreadyCopiedFiles.CollectionChanged += (s, e) =>
+        {
+            OnPropertyChanged(nameof(AlreadyCopiedFilesHeader));
+            OnPropertyChanged(nameof(SourceFileCountText));
+        };
+        NewFiles.CollectionChanged += (s, e) =>
+        {
+            OnPropertyChanged(nameof(NewFilesHeader));
+            OnPropertyChanged(nameof(SourceFileCountText));
+            OnPropertyChanged(nameof(NewFileCountText));
+        };
+        DestinationFiles.CollectionChanged += (s, e) =>
+        {
+            OnPropertyChanged(nameof(DestinationFilesHeader));
+        };
 
         // Initialize commands that bind to UI elements (buttons, menu items, key bindings)
         BrowseSourceCommand = new RelayCommand(_ => BrowseSource());
@@ -176,7 +188,14 @@ public class MainViewModel : ViewModelBase
     public bool IsLoading
     {
         get => _isLoading;
-        set => SetProperty(ref _isLoading, value);
+        set
+        {
+            if (SetProperty(ref _isLoading, value))
+            {
+                OnPropertyChanged(nameof(StatusBarIcon));
+                OnPropertyChanged(nameof(StatusBarText));
+            }
+        }
     }
 
     /// <summary>
@@ -192,6 +211,8 @@ public class MainViewModel : ViewModelBase
             {
                 // Notify the Copy command to re-evaluate its CanExecute condition
                 ((AsyncRelayCommand)CopyCommand).RaiseCanExecuteChanged();
+                OnPropertyChanged(nameof(StatusBarIcon));
+                OnPropertyChanged(nameof(StatusBarText));
             }
         }
     }
@@ -267,6 +288,58 @@ public class MainViewModel : ViewModelBase
                 _settingsService.FontSize = value;
                 OnPropertyChanged(nameof(FontSize));
             }
+        }
+    }
+
+    /// <summary>
+    /// Gets the status bar icon (emoji) based on current state.
+    /// </summary>
+    public string StatusBarIcon
+    {
+        get
+        {
+            if (IsLoading) return "⏳";
+            if (IsCopying) return "📋";
+            if (string.IsNullOrEmpty(SourcePath)) return "📁";
+            return "✓";
+        }
+    }
+
+    /// <summary>
+    /// Gets the status bar text based on current state.
+    /// </summary>
+    public string StatusBarText
+    {
+        get
+        {
+            if (IsLoading) return "Loading files...";
+            if (IsCopying) return "Copying files...";
+            if (string.IsNullOrEmpty(SourcePath)) return "Select source folder";
+            return "Ready";
+        }
+    }
+
+    /// <summary>
+    /// Gets the source file count text for the status bar.
+    /// </summary>
+    public string SourceFileCountText
+    {
+        get
+        {
+            int totalFiles = AlreadyCopiedFiles.Count + NewFiles.Count;
+            return totalFiles > 0 ? $"{totalFiles} files in source" : "No source files";
+        }
+    }
+
+    /// <summary>
+    /// Gets the new file count text for the status bar.
+    /// </summary>
+    public string NewFileCountText
+    {
+        get
+        {
+            int newCount = NewFiles.Count;
+            return newCount > 0 ? $"{newCount} new file{(newCount != 1 ? "s" : "")}" : "0 new files";
         }
     }
 
