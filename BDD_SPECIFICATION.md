@@ -5,10 +5,10 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 2.24.0 |
+| **Version** | 2.25.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
-| **Last Updated** | 2026-02-22 |
+| **Last Updated** | 2026-02-26 |
 
 ---
 
@@ -26,6 +26,7 @@
 10. [Data Persistence](#data-persistence)
 11. [Security Considerations](#security-considerations)
 12. [Appendix: Technical Details](#appendix-technical-details)
+13. [Appendix: Google Drive Integration](#appendix-google-drive-integration)
 
 ---
 
@@ -75,6 +76,7 @@ The primary purpose of CameraCopyTool is to provide a user-friendly interface fo
 7. Delete files from any location
 8. Open files with default applications
 9. Configure font size for accessibility
+10. **Upload files to Google Drive** (planned feature)
 
 ---
 
@@ -1103,6 +1105,161 @@ Scenario: Status bar updates during operations
   When viewing the status bar
   Then it should show the copying icon and text
   And update in real-time as the operation progresses
+```
+
+---
+
+### Feature 10: Google Drive Integration
+
+#### User Story 10.1: Upload Files to Google Drive
+
+**As a** user  
+**I want to** upload files from my computer to Google Drive  
+**So that** my files are backed up in the cloud without using a browser
+
+**Acceptance Criteria:**
+
+```gherkin
+Scenario: Context menu includes "Upload to Google Drive" option
+  Given the application is open with files loaded in the destination listview
+  When the user right-clicks on a file in the "💻 Videos on Your Computer" list
+  Then a context menu should appear with the following options:
+    | Menu Item            | Icon | Purpose                          |
+    |----------------------|------|----------------------------------|
+    | Open                 | 📂   | Open file with default application |
+    | Upload to Google Drive | ☁️   | Upload file to Google Drive      |
+    | Delete               | 🗑️   | Delete the file                  |
+
+Scenario: User uploads a single file to Google Drive
+  Given the user is authenticated with Google Drive
+  And a file is selected in the destination listview
+  When the user right-clicks and selects "Upload to Google Drive"
+  Then the file should be uploaded to Google Drive
+  And a progress dialog should display upload progress
+  And a success message should appear on completion
+
+Scenario: Upload progress is displayed
+  Given a file upload is in progress
+  When uploading to Google Drive
+  Then a progress dialog should display:
+    | Information | Format |
+    |-------------|--------|
+    | Filename | Name of file being uploaded |
+    | Progress | Percentage (0% - 100%) with progress bar |
+    | Status | "Uploading to Google Drive..." |
+
+Scenario: Upload success notification
+  Given a file has been successfully uploaded to Google Drive
+  When the upload completes
+  Then a success message should display for 5 seconds:
+    "✓ Uploaded to Google Drive: [filename]"
+  And the file should show a cloud icon (☁️) in the list
+
+Scenario: Upload error - network failure
+  Given the internet connection is lost during upload
+  When the upload fails
+  Then an error dialog should display:
+    | Element | Content |
+    |---------|---------|
+    | Title | "Upload Failed" |
+    | Message | "Lost internet connection. Please check your connection and try again." |
+    | Buttons | "Retry", "Cancel" |
+
+Scenario: Multiple files can be uploaded
+  Given multiple files are selected in the destination listview
+  When the user right-clicks and selects "Upload to Google Drive"
+  Then all selected files should be uploaded to Google Drive in sequence
+  And a progress dialog should show overall and per-file progress
+```
+
+#### User Story 10.2: Google Drive Authentication
+
+**As a** user  
+**I want to** authenticate with Google Drive securely  
+**So that** my files can be uploaded to my Google Drive account
+
+**Acceptance Criteria:**
+
+```gherkin
+Scenario: User is prompted to authenticate on first upload
+  Given the user has not previously authenticated with Google Drive
+  When the user selects "Upload to Google Drive" from the context menu
+  Then an authentication dialog should appear
+  And it should explain: "This will open your web browser to sign in to Google"
+  And buttons: "Sign In" and "Cancel"
+
+Scenario: User completes OAuth flow successfully
+  Given the authentication dialog is displayed
+  When the user clicks "Sign In"
+  And completes the OAuth flow in their browser
+  Then the application should receive an authentication token
+  And store the refresh token securely
+  And display: "✓ Connected to Google Drive"
+
+Scenario: Authentication token is persisted
+  Given the user has successfully authenticated
+  When the application is closed and reopened
+  Then the authentication should be restored (no re-authentication required)
+
+Scenario: Authentication error handling
+  Given the user cancels the OAuth flow in the browser
+  Or an error occurs during authentication
+  When returning to the application
+  Then an error message should display: "Authentication cancelled" or error description
+  And the user should be able to try again
+```
+
+#### User Story 10.3: Upload History Tracking
+
+**As a** user  
+**I want** the application to remember which files I've uploaded to Google Drive  
+**So that** I can see their upload status without needing to check Google Drive manually
+
+**Acceptance Criteria:**
+
+```gherkin
+Scenario: Upload history is created on successful upload
+  Given a file has been successfully uploaded to Google Drive
+  When the upload completes
+  Then an entry should be added to the local upload history with:
+    | Field | Description |
+    |-------|-------------|
+    | Local Path | Full path to the local file |
+    | File Name | Name of the file |
+    | File Size | Size in bytes at time of upload |
+    | File Hash | SHA256 hash of file content |
+    | Google Drive ID | Unique ID assigned by Google Drive |
+    | Upload Timestamp | When the upload completed |
+    | Status | "Success" |
+
+Scenario: Upload status is shown in file list
+  Given the application has loaded files
+  And some files exist in the upload history
+  When viewing the destination file list
+  Then files with successful upload history should display a cloud icon (☁️)
+  And hovering over the icon should show a tooltip:
+    "Uploaded to Google Drive on [date]"
+
+Scenario: Changed files are detected
+  Given a file was previously uploaded
+  But the local file has changed (different hash than stored)
+  When viewing the file list
+  Then display a warning icon (⚠️) next to the file
+  And tooltip: "File changed since upload - consider re-uploading"
+
+Scenario: Automatic cleanup on startup - missing files
+  Given the upload history contains entries for files that no longer exist on the local machine
+  When the application starts
+  Then each missing file should be identified
+  And marked with "LocalFileDeleted" status and timestamp
+  And entries marked for more than 30 days should be permanently removed
+  And the history file should be saved after cleanup
+
+Scenario: Automatic cleanup on startup - enforce size limit
+  Given the upload history has reached the maximum entry limit (10,000 entries)
+  When the application starts
+  Then the oldest entries should be removed until under the limit
+  And newer entries should be preserved
 ```
 
 ---
@@ -2897,6 +3054,118 @@ The following unit tests have been implemented to verify BDD compliance:
 | 2.22.0 | 2026-02-22 | AI Assistant | **Select Folder Button Styling**: Changed Select Folder buttons from default blue action button style to subdued gray styling (#E0E0E0 background, #424242 text, 12px font). Added hover/pressed states with darker grays. Reduced padding to 8,4. Added design rationale: folder selection is infrequent after initial setup, so buttons should be less visually distracting. Updated Browse Source and Browse Destination button specifications in BDD. Benefits: reduced visual clutter, primary action buttons (Copy, Refresh) stand out more, better visual hierarchy. |
 | 2.23.0 | 2026-02-22 | AI Assistant | **Help Panel Text Update**: Changed "To Copy Photos" to "To Copy Videos" and "Select the photos" to "Select the videos" in help panel instructions to accurately reflect application functionality (video file copying). Updated BDD User Story 0.2 and Help Panel Instructions table. Benefits: documentation accuracy, reduces user confusion about supported file types. |
 | 2.24.0 | 2026-02-22 | AI Assistant | **Settings Button Styling**: Changed Settings button from bright orange (#FF9800) to subdued gray (#757575) with darker hover (#616161) and pressed (#424242) states. Added design rationale: Settings is a secondary action, should be less visually distracting than primary actions like Refresh and Copy. Updated BDD Settings Button specification. Benefits: reduced visual clutter, better visual hierarchy, primary action buttons stand out more. |
+| 2.25.0 | 2026-02-26 | AI Assistant | **Google Drive Integration Feature**: Added Feature 10: Google Drive Integration with three user stories (10.1 Upload Files, 10.2 Authentication, 10.3 Upload History). Added core capability for Google Drive upload. Created 3 Architecture Decision Records (ADR-001: API Integration, ADR-002: Upload History Storage, ADR-003: Error Handling). Updated Table of Contents with Google Drive Integration appendix. |
+
+---
+
+## Appendix: Google Drive Integration
+
+### Overview
+
+The Google Drive integration feature allows users to upload files directly from CameraCopyTool to their Google Drive account without using a web browser.
+
+### Feature Summary
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Context Menu Upload | Right-click to upload files to Google Drive | Planned |
+| OAuth 2.0 Authentication | Secure authentication via Google | Planned |
+| Upload Progress Tracking | Real-time progress display | Planned |
+| Upload History | Local tracking of uploaded files | Planned |
+| Automatic Cleanup | Remove history for deleted files | Planned |
+| Multi-File Upload | Upload multiple files in sequence | Planned |
+| Error Handling | Retry logic with exponential backoff | Planned |
+
+### Architecture Decision Records
+
+| ADR | Title | Location |
+|-----|-------|----------|
+| ADR-001 | Google Drive API Integration | [docs/adr/ADR-001-Google-Drive-API.md](docs/adr/ADR-001-Google-Drive-API.md) |
+| ADR-002 | Upload History Storage Format | [docs/adr/ADR-002-Upload-History-Storage.md](docs/adr/ADR-002-Upload-History-Storage.md) |
+| ADR-003 | Error Handling and Retry Strategy | [docs/adr/ADR-003-Error-Handling-Retry.md](docs/adr/ADR-003-Error-Handling-Retry.md) |
+
+### Technical Specifications
+
+#### API Integration
+- **Library**: Google.Apis.Drive.v3 via NuGet
+- **Authentication**: OAuth 2.0 for Desktop Apps
+- **Scope**: `Drive.File` (files created by app only)
+- **Token Storage**: `%APPDATA%\CameraCopyTool\google-drive-credentials.json`
+- **Encryption**: DPAPI (user-specific)
+
+#### Upload History
+- **Storage**: `%APPDATA%\CameraCopyTool\google-drive-uploads.json`
+- **Format**: JSON
+- **Max Entries**: 10,000
+- **Cleanup**: Automatic on startup (7-day frequency, 30-day grace period)
+- **Hash Algorithm**: SHA256 for file change detection
+
+#### Error Handling
+- **Retry Strategy**: Exponential backoff (1s, 2s, 4s, 8s, 16s, 30s)
+- **Max Retries**: 5
+- **Error Categories**: Transient, Rate Limit, Authentication, File Conflict, Permanent
+- **User Messages**: Clear, non-technical error descriptions
+
+### User Interface Elements
+
+| Element | Icon | Location | Purpose |
+|---------|------|----------|---------|
+| Upload to Google Drive | ☁️ | Context Menu | Initiate upload |
+| Upload Progress Dialog | ⏳ | Modal Dialog | Show upload progress |
+| Upload Status Icon | ☁️ | File List | Indicate uploaded files |
+| Changed File Warning | ⚠️ | File List | File changed since upload |
+
+### Security Considerations
+
+| Concern | Mitigation |
+|---------|------------|
+| Token Storage | DPAPI encryption, user-specific keys |
+| Token Transmission | HTTPS only (Google API library) |
+| Scope Limitation | `Drive.File` scope only |
+| User Consent | Clear OAuth consent screen explanation |
+| Credential Handling | No passwords stored, OAuth flow only |
+
+### Performance Considerations
+
+| Aspect | Target |
+|--------|--------|
+| Upload Speed | Limited by user's internet connection |
+| UI Responsiveness | Non-blocking async operations |
+| Progress Update | Every 500ms minimum |
+| Startup Cleanup | < 2 seconds for 10,000 entries |
+| History File Size | < 3 MB (10,000 entries max) |
+
+### Accessibility Considerations (for Margaret, age 75)
+
+| Need | Implementation |
+|------|----------------|
+| Clear labels | "Upload to Google Drive" (not abbreviated) |
+| Visual feedback | Cloud icon (☁️), progress bar, success messages |
+| Simple language | "Sign in to Google" not "OAuth authentication" |
+| Large click targets | Context menu items 35px height minimum |
+| Reassurance | "Your files are backed up" messaging |
+| No manual maintenance | Automatic cleanup, no user action needed |
+
+### Related GitHub Issues
+
+| Issue | Title | Status |
+|-------|-------|--------|
+| #1 | Context Menu Infrastructure | Planned |
+| #2 | Google Drive Authentication | Planned |
+| #3 | Single File Upload | Planned |
+| #4 | Multiple File Upload | Planned |
+| #5 | Error Handling & Recovery | Planned |
+| #6 | Upload History Tracking | Planned |
+
+### Future Enhancements
+
+- [ ] Select specific Google Drive folder for uploads
+- [ ] View Google Drive files within the application
+- [ ] Download files from Google Drive
+- [ ] Sync folder with Google Drive
+- [ ] Upload to other cloud services (OneDrive, Dropbox)
+- [ ] Background upload service
+- [ ] Manual upload history management UI
 
 ---
 
