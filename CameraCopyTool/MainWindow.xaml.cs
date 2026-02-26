@@ -2,8 +2,10 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 using CameraCopyTool.Commands;
 using CameraCopyTool.Models;
 using CameraCopyTool.ViewModels;
@@ -24,16 +26,9 @@ namespace CameraCopyTool
         private readonly MainViewModel _viewModel;
 
         /// <summary>
-        /// Tracks the last clicked GridView column header for sorting.
-        /// (Currently unused - reserved for future sorting functionality)
+        /// Tracks the last sorted header for each ListView to clear its indicator.
         /// </summary>
-        private GridViewColumnHeader? _lastHeaderClicked;
-
-        /// <summary>
-        /// Tracks the last sort direction for column sorting.
-        /// (Currently unused - reserved for future sorting functionality)
-        /// </summary>
-        private ListSortDirection _lastDirection = ListSortDirection.Ascending;
+        private readonly Dictionary<ListView, GridViewColumnHeader?> _lastSortedHeaders = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow"/> class.
@@ -63,6 +58,41 @@ namespace CameraCopyTool
             lvAlreadyCopied.SizeChanged += ListView_SizeChanged;
             lvNewFiles.SizeChanged += ListView_SizeChanged;
             lvDestinationFiles.SizeChanged += ListView_SizeChanged;
+
+            // Subscribe to ViewModel property changes for Copy button animation
+            _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+        }
+
+        /// <summary>
+        /// Handles ViewModel property changes to update UI elements.
+        /// Starts/stops Copy button pulse animation when files are ready to copy.
+        /// </summary>
+        private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(MainViewModel.NewFiles) ||
+                e.PropertyName == nameof(MainViewModel.SelectedNewFiles))
+            {
+                UpdateCopyButtonAnimation();
+            }
+        }
+
+        /// <summary>
+        /// Updates the Copy button pulse animation based on whether files are ready to copy.
+        /// Animation plays when there are new files and at least one is selected.
+        /// </summary>
+        private void UpdateCopyButtonAnimation()
+        {
+            var storyboard = FindResource("CopyButtonPulse") as Storyboard;
+            bool shouldAnimate = _viewModel.NewFiles.Count > 0 && _viewModel.SelectedNewFiles.Count > 0;
+
+            if (shouldAnimate && storyboard != null)
+            {
+                CopyButton.BeginStoryboard(storyboard, HandoffBehavior.Compose, true);
+            }
+            else if (storyboard != null)
+            {
+                storyboard.Remove(CopyButton);
+            }
         }
 
         /// <summary>
@@ -130,6 +160,43 @@ namespace CameraCopyTool
             {
                 _viewModel.SelectedDestinationFiles = lvDestinationFiles.SelectedItems.Cast<FileItem>().ToList();
             };
+
+            // Add toggle selection behavior - clicking selected item deselects it
+            lvNewFiles.PreviewMouseLeftButtonDown += ListView_PreviewMouseLeftButtonDown;
+            lvAlreadyCopied.PreviewMouseLeftButtonDown += ListView_PreviewMouseLeftButtonDown;
+            lvDestinationFiles.PreviewMouseLeftButtonDown += ListView_PreviewMouseLeftButtonDown;
+        }
+
+        /// <summary>
+        /// Handles mouse click on ListView items to enable toggle selection.
+        /// Clicking an already selected item will deselect it.
+        /// </summary>
+        private void ListView_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is ListView listView)
+            {
+                var item = FindAncestor<ListViewItem>(e.OriginalSource as DependencyObject);
+                if (item != null && item.IsSelected)
+                {
+                    // Item is already selected - clicking will deselect it
+                    item.IsSelected = false;
+                    e.Handled = true; // Prevent default selection behavior
+                }
+            }
+        }
+
+        /// <summary>
+        /// Finds the first ancestor of the specified type in the visual tree.
+        /// </summary>
+        private static T? FindAncestor<T>(DependencyObject? child) where T : DependencyObject
+        {
+            while (child != null)
+            {
+                if (child is T typedChild)
+                    return typedChild;
+                child = System.Windows.Media.VisualTreeHelper.GetParent(child);
+            }
+            return null;
         }
 
         /// <summary>
@@ -161,6 +228,168 @@ namespace CameraCopyTool
                 item.IsSelected = true;
                 item.Focus();
             }
+        }
+
+        /// <summary>
+        /// Handles click on GridView column headers for sorting.
+        /// Toggles between ascending and descending sort order.
+        /// Ignores clicks on the resize Thumb (PART_HeaderGrip).
+        /// </summary>
+        private void GridViewColumnHeader_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // Ignore clicks on the resize Thumb - let it handle dragging
+            // Check if click was on the Thumb (resize grip)
+            if (e.OriginalSource is Thumb || FindParent<Thumb>(e.OriginalSource as DependencyObject) != null)
+            {
+                return;
+            }
+
+            if (sender is GridViewColumnHeader header && header.Column != null)
+            {
+                string sortBy = header.Column.Header?.ToString() ?? "";
+                if (string.IsNullOrEmpty(sortBy)) return;
+
+                // Determine which ListView this header belongs to
+                ListView? listView = null;
+                ICollectionView? view = null;
+
+                if (lvAlreadyCopied.IsLoaded && IsHeaderInListView(lvAlreadyCopied, header))
+                {
+                    listView = lvAlreadyCopied;
+                    view = CollectionViewSource.GetDefaultView(_viewModel.AlreadyCopiedFiles);
+                }
+                else if (lvNewFiles.IsLoaded && IsHeaderInListView(lvNewFiles, header))
+                {
+                    listView = lvNewFiles;
+                    view = CollectionViewSource.GetDefaultView(_viewModel.NewFiles);
+                }
+                else if (lvDestinationFiles.IsLoaded && IsHeaderInListView(lvDestinationFiles, header))
+                {
+                    listView = lvDestinationFiles;
+                    view = CollectionViewSource.GetDefaultView(_viewModel.DestinationFiles);
+                }
+
+                if (view == null) return;
+
+                // Toggle sort direction
+                ListSortDirection direction = ListSortDirection.Ascending;
+                if (view.SortDescriptions.Count > 0)
+                {
+                    var currentSort = view.SortDescriptions[0];
+                    if (currentSort.PropertyName == GetPropertyName(sortBy) && currentSort.Direction == ListSortDirection.Ascending)
+                    {
+                        direction = ListSortDirection.Descending;
+                    }
+                }
+
+                // Apply sort
+                view.SortDescriptions.Clear();
+                view.SortDescriptions.Add(new SortDescription(GetPropertyName(sortBy), direction));
+
+                // Update the clicked header's indicator and clear the previous one
+                if (listView != null)
+                {
+                    UpdateHeaderIndicator(listView, header, direction);
+                }
+
+                // Mark event as handled to prevent selection changes
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Updates the sort indicator on a specific header.
+        /// </summary>
+        private void UpdateHeaderIndicator(ListView listView, GridViewColumnHeader header, ListSortDirection direction)
+        {
+            // Clear the indicator from the previously sorted header in this ListView
+            if (_lastSortedHeaders.TryGetValue(listView, out var lastHeader) && lastHeader != null)
+            {
+                var lastIndicator = FindChild<TextBlock>(lastHeader, "SortIndicator");
+                if (lastIndicator != null)
+                {
+                    lastIndicator.Visibility = System.Windows.Visibility.Collapsed;
+                }
+            }
+
+            // Set indicator on the clicked header
+            var clickedIndicator = FindChild<TextBlock>(header, "SortIndicator");
+            if (clickedIndicator != null)
+            {
+                clickedIndicator.Text = direction == ListSortDirection.Ascending ? "▲" : "▼";
+                clickedIndicator.Visibility = System.Windows.Visibility.Visible;
+            }
+
+            // Track this as the last sorted header
+            _lastSortedHeaders[listView] = header;
+        }
+
+        /// <summary>
+        /// Finds a child element by name in the visual tree.
+        /// </summary>
+        private static T? FindChild<T>(DependencyObject parent, string childName) where T : DependencyObject
+        {
+            if (parent == null) return null;
+
+            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+                if (child is FrameworkElement fe && fe.Name == childName)
+                    return child as T;
+
+                var result = FindChild<T>(child, childName);
+                if (result != null) return result;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Checks if a header belongs to a specific ListView.
+        /// </summary>
+        private bool IsHeaderInListView(ListView listView, GridViewColumnHeader header)
+        {
+            if (listView.View is GridView gridView)
+            {
+                return gridView.Columns.Contains(header.Column);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Maps column header text to property name for sorting.
+        /// </summary>
+        private string GetPropertyName(string header)
+        {
+            return header switch
+            {
+                "File Name" => nameof(FileItem.DisplayName),
+                "Modified Date" => nameof(FileItem.ModifiedDate),
+                _ => header
+            };
+        }
+
+        /// <summary>
+        /// Handles mouse down on resize thumb - prevents sort from triggering.
+        /// </summary>
+        private void Thumb_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // Mark as handled to prevent sort from triggering when clicking the resize grip
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// Finds a parent element of the specified type in the visual tree.
+        /// </summary>
+        private static T? FindParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            DependencyObject? parent = System.Windows.Media.VisualTreeHelper.GetParent(child);
+            while (parent != null)
+            {
+                if (parent is T typedParent)
+                    return typedParent;
+                parent = System.Windows.Media.VisualTreeHelper.GetParent(parent);
+            }
+            return null;
         }
 
         /// <summary>
