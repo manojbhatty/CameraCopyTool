@@ -67,19 +67,10 @@ jobs:
         thresholdtype: 'linecoverage'
         failbelowthreshold: true
 
-    - name: Publish coverage to GitHub
+    # Upload coverage report as artifact for download
+    - name: Upload coverage HTML report
       if: success()
-      uses: irongut/CodeCoverageSummary@v1.3.0
+      uses: actions/upload-artifact@v4
       with:
-        filename: './coverage/**/*.cobertura.xml'
-        badge: true
-        format: 'markdown'
-        output: 'both'
-
-    - name: Add coverage to PR
-      if: github.event_name == 'pull_request' && success()
-      uses: irongut/CodeCoverageSummary@v1.3.0
-      with:
-        filename: './coverage/**/*.cobertura.xml'
-        format: 'markdown'
-        output: 'comment'
+        name: coverage-html-report
+        path: coveragereport/
