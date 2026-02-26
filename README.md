@@ -1,5 +1,7 @@
 # CameraCopyTool
 
+[![CI - Build and Test](https://github.com/yourusername/CameraCopyTool/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/CameraCopyTool/actions/workflows/ci.yml)
+
 A Windows desktop application that simplifies copying photos and videos from a camera or mobile device to a computer. The application provides a side-by-side comparison of source (camera) and destination (computer) folders, clearly indicating which files are new and which have already been copied.
 
 ## How to Use
@@ -50,6 +52,17 @@ You can delete files from any of the three lists (New, Already Copied, or Destin
 - **Accessibility**: Configurable font sizes for users with visual impairments
 - **Keyboard Shortcuts**: `F5` to refresh, `Delete` to remove selected files
 - **Resumable Operations**: Handles disconnections gracefully
+
+## CI/CD
+
+This project uses GitHub Actions for continuous integration and deployment:
+
+- ✅ Automatic build and test on every push
+- ✅ Code coverage enforcement (minimum 80%)
+- ✅ Automated releases on version tags
+- ✅ PR validation for branch naming conventions
+
+For detailed information, see [.github/workflows/README.md](.github/workflows/README.md).
 
 ## System Requirements
 

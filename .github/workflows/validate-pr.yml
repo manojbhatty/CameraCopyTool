@@ -1,0 +1,26 @@
+name: Validate PR Branch Name
+
+on:
+  pull_request:
+    branches: [ main, feature/* ]
+
+jobs:
+  validate-branch-name:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check branch naming for main
+      if: github.base_ref == 'main' && !startsWith(github.head_ref, 'feature/')
+      run: |
+        echo "❌ PR to main must come from a feature/* branch"
+        echo "Current branch: ${{ github.head_ref }}"
+        echo "Expected pattern: feature/*"
+        exit 1
+    
+    - name: Check branch naming for feature branches
+      if: startsWith(github.base_ref, 'feature/') && !startsWith(github.head_ref, 'dev/') && github.head_ref != github.base_ref
+      run: |
+        echo "❌ PR to feature/* branch must come from a dev/* branch"
+        echo "Current branch: ${{ github.head_ref }}"
+        echo "Expected pattern: dev/*"
+        exit 1

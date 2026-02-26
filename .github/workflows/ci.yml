@@ -1,0 +1,69 @@
+name: CI - Build, Test, Coverage
+
+on:
+  push:
+    branches: [ main, feature/*, dev/* ]
+  pull_request:
+    branches: [ main, feature/* ]
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+      
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+      
+    - name: Run tests with coverage
+      run: dotnet test --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+      
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: '**/TestResults/*.trx'
+      
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      if: success()
+      with:
+        name: coverage-report
+        path: '**/coverage/*.cobertura.xml'
+      
+    - name: Generate coverage report
+      uses: danielpalme/ReportGenerator-GitHub-Action@v5
+      with:
+        reports: '**/coverage/*.cobertura.xml'
+        targetdir: 'coveragereport'
+        reporttypes: 'HtmlSummary;JsonSummary'
+        threshold: '80'
+        thresholdtype: 'linecoverage'
+        failbelowthreshold: true
+      
+    - name: Publish coverage to GitHub
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      with:
+        filename: '**/coverage/*.cobertura.xml'
+        badge: true
+        format: 'markdown'
+        output: 'both'
+      
+    - name: Add coverage to PR
+      if: github.event_name == 'pull_request'
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      with:
+        filename: '**/coverage/*.cobertura.xml'
+        format: 'markdown'
+        output: 'comment'
