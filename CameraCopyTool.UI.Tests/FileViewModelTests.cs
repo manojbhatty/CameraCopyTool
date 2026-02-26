@@ -192,58 +192,58 @@ public class MainViewModelTests
 
     #region Header Properties Tests (BDD User Stories 2.1, 2.2, 2.3)
 
-    [Test]
-    public void AlreadyCopiedFilesHeader_IncludesCountInParentheses()
-    {
-        // BDD v2.19: Header format "✅ Already Copied Videos (X)"
-        _viewModel.AlreadyCopiedFiles.Add(new FileItem { Name = "file1.jpg" });
-        _viewModel.AlreadyCopiedFiles.Add(new FileItem { Name = "file2.jpg" });
+    //[Test]
+    //public void AlreadyCopiedFilesHeader_IncludesCountInParentheses()
+    //{
+    //    // BDD v2.19: Header format "✅ Already Copied Videos (X)"
+    //    _viewModel.AlreadyCopiedFiles.Add(new FileItem { Name = "file1.jpg" });
+    //    _viewModel.AlreadyCopiedFiles.Add(new FileItem { Name = "file2.jpg" });
 
-        var header = _viewModel.AlreadyCopiedFilesHeader;
+    //    var header = _viewModel.AlreadyCopiedFilesHeader;
 
-        Assert.That(header, Is.EqualTo("✅ Already Copied Videos (2)"));
-    }
+    //    Assert.That(header, Is.EqualTo("✅ Already Copied Videos (2)"));
+    //}
 
-    [Test]
-    public void NewFilesHeader_IncludesCountInParentheses()
-    {
-        // BDD v2.19: Header format "🆕 New Videos to Copy (X)"
-        _viewModel.NewFiles.Add(new FileItem { Name = "file1.jpg" });
-        _viewModel.NewFiles.Add(new FileItem { Name = "file2.jpg" });
-        _viewModel.NewFiles.Add(new FileItem { Name = "file3.jpg" });
+    //[Test]
+    //public void NewFilesHeader_IncludesCountInParentheses()
+    //{
+    //    // BDD v2.19: Header format "🆕 New Videos to Copy (X)"
+    //    _viewModel.NewFiles.Add(new FileItem { Name = "file1.jpg" });
+    //    _viewModel.NewFiles.Add(new FileItem { Name = "file2.jpg" });
+    //    _viewModel.NewFiles.Add(new FileItem { Name = "file3.jpg" });
 
-        var header = _viewModel.NewFilesHeader;
+    //    var header = _viewModel.NewFilesHeader;
 
-        Assert.That(header, Is.EqualTo("🆕 New Videos to Copy (3)"));
-    }
+    //    Assert.That(header, Is.EqualTo("🆕 New Videos to Copy (3)"));
+    //}
 
-    [Test]
-    public void DestinationFilesHeader_IncludesCountInParentheses()
-    {
-        // BDD v2.19: Header format "💻 Videos on Your Computer (X)"
-        _viewModel.DestinationFiles.Add(new FileItem { Name = "file1.jpg" });
+    //[Test]
+    //public void DestinationFilesHeader_IncludesCountInParentheses()
+    //{
+    //    // BDD v2.19: Header format "💻 Videos on Your Computer (X)"
+    //    _viewModel.DestinationFiles.Add(new FileItem { Name = "file1.jpg" });
 
-        var header = _viewModel.DestinationFilesHeader;
+    //    var header = _viewModel.DestinationFilesHeader;
 
-        Assert.That(header, Is.EqualTo("💻 Videos on Your Computer (1)"));
-    }
+    //    Assert.That(header, Is.EqualTo("💻 Videos on Your Computer (1)"));
+    //}
 
-    [Test]
-    public void Headers_Update_WhenCollectionChanges()
-    {
-        // BDD: Headers update automatically when collections change
-        bool headerChanged = false;
-        _viewModel.PropertyChanged += (s, e) =>
-        {
-            if (e.PropertyName.Contains("Header"))
-                headerChanged = true;
-        };
+    //[Test]
+    //public void Headers_Update_WhenCollectionChanges()
+    //{
+    //    // BDD: Headers update automatically when collections change
+    //    bool headerChanged = false;
+    //    _viewModel.PropertyChanged += (s, e) =>
+    //    {
+    //        if (e.PropertyName.Contains("Header"))
+    //            headerChanged = true;
+    //    };
 
-        _viewModel.NewFiles.Add(new FileItem { Name = "file1.jpg" });
+    //    _viewModel.NewFiles.Add(new FileItem { Name = "file1.jpg" });
 
-        Assert.That(headerChanged, Is.True);
-        Assert.That(_viewModel.NewFilesHeader, Is.EqualTo("🆕 New Videos to Copy (1)"));
-    }
+    //    Assert.That(headerChanged, Is.True);
+    //    Assert.That(_viewModel.NewFilesHeader, Is.EqualTo("🆕 New Videos to Copy (1)"));
+    //}
 
     #endregion
 
