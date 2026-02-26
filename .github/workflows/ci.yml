@@ -30,17 +30,12 @@ jobs:
         dotnet test CameraCopyTool.Tests/CameraCopyTool.Tests.csproj `
           --configuration Debug `
           --no-build `
-          --verbosity normal `
-          --collect:"XPlat Code Coverage" `
-          --results-directory ./coverage `
-          --logger:"trx" `
-          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura `
-          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute="GeneratedCodeAttribute"
+          --verbosity normal
 
     - name: List coverage files
       run: |
         Write-Host "Coverage files found:"
-        Get-ChildItem -Recurse -Filter "*.cobertura.xml" -Path ./coverage | ForEach-Object { Write-Host $_.FullName }
+        Get-ChildItem -Recurse -Filter "*.cobertura.xml" -Path ./CameraCopyTool.Tests/coverage | ForEach-Object { Write-Host $_.FullName }
       
     - name: Upload test results
       uses: actions/upload-artifact@v4
@@ -54,13 +49,13 @@ jobs:
       if: success()
       with:
         name: coverage-report
-        path: '**/coverage/*.cobertura.xml'
+        path: 'CameraCopyTool.Tests/coverage/*.cobertura.xml'
 
     - name: Generate coverage report
       if: success()
       uses: danielpalme/ReportGenerator-GitHub-Action@v5
       with:
-        reports: './coverage/**/*.cobertura.xml'
+        reports: 'CameraCopyTool.Tests/coverage/*.cobertura.xml'
         targetdir: 'coveragereport'
         reporttypes: 'HtmlSummary;JsonSummary'
         threshold: '80'
