@@ -76,6 +76,8 @@
         <!-- Context menu for ListView items -->
         <ContextMenu x:Key="FileItemContextMenu">
             <MenuItem Header="Open" Click="Menu_Open_Click"/>
+            <MenuItem Header="Upload to Google Drive" Click="Menu_UploadToGoogleDrive_Click"/>
+            <Separator/>
             <MenuItem Header="Delete" Click="Menu_Delete_Click"/>
         </ContextMenu>
 

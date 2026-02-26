@@ -218,6 +218,22 @@ namespace CameraCopyTool
         }
 
         /// <summary>
+        /// Handles the Upload to Google Drive menu item click from the context menu.
+        /// Shows a placeholder message for now (Issue #1 - Context Menu Infrastructure).
+        /// </summary>
+        private void Menu_UploadToGoogleDrive_Click(object sender, RoutedEventArgs e)
+        {
+            // Placeholder implementation for Issue #1
+            // Full implementation will be added in Issues #2-#6
+            MessageBox.Show(
+                "Google Drive upload feature is coming soon!\n\n" +
+                "This feature will allow you to upload files directly to your Google Drive account.",
+                "Upload to Google Drive",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+
+        /// <summary>
         /// Handles right-click on ListView items.
         /// Selects the item and gives it focus so context menu actions apply to it.
         /// </summary>
