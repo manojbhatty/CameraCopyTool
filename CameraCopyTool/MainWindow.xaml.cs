@@ -8,7 +8,9 @@ using System.Windows.Input;
 using System.Windows.Media.Animation;
 using CameraCopyTool.Commands;
 using CameraCopyTool.Models;
+using CameraCopyTool.Services;
 using CameraCopyTool.ViewModels;
+using CameraCopyTool.Views;
 
 namespace CameraCopyTool
 {
@@ -26,6 +28,11 @@ namespace CameraCopyTool
         private readonly MainViewModel _viewModel;
 
         /// <summary>
+        /// The Google Drive service for upload operations.
+        /// </summary>
+        private readonly IGoogleDriveService _googleDriveService;
+
+        /// <summary>
         /// Tracks the last sorted header for each ListView to clear its indicator.
         /// </summary>
         private readonly Dictionary<ListView, GridViewColumnHeader?> _lastSortedHeaders = new();
@@ -35,9 +42,11 @@ namespace CameraCopyTool
         /// Sets up data binding, event subscriptions, and UI initialization.
         /// </summary>
         /// <param name="viewModel">The MainViewModel instance, injected via DI.</param>
-        public MainWindow(MainViewModel viewModel)
+        /// <param name="googleDriveService">The Google Drive service, injected via DI.</param>
+        public MainWindow(MainViewModel viewModel, IGoogleDriveService googleDriveService)
         {
             _viewModel = viewModel;
+            _googleDriveService = googleDriveService;
             DataContext = _viewModel;
 
             InitializeComponent();
@@ -219,18 +228,150 @@ namespace CameraCopyTool
 
         /// <summary>
         /// Handles the Upload to Google Drive menu item click from the context menu.
-        /// Shows a placeholder message for now (Issue #1 - Context Menu Infrastructure).
+        /// Initiates upload to Google Drive with authentication and progress tracking.
         /// </summary>
-        private void Menu_UploadToGoogleDrive_Click(object sender, RoutedEventArgs e)
+        private async void Menu_UploadToGoogleDrive_Click(object sender, RoutedEventArgs e)
         {
-            // Placeholder implementation for Issue #1
-            // Full implementation will be added in Issues #2-#6
-            MessageBox.Show(
-                "Google Drive upload feature is coming soon!\n\n" +
-                "This feature will allow you to upload files directly to your Google Drive account.",
-                "Upload to Google Drive",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            // Get the selected file from the destination ListView
+            if (lvDestinationFiles.SelectedItem is not FileItem selectedFile)
+            {
+                MessageBox.Show(
+                    "Please select a file to upload to Google Drive.",
+                    "No File Selected",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
+            // Check if Google Drive service is configured
+            if (!_viewModel.IsGoogleDriveConfigured)
+            {
+                MessageBox.Show(
+                    "Google Drive is not configured.\n\n" +
+                    "To use this feature, you need to:\n\n" +
+                    "1. Go to Google Cloud Console:\n" +
+                    "   https://console.cloud.google.com/apis/credentials\n\n" +
+                    "2. Create a new project (or select existing)\n\n" +
+                    "3. Enable Google Drive API\n\n" +
+                    "4. Create OAuth 2.0 Client ID (Desktop app)\n\n" +
+                    "5. Copy Client ID and Client Secret to:\n" +
+                    "   App.config (GoogleDrive.ClientId)\n" +
+                    "   App.config (GoogleDrive.ClientSecret)\n\n" +
+                    "See README.md for detailed setup instructions.",
+                    "Google Drive Not Configured",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
+            // Get the full file path
+            var filePath = Path.Combine(_viewModel.DestinationPath, selectedFile.Name);
+            
+            if (!File.Exists(filePath))
+            {
+                MessageBox.Show(
+                    $"The file '{selectedFile.Name}' was not found.",
+                    "File Not Found",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+
+            try
+            {
+                // Check if authenticated, if not show auth dialog
+                if (!_googleDriveService.IsAuthenticated)
+                {
+                    var authDialog = new GoogleDriveAuthDialog { Owner = this };
+                    var authResult = authDialog.ShowDialog();
+
+                    if (authResult != true || !authDialog.UserConsentGiven)
+                    {
+                        return; // User cancelled authentication
+                    }
+
+                    // User consented - now authenticate (this will open the browser)
+                    // The Google API will open the browser and wait for user to complete auth
+                    var authSuccess = await _googleDriveService.AuthenticateAsync();
+                    
+                    if (!authSuccess)
+                    {
+                        MessageBox.Show(
+                            "Authentication failed.\n\n" +
+                            "Possible causes:\n" +
+                            "• Invalid Client ID or Client Secret in App.config\n" +
+                            "• Google Drive API not enabled in Google Cloud Console\n" +
+                            "• Network connection issues\n" +
+                            "• User cancelled the authentication\n\n" +
+                            "Please check your credentials and try again.",
+                            "Authentication Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                        return;
+                    }
+
+                    MessageBox.Show(
+                        "✓ Successfully connected to Google Drive!",
+                        "Authentication Successful",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+
+                // Show upload progress dialog
+                var progressDialog = new GoogleDriveUploadProgressDialog(selectedFile.DisplayName) { Owner = this };
+                
+                // Start upload in background
+                var uploadTask = Task.Run(async () =>
+                {
+                    var fileId = await _googleDriveService.UploadFileAsync(
+                        filePath,
+                        progressDialog,
+                        CancellationToken.None);
+                    
+                    return fileId;
+                });
+
+                // Show dialog while upload runs
+                var dialogResult = progressDialog.ShowDialog();
+
+                if (progressDialog.IsCancelled)
+                {
+                    MessageBox.Show(
+                        "Upload was cancelled.",
+                        "Upload Cancelled",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return;
+                }
+
+                // Wait for upload to complete
+                var fileId = await uploadTask;
+
+                if (fileId != null)
+                {
+                    MessageBox.Show(
+                        $"Successfully uploaded '{selectedFile.DisplayName}' to Google Drive!\n\nFile ID: {fileId}",
+                        "Upload Complete",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "Upload failed. Please check your connection and try again.",
+                        "Upload Failed",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"An error occurred during upload:\n\n{ex.Message}",
+                    "Upload Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
 
         /// <summary>
