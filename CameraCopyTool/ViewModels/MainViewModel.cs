@@ -35,6 +35,11 @@ public class MainViewModel : ViewModelBase
     private readonly ISettingsService _settingsService;
 
     /// <summary>
+    /// Service interface for Google Drive operations.
+    /// </summary>
+    private readonly IGoogleDriveService _googleDriveService;
+
+    /// <summary>
     /// Backing field for the source path (camera/device folder).
     /// </summary>
     private string _sourcePath = string.Empty;
@@ -103,14 +108,17 @@ public class MainViewModel : ViewModelBase
     /// <param name="fileService">Service for file operations.</param>
     /// <param name="dialogService">Service for displaying dialogs.</param>
     /// <param name="settingsService">Service for managing application settings.</param>
+    /// <param name="googleDriveService">Service for Google Drive operations.</param>
     public MainViewModel(
         IFileService fileService,
         IDialogService dialogService,
-        ISettingsService settingsService)
+        ISettingsService settingsService,
+        IGoogleDriveService googleDriveService)
     {
         _fileService = fileService;
         _dialogService = dialogService;
         _settingsService = settingsService;
+        _googleDriveService = googleDriveService;
 
         // Initialize observable collections for file lists displayed in the UI
         AlreadyCopiedFiles = new ObservableCollection<FileItem>();
@@ -143,6 +151,7 @@ public class MainViewModel : ViewModelBase
         OpenCommand = new RelayCommand(OpenSelected);
         OpenSettingsCommand = new RelayCommand(_ => OpenSettings());
         ToggleHelpCommand = new RelayCommand(_ => ToggleHelpPanel());
+        LogoutGoogleDriveCommand = new RelayCommand(_ => LogoutGoogleDrive());
 
         // Load saved settings from previous session
         _sourcePath = _settingsService.LastSourceFolder ?? string.Empty;
@@ -320,6 +329,18 @@ public class MainViewModel : ViewModelBase
             }
         }
     }
+
+    /// <summary>
+    /// Gets a value indicating whether Google Drive authentication is available.
+    /// </summary>
+    public bool IsGoogleDriveConfigured => _googleDriveService != null;
+
+    /// <summary>
+    /// Gets the Google Drive authentication status message.
+    /// </summary>
+    public string GoogleDriveStatus => _googleDriveService?.IsAuthenticated == true
+        ? $"Connected: {_googleDriveService.UserEmail}"
+        : "Not connected to Google Drive";
 
     /// <summary>
     /// Gets the status bar icon (emoji) based on current state.
@@ -515,6 +536,11 @@ public class MainViewModel : ViewModelBase
     /// </summary>
     public ICommand ToggleHelpCommand { get; }
 
+    /// <summary>
+    /// Gets the command to logout from Google Drive.
+    /// </summary>
+    public ICommand LogoutGoogleDriveCommand { get; }
+
     #endregion
 
     #region Command Handlers
@@ -625,6 +651,21 @@ public class MainViewModel : ViewModelBase
     private void ToggleHelpPanel()
     {
         ShowHelpPanel = !ShowHelpPanel;
+    }
+
+    /// <summary>
+    /// Logs out from Google Drive by deleting stored credentials.
+    /// </summary>
+    private void LogoutGoogleDrive()
+    {
+        _googleDriveService?.Logout();
+        OnPropertyChanged(nameof(GoogleDriveStatus));
+        
+        _dialogService.ShowMessage(
+            "Disconnected from Google Drive.\n\nYou will need to sign in again to upload files.",
+            "Logged Out",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
     }
 
     /// <summary>

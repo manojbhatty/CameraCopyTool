@@ -409,8 +409,10 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                     </Grid>
                 </ItemsPanelTemplate>
@@ -428,6 +430,13 @@
             <Separator Grid.Column="3" Width="1" Margin="5,5"/>
             <StatusBarItem Grid.Column="4" Padding="10,5">
                 <TextBlock Text="{Binding NewFileCountText}" FontSize="13" FontWeight="Bold" Foreground="#1976D2"/>
+            </StatusBarItem>
+            <Separator Grid.Column="5" Width="1" Margin="5,5"/>
+            <StatusBarItem Grid.Column="6" Padding="10,5">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="☁️" FontSize="14" Margin="0,0,5,0"/>
+                    <TextBlock Text="{Binding GoogleDriveStatus}" FontSize="13"/>
+                </StackPanel>
             </StatusBarItem>
         </StatusBar>
 

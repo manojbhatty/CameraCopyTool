@@ -71,7 +71,7 @@ Scenario: Context menu styling matches existing items
 - [ ] Context menu item added to destination ListView
 - [ ] Cloud icon displayed next to menu item
 - [ ] Click handler shows placeholder MessageBox
-- [ ] UI tested with screen reader (accessibility)
+- [ ] UI tested with screen reader (accessibility)h
 - [ ] Code reviewed and merged
 
 ---
