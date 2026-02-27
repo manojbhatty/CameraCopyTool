@@ -25,8 +25,8 @@ namespace CameraCopyTool.Views
             // Apply font size immediately to all elements
             this.FontSize = fontSize;
             FileNameText.FontSize = fontSize;
-            ProgressText.FontSize = fontSize;
-            SpeedText.FontSize = fontSize;
+            PercentageText.FontSize = fontSize;
+            // SpeedText removed
             TimeText.FontSize = fontSize;
             CancelButton.FontSize = fontSize;
             OkButton.FontSize = fontSize;
@@ -58,8 +58,8 @@ namespace CameraCopyTool.Views
                 UploadProgressBar.Value = percentage;
                 UploadProgressBar.UpdateLayout();
                 
-                ProgressText.Text = $"{percentage:F1}%";
-                SpeedText.Text = progress.SpeedString;
+                PercentageText.Text = $"{percentage:F1}%";
+                // Speed removed
                 TimeText.Text = progress.TimeRemainingString;
                 
                 // Auto-complete on 100%
@@ -94,8 +94,8 @@ namespace CameraCopyTool.Views
             Dispatcher.Invoke(() =>
             {
                 UploadProgressBar.Value = 100;
-                ProgressText.Text = "✓ Upload Complete!";
-                SpeedText.Text = "Done";
+                PercentageText.Text = "✓ Upload Complete!";
+                // SpeedText removed
                 TimeText.Text = "";
                 
                 // Hide Cancel button, show OK button

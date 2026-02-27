@@ -282,7 +282,7 @@ namespace CameraCopyTool
                 // Check if authenticated, if not show auth dialog
                 if (!_googleDriveService.IsAuthenticated)
                 {
-                    var authDialog = new GoogleDriveAuthDialog { Owner = this };
+                    var authDialog = new GoogleDriveAuthDialog(_viewModel.FontSize) { Owner = this };
                     var authResult = authDialog.ShowDialog();
 
                     if (authResult != true || !authDialog.UserConsentGiven)
@@ -310,12 +310,7 @@ namespace CameraCopyTool
                         return;
                     }
 
-                    MessageBox.Show(
-                        "✓ Successfully connected to Google Drive!",
-                        "Authentication Successful",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                    
+                    // Authentication successful - no MessageBox needed
                     // Force refresh the status bar to show connected status
                     _viewModel.OnPropertyChanged(nameof(MainViewModel.GoogleDriveStatus));
                     System.Diagnostics.Debug.WriteLine($"Status bar updated: {_viewModel.GoogleDriveStatus}");

@@ -212,7 +212,7 @@ namespace CameraCopyTool.Services
                 
                 try
                 {
-                    var uploadResult = await uploadRequest.UploadAsync(CancellationToken.None);
+                    var uploadResult = await uploadRequest.UploadAsync(cancellationToken);
                     
                     FileLogger.Log($"Upload completed: {uploadResult.Status}");
                     System.Diagnostics.Debug.WriteLine($"Upload completed: {uploadResult.Status}");
