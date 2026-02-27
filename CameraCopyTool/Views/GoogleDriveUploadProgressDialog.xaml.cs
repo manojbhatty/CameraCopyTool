@@ -134,6 +134,15 @@ namespace CameraCopyTool.Views
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             _isCancelled = true;
+            
+            // Change icon to orange warning
+            StatusIcon.Text = "⚠️";
+            StatusIcon.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
+            
+            // Update title
+            TitleText.Text = "Upload Cancelled";
+            TitleText.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
+            
             DialogResult = false;
             Close();
         }
@@ -154,6 +163,14 @@ namespace CameraCopyTool.Views
 
             Dispatcher.Invoke(() =>
             {
+                // Change icon from cloud to green checkmark
+                StatusIcon.Text = "✅";
+                StatusIcon.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
+                
+                // Update title to show success
+                TitleText.Text = "Upload Success!";
+                TitleText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
+                
                 UploadProgressBar.Value = 100;
                 PercentageText.Text = "100%";
                 TimeText.Text = "✓ Upload Success!";
