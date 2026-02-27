@@ -21,14 +21,15 @@ namespace CameraCopyTool.Views
             _startTime = DateTime.Now;
 
             // Apply font size to all elements
-            TitleText.FontSize = fontSize * 1.2;        // ~24px at base 20
+            TitleText.FontSize = fontSize * 1.1;        // ~22px at base 20
+            StatusMessage.FontSize = fontSize * 0.8;    // ~16px at base 20
             FileNameLabel.FontSize = fontSize * 0.6;    // ~12px at base 20
             FileNameText.FontSize = fontSize * 0.8;     // ~16px at base 20
             SizeLabel.FontSize = fontSize * 0.6;        // ~12px at base 20
             FileSizeText.FontSize = fontSize * 0.8;     // ~16px at base 20
             PercentageLabel.FontSize = fontSize * 0.6;  // ~12px at base 20
             TimeLabel.FontSize = fontSize * 0.6;        // ~12px at base 20
-            TimeText.FontSize = fontSize * 0.7;         // ~14px at base 20
+            TimeText.FontSize = fontSize * 0.75;        // ~15px at base 20
             CancelButton.FontSize = fontSize;
             OkButton.FontSize = fontSize;
 
@@ -53,8 +54,26 @@ namespace CameraCopyTool.Views
                 UploadProgressBar.Value = percentage;
 
                 // Update percentage text
-                string percentageStr = $"{percentage:F1}%";
+                string percentageStr = $"{percentage:F0}%";
                 PercentageText.Text = percentageStr;
+
+                // Update status message based on progress
+                if (percentage < 10)
+                {
+                    StatusMessage.Text = "Starting upload... please wait";
+                }
+                else if (percentage < 50)
+                {
+                    StatusMessage.Text = "Uploading... please wait";
+                }
+                else if (percentage < 90)
+                {
+                    StatusMessage.Text = "Making good progress...";
+                }
+                else if (percentage < 100)
+                {
+                    StatusMessage.Text = "Almost done...";
+                }
 
                 // Calculate time remaining
                 if (progress.BytesSent > 0 && progress.TotalBytes > 0 && percentage < 100)

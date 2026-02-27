@@ -28,6 +28,13 @@
                        x:Name="TitleText"
                        FontWeight="Bold"
                        HorizontalAlignment="Center"
+                       Margin="0,0,0,5"/>
+
+            <TextBlock x:Name="StatusMessage"
+                       Text="Starting upload... please wait"
+                       Foreground="#666666"
+                       FontSize="14"
+                       HorizontalAlignment="Center"
                        Margin="0,0,0,15"/>
 
             <StackPanel Margin="0,0,0,10">
