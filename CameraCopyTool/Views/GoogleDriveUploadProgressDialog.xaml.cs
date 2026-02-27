@@ -23,20 +23,20 @@ namespace CameraCopyTool.Views
             // Apply font size to all elements
             TitleText.FontSize = fontSize * 1.1;        // ~22px at base 20
             StatusMessage.FontSize = fontSize * 0.8;    // ~16px at base 20
-            FileNameLabel.FontSize = fontSize * 0.6;    // ~12px at base 20
-            FileNameText.FontSize = fontSize * 0.8;     // ~16px at base 20
-            SizeLabel.FontSize = fontSize * 0.6;        // ~12px at base 20
-            FileSizeText.FontSize = fontSize * 0.8;     // ~16px at base 20
-            PercentageLabel.FontSize = fontSize * 0.6;  // ~12px at base 20
-            TimeLabel.FontSize = fontSize * 0.6;        // ~12px at base 20
-            TimeText.FontSize = fontSize * 0.75;        // ~15px at base 20
-            ReassuranceText.FontSize = fontSize * 0.7;  // ~14px at base 20
+            FileNameLabel.FontSize = fontSize * 0.7;    // ~12px at base 20
+            FileNameText.FontSize = fontSize * 0.9;     // ~16px at base 20
+            SizeLabel.FontSize = fontSize * 0.7;        // ~12px at base 20
+            FileSizeText.FontSize = fontSize * 0.9;     // ~16px at base 20
+            // PercentageLabel.FontSize = fontSize * 0.6;  // ~12px at base 20
+            TimeLabel.FontSize = fontSize * 0.8;        // ~12px at base 20
+            TimeText.FontSize = fontSize;        // ~15px at base 20
+            ReassuranceText.FontSize = fontSize * 0.8;  // ~14px at base 20
             CancelButton.FontSize = fontSize;
             OkButton.FontSize = fontSize;
 
             // Start with 0%
             UploadProgressBar.Value = 0;
-            PercentageText.Text = "0%";
+            // PercentageText.Text = "0%";
             TimeText.Text = "Starting...";
         }
 
@@ -53,10 +53,12 @@ namespace CameraCopyTool.Views
 
                 // Update progress bar
                 UploadProgressBar.Value = percentage;
+                
+                // Update percentage text inside progress bar
+                ProgressPercentageText.Text = $"{percentage:F0}%";
 
-                // Update percentage text
-                string percentageStr = $"{percentage:F0}%";
-                PercentageText.Text = percentageStr;
+                // Update percentage text below (keep for consistency)
+                // PercentageText.Text = $"{percentage:F0}%";
 
                 // Update status message based on progress
                 if (percentage < 10)
@@ -196,7 +198,7 @@ namespace CameraCopyTool.Views
                 StatusMessage.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
 
                 UploadProgressBar.Value = 100;
-                PercentageText.Text = "100%";
+                // PercentageText.Text = "100%";
                 TimeText.Text = "✓ Upload Success!";
                 TimeText.Foreground = new SolidColorBrush(Colors.Green);
                 
