@@ -317,7 +317,8 @@ namespace CameraCopyTool
                 }
 
                 // Show upload progress dialog
-                var progressDialog = new GoogleDriveUploadProgressDialog(selectedFile.DisplayName, _viewModel.FontSize) { Owner = this };
+                var fileInfo = new FileInfo(filePath);
+                var progressDialog = new GoogleDriveUploadProgressDialog(selectedFile.DisplayName, fileInfo.Length, _viewModel.FontSize) { Owner = this };
 
                 // Start upload in background
                 var uploadTask = Task.Run(async () =>
@@ -346,32 +347,19 @@ namespace CameraCopyTool
                 // Wait for upload to complete
                 var result = await uploadTask;
 
-                if (result?.Success == true)
+                if (result?.Success != true)
                 {
+                    // Play error sound and show error message
+                    System.Media.SystemSounds.Hand.Play();
+                    
+                    var errorMessage = result?.Error ?? "Upload failed. Please check your connection and try again.";
                     MessageBox.Show(
-                        $"✓ Successfully uploaded '{result.FileName}' to Google Drive!\n\n" +
-                        $"File size: {FormatFileSize(result.FileSize)}\n" +
-                        $"File ID: {result.FileId}",
-                        "Upload Complete",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-                else if (result?.Error != null)
-                {
-                    MessageBox.Show(
-                        $"Upload failed:\n\n{result.Error}",
+                        $"Upload failed:\n\n{errorMessage}",
                         "Upload Failed",
                         MessageBoxButton.OK,
                         MessageBoxImage.Error);
                 }
-                else
-                {
-                    MessageBox.Show(
-                        "Upload failed. Please check your connection and try again.",
-                        "Upload Failed",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                }
+                // Success - dialog already shows "Upload Success!" with sound
             }
             catch (Exception ex)
             {

@@ -1,73 +1,134 @@
 using System;
-using System.Collections.Generic;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media;
 using CameraCopyTool.Models;
 
 namespace CameraCopyTool.Views
 {
-    /// <summary>
-    /// Interaction logic for GoogleDriveUploadProgressDialog.xaml
-    /// </summary>
     public partial class GoogleDriveUploadProgressDialog : Window, IProgress<UploadProgress>
     {
         private bool _isCancelled;
         private bool _isCompleted;
+        private DateTime _startTime;
 
-        public GoogleDriveUploadProgressDialog(string fileName, double fontSize = 20)
+        public GoogleDriveUploadProgressDialog(string fileName, long fileSize, double fontSize = 20)
         {
             InitializeComponent();
             FileNameText.Text = fileName;
+            FileSizeText.Text = FormatFileSize(fileSize);
             _isCancelled = false;
             _isCompleted = false;
-            
-            // Apply font size immediately to all elements
-            this.FontSize = fontSize;
-            FileNameText.FontSize = fontSize;
-            PercentageText.FontSize = fontSize;
-            // SpeedText removed
-            TimeText.FontSize = fontSize;
+            _startTime = DateTime.Now;
+
+            // Apply font size to all elements
+            TitleText.FontSize = fontSize * 1.2;        // ~24px at base 20
+            FileNameLabel.FontSize = fontSize * 0.6;    // ~12px at base 20
+            FileNameText.FontSize = fontSize * 0.8;     // ~16px at base 20
+            SizeLabel.FontSize = fontSize * 0.6;        // ~12px at base 20
+            FileSizeText.FontSize = fontSize * 0.8;     // ~16px at base 20
+            PercentageLabel.FontSize = fontSize * 0.6;  // ~12px at base 20
+            TimeLabel.FontSize = fontSize * 0.6;        // ~12px at base 20
+            TimeText.FontSize = fontSize * 0.7;         // ~14px at base 20
             CancelButton.FontSize = fontSize;
             OkButton.FontSize = fontSize;
+
+            // Start with 0%
+            UploadProgressBar.Value = 0;
+            PercentageText.Text = "0%";
+            TimeText.Text = "Starting...";
         }
 
-        /// <summary>
-        /// Gets a value indicating whether the upload was cancelled.
-        /// </summary>
         public bool IsCancelled => _isCancelled;
-
-        /// <summary>
-        /// Gets a value indicating whether the upload completed successfully.
-        /// </summary>
         public bool IsCompleted => _isCompleted;
 
-        /// <summary>
-        /// Reports progress update.
-        /// </summary>
         public void Report(UploadProgress progress)
         {
             Dispatcher.Invoke(() =>
             {
-                // Ensure progress bar updates correctly
-                var percentage = progress.Percentage;
+                double percentage = progress.Percentage;
                 if (percentage < 0) percentage = 0;
                 if (percentage > 100) percentage = 100;
-                
-                // Explicitly set and refresh progress bar
+
+                // Update progress bar
                 UploadProgressBar.Value = percentage;
-                UploadProgressBar.UpdateLayout();
-                
-                PercentageText.Text = $"{percentage:F1}%";
-                // Speed removed
-                TimeText.Text = progress.TimeRemainingString;
-                
-                // Auto-complete on 100%
-                if (percentage >= 100.0 && !_isCompleted)
+
+                // Update percentage text
+                string percentageStr = $"{percentage:F1}%";
+                PercentageText.Text = percentageStr;
+
+                // Calculate time remaining
+                if (progress.BytesSent > 0 && progress.TotalBytes > 0 && percentage < 100)
                 {
-                    SetCompleted();
+                    var elapsedSeconds = (DateTime.Now - _startTime).TotalSeconds;
+
+                    if (elapsedSeconds > 0.1)
+                    {
+                        var bytesPerSecond = progress.BytesSent / elapsedSeconds;
+                        var remainingBytes = progress.TotalBytes - progress.BytesSent;
+
+                        if (bytesPerSecond > 0 && remainingBytes > 0)
+                        {
+                            var remainingSeconds = remainingBytes / bytesPerSecond;
+                            TimeText.Text = FormatTimeRemaining(remainingSeconds);
+                        }
+                        else
+                        {
+                            TimeText.Text = "Calculating...";
+                        }
+                    }
+                    else
+                    {
+                        TimeText.Text = "Starting...";
+                    }
+                }
+                else if (percentage >= 100)
+                {
+                    TimeText.Text = "Complete!";
+                    
+                    // Call SetCompleted to show success state
+                    if (!_isCompleted)
+                    {
+                        SetCompleted();
+                    }
+                }
+                else
+                {
+                    TimeText.Text = "Starting...";
                 }
             });
+        }
+
+        private string FormatTimeRemaining(double seconds)
+        {
+            if (seconds < 60)
+            {
+                return $"{(int)seconds} seconds";
+            }
+            else if (seconds < 3600)
+            {
+                var minutes = (int)(seconds / 60);
+                var secs = (int)(seconds % 60);
+                return $"{minutes}m {secs}s";
+            }
+            else
+            {
+                var hours = (int)(seconds / 3600);
+                var minutes = (int)((seconds % 3600) / 60);
+                return $"{hours}h {minutes}m";
+            }
+        }
+        
+        private string FormatFileSize(long bytes)
+        {
+            string[] sizes = { "B", "KB", "MB", "GB" };
+            double len = bytes;
+            int order = 0;
+            while (len >= 1024 && order < sizes.Length - 1)
+            {
+                order++;
+                len = len / 1024;
+            }
+            return $"{len:0.##} {sizes[order]}";
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
@@ -90,18 +151,21 @@ namespace CameraCopyTool.Views
         public void SetCompleted()
         {
             _isCompleted = true;
-            
+
             Dispatcher.Invoke(() =>
             {
                 UploadProgressBar.Value = 100;
-                PercentageText.Text = "✓ Upload Complete!";
-                // SpeedText removed
-                TimeText.Text = "";
-                
+                PercentageText.Text = "100%";
+                TimeText.Text = "✓ Upload Success!";
+                TimeText.Foreground = new SolidColorBrush(Colors.Green);
+
                 // Hide Cancel button, show OK button
                 CancelButton.Visibility = Visibility.Collapsed;
                 OkButton.Visibility = Visibility.Visible;
                 OkButton.Focus();
+                
+                // Play success sound
+                System.Media.SystemSounds.Asterisk.Play();
             });
         }
     }

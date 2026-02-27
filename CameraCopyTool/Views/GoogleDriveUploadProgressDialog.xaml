@@ -2,14 +2,14 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Uploading to Google Drive"
-        Height="280" Width="500"
+        Height="420" Width="500"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
         Topmost="True"
         Background="White">
 
-    <Grid Margin="25">
+    <Grid Margin="15">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -17,24 +17,38 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <StackPanel Grid.Row="0">
+        <StackPanel Grid.Row="0" Margin="0,0,0,10">
             <TextBlock Text="☁️ Uploading to Google Drive"
-                       FontSize="24"
+                       x:Name="TitleText"
                        FontWeight="Bold"
-                       Margin="0,0,0,10"/>
+                       Margin="0,0,0,15"/>
 
-            <TextBlock x:Name="FileNameText"
-                       Text="filename.mp4"
-                       TextTrimming="CharacterEllipsis"
-                       Margin="0,0,0,20"/>
+            <StackPanel Margin="0,0,0,10">
+                <TextBlock Text="File Name:"
+                           x:Name="FileNameLabel"
+                           Foreground="#666666"/>
+                <TextBlock x:Name="FileNameText"
+                           Text="filename.mp4"
+                           TextTrimming="CharacterEllipsis"
+                           FontWeight="Medium"/>
+            </StackPanel>
+
+            <StackPanel>
+                <TextBlock Text="Size:"
+                           x:Name="SizeLabel"
+                           Foreground="#666666"/>
+                <TextBlock x:Name="FileSizeText"
+                           Text="0 MB"
+                           FontWeight="Medium"/>
+            </StackPanel>
         </StackPanel>
 
         <!-- Progress Section -->
         <StackPanel Grid.Row="1" VerticalAlignment="Center">
             <!-- Progress Bar -->
             <ProgressBar x:Name="UploadProgressBar"
-                         Minimum="0" 
-                         Maximum="100" 
+                         Minimum="0"
+                         Maximum="100"
                          Value="5"
                          Height="30"
                          Margin="0,0,0,15"/>
@@ -46,28 +60,24 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0">
-                    <TextBlock Text="Completed:"
-                               FontSize="12"
+                <StackPanel Grid.Column="0" HorizontalAlignment="Left">
+                    <TextBlock x:Name="PercentageLabel"
+                               Text="Completed:"
                                Foreground="#666666"/>
                     <TextBlock x:Name="PercentageText"
-                               Text="5%"
-                               FontSize="18"
-                               FontWeight="Bold"
-                               Foreground="#000000"/>
+                               Text="0%"
+                               FontWeight="Bold"/>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1">
-                    <TextBlock Text="Time Remaining:"
-                               FontSize="12"
+                <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                    <TextBlock x:Name="TimeLabel"
+                               Text="Time Remaining:"
                                Foreground="#666666"
                                HorizontalAlignment="Right"/>
                     <TextBlock x:Name="TimeText"
                                Text="Calculating..."
-                               FontSize="14"
                                FontWeight="Medium"
-                               HorizontalAlignment="Right"
-                               Foreground="#000000"/>
+                               HorizontalAlignment="Right"/>
                 </StackPanel>
             </Grid>
         </StackPanel>
