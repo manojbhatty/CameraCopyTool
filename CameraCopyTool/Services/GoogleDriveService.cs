@@ -41,12 +41,12 @@ namespace CameraCopyTool.Services
         /// Uploads a file to Google Drive.
         /// </summary>
         /// <param name="filePath">Path to the file to upload.</param>
-        /// <param name="progress">Progress reporter for upload progress.</param>
+        /// <param name="progress">Progress reporter for upload progress (percentage, speed, time remaining).</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>Google Drive file ID if successful, null otherwise.</returns>
-        Task<string?> UploadFileAsync(
+        /// <returns>Upload result with file ID and status, or null if failed.</returns>
+        Task<UploadResult?> UploadFileAsync(
             string filePath,
-            IProgress<double>? progress = null,
+            IProgress<UploadProgress>? progress = null,
             CancellationToken cancellationToken = default);
     }
 
@@ -66,7 +66,22 @@ namespace CameraCopyTool.Services
 
         public bool IsAuthenticated => _credential != null;
 
-        public string? UserEmail => _credential?.UserId;
+        public string? UserEmail
+        {
+            get
+            {
+                // Try to get email from user info
+                var email = _credential?.UserId;
+                
+                // If it's just "user" or empty, return generic message
+                if (string.IsNullOrEmpty(email) || email == "user")
+                {
+                    return "Google Account";
+                }
+                
+                return email;
+            }
+        }
 
         /// <summary>
         /// Authenticates the user with Google Drive using OAuth 2.0.
@@ -145,9 +160,9 @@ namespace CameraCopyTool.Services
         /// <summary>
         /// Uploads a file to Google Drive.
         /// </summary>
-        public async Task<string?> UploadFileAsync(
+        public async Task<UploadResult?> UploadFileAsync(
             string filePath,
-            IProgress<double>? progress = null,
+            IProgress<UploadProgress>? progress = null,
             CancellationToken cancellationToken = default)
         {
             if (!IsAuthenticated || _driveService == null)
@@ -159,6 +174,9 @@ namespace CameraCopyTool.Services
             {
                 var fileName = Path.GetFileName(filePath);
                 var fileSize = new FileInfo(filePath).Length;
+                
+                FileLogger.Log($"Starting upload: {fileName} ({fileSize} bytes)");
+                System.Diagnostics.Debug.WriteLine($"Starting upload: {fileName} ({fileSize} bytes)");
 
                 using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
 
@@ -171,43 +189,129 @@ namespace CameraCopyTool.Services
                 uploadRequest.Fields = "id";
 
                 // Track progress
-                var lastProgressValue = -1.0;
                 uploadRequest.ProgressChanged += (uploadProgress) =>
                 {
-                    if (progress != null && uploadProgress.BytesSent > 0)
+                    var logMsg = $"Progress: {uploadProgress.Status} - {uploadProgress.BytesSent} bytes";
+                    FileLogger.Log(logMsg);
+                    System.Diagnostics.Debug.WriteLine(logMsg);
+                    
+                    progress?.Report(new UploadProgress
                     {
-                        var percentage = (double)uploadProgress.BytesSent / fileSize * 100;
-                        var roundedPercentage = Math.Round(percentage, 2);
-
-                        // Only report if changed to avoid too many updates
-                        if (Math.Abs(roundedPercentage - lastProgressValue) >= 1.0)
-                        {
-                            progress.Report(roundedPercentage);
-                            lastProgressValue = roundedPercentage;
-                        }
-                    }
+                        Percentage = fileSize > 0 ? Math.Round((double)uploadProgress.BytesSent / fileSize * 100, 1) : 0,
+                        BytesSent = uploadProgress.BytesSent,
+                        TotalBytes = fileSize,
+                        BytesPerSecond = 0,
+                        SecondsRemaining = 0
+                    });
                 };
 
+                FileLogger.Log("Upload request sent...");
+                System.Diagnostics.Debug.WriteLine("Upload request sent...");
+                
                 Google.Apis.Drive.v3.Data.File? uploadedFile = null;
-                var uploadResult = await uploadRequest.UploadAsync(cancellationToken);
-
-                if (uploadResult.Status == Google.Apis.Upload.UploadStatus.Completed)
+                
+                try
                 {
-                    uploadedFile = uploadRequest.ResponseBody;
-                    progress?.Report(100.0);
-                    return uploadedFile?.Id;
-                }
+                    var uploadResult = await uploadRequest.UploadAsync(CancellationToken.None);
+                    
+                    FileLogger.Log($"Upload completed: {uploadResult.Status}");
+                    System.Diagnostics.Debug.WriteLine($"Upload completed: {uploadResult.Status}");
 
-                return null;
+                    if (uploadResult.Status == Google.Apis.Upload.UploadStatus.Completed)
+                    {
+                        uploadedFile = uploadRequest.ResponseBody;
+                        FileLogger.Log($"File uploaded successfully: {uploadedFile?.Id}");
+                        System.Diagnostics.Debug.WriteLine($"File uploaded successfully: {uploadedFile?.Id}");
+                        
+                        // Final progress report
+                        progress?.Report(new UploadProgress
+                        {
+                            Percentage = 100.0,
+                            BytesSent = fileSize,
+                            TotalBytes = fileSize,
+                            BytesPerSecond = 0,
+                            SecondsRemaining = 0
+                        });
+                        
+                        return new UploadResult
+                        {
+                            Success = true,
+                            FileId = uploadedFile?.Id,
+                            FileName = fileName,
+                            FileSize = fileSize
+                        };
+                    }
+                    
+                    if (uploadResult.Exception != null)
+                    {
+                        FileLogger.Log($"Upload exception: {uploadResult.Exception.Message}");
+                        FileLogger.Log($"Stack trace: {uploadResult.Exception.StackTrace}");
+                        System.Diagnostics.Debug.WriteLine($"Upload exception: {uploadResult.Exception.Message}");
+                        
+                        return new UploadResult
+                        {
+                            Success = false,
+                            Error = $"Upload failed: {uploadResult.Exception.Message}"
+                        };
+                    }
+
+                    FileLogger.Log($"Upload failed: {uploadResult.Status}");
+                    System.Diagnostics.Debug.WriteLine($"Upload failed: {uploadResult.Status}");
+                    return new UploadResult
+                    {
+                        Success = false,
+                        Error = $"Upload failed with status: {uploadResult.Status}"
+                    };
+                }
+                catch (Exception ex) when (ex.GetType().Name.Contains("GoogleApi"))
+                {
+                    var googleEx = ex as dynamic;
+                    var httpStatus = googleEx?.HttpStatusCode ?? "Unknown";
+                    
+                    FileLogger.Log($"Google API Exception: {ex.Message}");
+                    FileLogger.Log($"HTTP Status: {httpStatus}");
+                    FileLogger.Log($"Stack trace: {ex.StackTrace}");
+                    System.Diagnostics.Debug.WriteLine($"Google API Exception: {ex.Message}");
+                    
+                    return new UploadResult
+                    {
+                        Success = false,
+                        Error = $"Google API Error ({httpStatus}): {ex.Message}\n\n" +
+                               $"Common causes:\n" +
+                               $"• Google Drive API not enabled in Google Cloud Console\n" +
+                               $"• OAuth consent screen not configured\n" +
+                               $"• Invalid OAuth credentials"
+                    };
+                }
+                catch (Exception ex)
+                {
+                    FileLogger.Log($"General Exception: {ex.Message}");
+                    FileLogger.Log($"Stack trace: {ex.StackTrace}");
+                    System.Diagnostics.Debug.WriteLine($"General Exception: {ex.Message}");
+                    
+                    return new UploadResult
+                    {
+                        Success = false,
+                        Error = $"Upload failed: {ex.Message}"
+                    };
+                }
             }
             catch (TaskCanceledException)
             {
-                return null;
+                return new UploadResult
+                {
+                    Success = false,
+                    Error = "Upload was cancelled by the user"
+                };
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Upload failed: {ex.Message}");
-                return null;
+                return new UploadResult
+                {
+                    Success = false,
+                    Error = $"Upload failed: {ex.Message}"
+                };
             }
         }
     }

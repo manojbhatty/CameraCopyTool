@@ -315,20 +315,24 @@ namespace CameraCopyTool
                         "Authentication Successful",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
+                    
+                    // Force refresh the status bar to show connected status
+                    _viewModel.OnPropertyChanged(nameof(MainViewModel.GoogleDriveStatus));
+                    System.Diagnostics.Debug.WriteLine($"Status bar updated: {_viewModel.GoogleDriveStatus}");
                 }
 
                 // Show upload progress dialog
-                var progressDialog = new GoogleDriveUploadProgressDialog(selectedFile.DisplayName) { Owner = this };
-                
+                var progressDialog = new GoogleDriveUploadProgressDialog(selectedFile.DisplayName, _viewModel.FontSize) { Owner = this };
+
                 // Start upload in background
                 var uploadTask = Task.Run(async () =>
                 {
-                    var fileId = await _googleDriveService.UploadFileAsync(
+                    var result = await _googleDriveService.UploadFileAsync(
                         filePath,
                         progressDialog,
                         CancellationToken.None);
-                    
-                    return fileId;
+
+                    return result;
                 });
 
                 // Show dialog while upload runs
@@ -345,15 +349,25 @@ namespace CameraCopyTool
                 }
 
                 // Wait for upload to complete
-                var fileId = await uploadTask;
+                var result = await uploadTask;
 
-                if (fileId != null)
+                if (result?.Success == true)
                 {
                     MessageBox.Show(
-                        $"Successfully uploaded '{selectedFile.DisplayName}' to Google Drive!\n\nFile ID: {fileId}",
+                        $"✓ Successfully uploaded '{result.FileName}' to Google Drive!\n\n" +
+                        $"File size: {FormatFileSize(result.FileSize)}\n" +
+                        $"File ID: {result.FileId}",
                         "Upload Complete",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
+                }
+                else if (result?.Error != null)
+                {
+                    MessageBox.Show(
+                        $"Upload failed:\n\n{result.Error}",
+                        "Upload Failed",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
                 }
                 else
                 {
@@ -385,6 +399,18 @@ namespace CameraCopyTool
                 item.IsSelected = true;
                 item.Focus();
             }
+        }
+
+        /// <summary>
+        /// Formats a file size in bytes to a human-readable string.
+        /// </summary>
+        private static string FormatFileSize(long bytes)
+        {
+            if (bytes < 0) return "Unknown";
+            if (bytes < 1024) return $"{bytes} B";
+            if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+            if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024 * 1024.0):F1} MB";
+            return $"{bytes / (1024 * 1024 * 1024.0):F1} GB";
         }
 
         /// <summary>

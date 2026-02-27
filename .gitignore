@@ -11,3 +11,6 @@
 /CameraCopyTool.Tests/bin/Debug/net10.0
 CameraCopyTool.UI.Tests/bin/
 CameraCopyTool.Tests/bin/
+
+# Configuration files with secrets
+/CameraCopyTool/App.config
