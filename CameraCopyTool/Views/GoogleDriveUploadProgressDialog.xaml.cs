@@ -30,6 +30,7 @@ namespace CameraCopyTool.Views
             PercentageLabel.FontSize = fontSize * 0.6;  // ~12px at base 20
             TimeLabel.FontSize = fontSize * 0.6;        // ~12px at base 20
             TimeText.FontSize = fontSize * 0.75;        // ~15px at base 20
+            ReassuranceText.FontSize = fontSize * 0.7;  // ~14px at base 20
             CancelButton.FontSize = fontSize;
             OkButton.FontSize = fontSize;
 
@@ -176,7 +177,7 @@ namespace CameraCopyTool.Views
         /// <summary>
         /// Sets the dialog to completed state.
         /// </summary>
-        public void SetCompleted()
+       public void SetCompleted()
         {
             _isCompleted = true;
 
@@ -185,21 +186,29 @@ namespace CameraCopyTool.Views
                 // Change icon from cloud to green checkmark
                 StatusIcon.Text = "✅";
                 StatusIcon.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
-                
+
                 // Update title to show success
                 TitleText.Text = "Upload Success!";
                 TitleText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
                 
+                // Update status message to success
+                StatusMessage.Text = "✓ Your file is safe on Google Drive!";
+                StatusMessage.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
+
                 UploadProgressBar.Value = 100;
                 PercentageText.Text = "100%";
                 TimeText.Text = "✓ Upload Success!";
                 TimeText.Foreground = new SolidColorBrush(Colors.Green);
+                
+                // Update reassurance text to success message
+                ReassuranceText.Text = "✓ Upload successful! You can now close this window.";
+                ReassuranceText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
 
                 // Hide Cancel button, show OK button
                 CancelButton.Visibility = Visibility.Collapsed;
                 OkButton.Visibility = Visibility.Visible;
                 OkButton.Focus();
-                
+
                 // Play success sound
                 System.Media.SystemSounds.Asterisk.Play();
             });
