@@ -768,12 +768,59 @@ public string ComputeFileHash(string filePath)
 
 | Issue | Title | Estimated Complexity | Dependencies |
 |-------|-------|---------------------|--------------|
-| #1 | Context Menu Infrastructure | Low | None |
-| #2 | Google Drive Authentication | Medium | None |
-| #3 | Single File Upload | Medium | Issue #2 |
-| #4 | Multiple File Upload | Medium | Issue #3 |
-| #5 | Error Handling & Recovery | High | Issue #3, #4 |
-| #6 | Upload History Tracking | Medium | Issue #3 |
+| #1 | Context Menu Infrastructure | Low | None | ✅ COMPLETE |
+| #2 | Google Drive Authentication | Medium | None | ✅ COMPLETE |
+| #3 | Single File Upload | Medium | Issue #2 | ✅ COMPLETE |
+| #4 | Multiple File Upload | Medium | Issue #3 | ✅ COMPLETE |
+| #5 | Error Handling & Recovery | High | Issue #3, #4 | ✅ COMPLETE |
+| #6 | Upload History Tracking | Medium | Issue #3 | ✅ COMPLETE |
+
+---
+
+## Issue #6 Completion Status
+
+### Completed Features ✅
+
+- [x] Upload history created on successful upload
+- [x] History entry includes: Local Path, File Name, File Size, SHA256 Hash, Google Drive ID, Timestamp, Status
+- [x] Upload status shown in file list with cloud icon (☁️⬆️)
+- [x] Tooltip on hover shows "Uploaded to Google Drive on [date]" (12-hour format)
+- [x] Changed files detected via SHA256 hash comparison
+- [x] Warning icon (⚠️) for changed files
+- [x] Deleted icon (❌) for missing local files
+- [x] Upload history loaded on startup
+- [x] File statuses updated on load
+- [x] Automatic cleanup on startup
+- [x] Missing files marked with LocalFileDeleted status
+- [x] 30-day grace period before deletion
+- [x] Max 500 entries enforced (configurable via user settings)
+- [x] Oldest entries removed first
+- [x] Cleanup logged
+- [x] 7-day cleanup frequency (configurable)
+- [x] lastCleanup timestamp tracked
+- [x] Log file size limits (5 MB max per file, configurable)
+- [x] Log retention (30 days, configurable)
+- [x] All settings stored in user settings for runtime configuration
+
+### Implementation Details
+
+**Files Created/Modified:**
+- `Models/UploadHistoryEntry.cs` - Added SHA256 hash, change detection
+- `Models/FileItem.cs` - Added UploadStatus, UploadIcon, UploadIconColor
+- `Services/UploadHistoryService.cs` - Cleanup logic, settings management
+- `Services/FileLogger.cs` - Max file size enforcement
+- `ViewModels/MainViewModel.cs` - UpdateUploadStatus() method
+- `Views/MainWindow.xaml` - Cloud icon display with color coding
+- `Properties/Settings.settings` - User-configurable settings
+
+**User Settings (Configurable at Runtime):**
+- `UploadHistoryMaxEntries` (default: 500)
+- `DebugLogMaxFileSize` (default: 5 MB)
+- `DebugLogRetentionDays` (default: 30 days)
+
+**Storage Location:**
+- Upload history: `<AppFolder>\upload_history.json`
+- Debug logs: `<AppFolder>\logs\upload-YYYY-MM-DD.log`
 
 ---
 

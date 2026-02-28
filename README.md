@@ -69,13 +69,23 @@ Upload files from the destination folder directly to Google Drive:
 - 🔄 **Auto-Retry**: Retries failed uploads with exponential backoff (1s, 2s, 4s, 8s, 16s)
 - 📊 **Upload History**: All uploads logged to `upload_history.json` for troubleshooting
 - ⚠️ **Clear Status**: Shows "No internet connection. Waiting to resume..." during outages
+- ☁️ **Visual Indicators**: Cloud icon (☁️⬆️) appears next to uploaded files
+- 📈 **Change Detection**: Warning icon (⚠️) if file changed since upload
+- ❌ **Deleted Files**: Cross icon (❌) if local file was deleted
 
 ### Log Files
 
 All logs are saved in the application folder:
-- `upload_history.json` - Complete upload history with status and duration
+- `upload_history.json` - Complete upload history with status and duration (max 500 entries)
 - `error.log` - Application errors and exceptions
-- `logs/upload-YYYY-MM-DD.log` - Daily upload debug logs
+- `logs/upload-YYYY-MM-DD.log` - Daily upload debug logs (max 5 MB, kept for 30 days)
+
+### Configurable Settings
+
+All log and history settings can be adjusted at runtime via user settings:
+- `UploadHistoryMaxEntries` - Max entries in upload history (default: 500)
+- `DebugLogMaxFileSize` - Max size per debug log file (default: 5 MB)
+- `DebugLogRetentionDays` - Days to keep debug logs (default: 30)
 
 ## CI/CD
 
