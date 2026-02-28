@@ -328,11 +328,11 @@ namespace CameraCopyTool
                 {
                     var result = await _googleDriveService.UploadFileWithRetryAsync(
                         filePath,
-                        async (error) =>
+                        async (error, retryCount, maxRetries) =>
                         {
                             // This callback is invoked on error
-                            // Show error dialog and wait for user action
-                            return await progressDialog.ShowErrorAsync(error);
+                            // Show error dialog or status message based on error type
+                            return await progressDialog.ShowErrorAsync(error, retryCount, maxRetries);
                         },
                         progressDialog,
                         cts.Token);

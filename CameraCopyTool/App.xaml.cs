@@ -58,6 +58,7 @@ namespace CameraCopyTool
             });
 
             // Register Google Drive service
+            services.AddSingleton<INetworkService, NetworkService>();
             services.AddSingleton<IGoogleDriveService, GoogleDriveService>();
 
             // Register upload history service

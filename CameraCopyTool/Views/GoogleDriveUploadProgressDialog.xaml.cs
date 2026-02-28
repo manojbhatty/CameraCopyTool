@@ -50,14 +50,33 @@ namespace CameraCopyTool.Views
         public bool IsPaused => _isPaused;
 
         /// <summary>
-        /// Shows an error dialog and waits for user action.
+        /// Shows an error dialog or status message based on error type.
+        /// For network errors, shows a status message and auto-retries.
+        /// For other errors, shows a dialog for user action.
         /// </summary>
         /// <param name="error">The upload error.</param>
+        /// <param name="retryCount">Current retry attempt (for non-network errors).</param>
+        /// <param name="maxRetries">Maximum retry attempts.</param>
         /// <returns>True if the upload should retry, false otherwise.</returns>
-        public async Task<bool> ShowErrorAsync(UploadError error)
+        public async Task<bool> ShowErrorAsync(UploadError error, int retryCount = 0, int maxRetries = 5)
         {
             _currentError = error;
 
+            // For network errors, show status message and auto-retry
+            if (error.Category == ErrorCategory.Network)
+            {
+                ShowNetworkWaiting();
+                return true; // Auto-retry for network errors
+            }
+
+            // For other retryable errors, show retry status
+            if (error.IsRetryable && retryCount < maxRetries)
+            {
+                ShowRetryStatus(retryCount + 1, maxRetries);
+                return true; // Auto-retry
+            }
+
+            // For non-retryable or max retries reached, show dialog
             var tcs = new TaskCompletionSource<bool>();
             _pauseCompletionSource = tcs;
 
@@ -127,6 +146,38 @@ namespace CameraCopyTool.Views
                 StatusIcon.Foreground = new SolidColorBrush(Colors.Black);
                 TitleText.Text = "Uploading to Google Drive";
                 TitleText.Foreground = new SolidColorBrush(Colors.Black);
+            });
+        }
+
+        /// <summary>
+        /// Shows network waiting status.
+        /// </summary>
+        public void ShowNetworkWaiting()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                StatusMessage.Text = "No internet connection. Waiting to resume...";
+                StatusMessage.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
+                StatusIcon.Text = "🌐";
+                StatusIcon.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
+                ReassuranceText.Text = "⏳ Upload will automatically resume when connection is restored";
+                ReassuranceText.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
+            });
+        }
+
+        /// <summary>
+        /// Shows retry status with countdown.
+        /// </summary>
+        /// <param name="retryCount">Current retry attempt.</param>
+        /// <param name="maxRetries">Maximum retry attempts.</param>
+        public void ShowRetryStatus(int retryCount, int maxRetries)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                StatusMessage.Text = $"Retrying upload... (attempt {retryCount} of {maxRetries})";
+                StatusMessage.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
+                ReassuranceText.Text = "⏳ Please wait, retrying automatically";
+                ReassuranceText.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
             });
         }
 

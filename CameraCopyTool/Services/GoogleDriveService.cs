@@ -70,13 +70,13 @@ namespace CameraCopyTool.Services
         /// Uploads a file to Google Drive with explicit retry control.
         /// </summary>
         /// <param name="filePath">Path to the file to upload.</param>
-        /// <param name="onError">Callback for error handling. Return true to retry, false to fail.</param>
+        /// <param name="onError">Callback for error handling. Return true to retry, false to fail. Receives error, retry count, and max retries.</param>
         /// <param name="progress">Progress reporter for upload progress (percentage, speed, time remaining).</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Upload result with file ID and status, or null if failed.</returns>
         Task<UploadResult?> UploadFileWithRetryAsync(
             string filePath,
-            Func<UploadError, Task<bool>> onError,
+            Func<UploadError, int, int, Task<bool>> onError,
             IProgress<UploadProgress>? progress = null,
             CancellationToken cancellationToken = default);
     }
@@ -88,15 +88,17 @@ namespace CameraCopyTool.Services
     {
         private readonly GoogleDriveSettings _settings;
         private readonly IUploadHistoryService _uploadHistoryService;
+        private readonly INetworkService _networkService;
         private UserCredential? _credential;
         private DriveService? _driveService;
         private readonly int _maxRetries;
         private readonly int[] _retryDelaysMs;
 
-        public GoogleDriveService(GoogleDriveSettings settings, IUploadHistoryService uploadHistoryService, int maxRetries = 5)
+        public GoogleDriveService(GoogleDriveSettings settings, IUploadHistoryService uploadHistoryService, INetworkService networkService, int maxRetries = 5)
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _uploadHistoryService = uploadHistoryService ?? throw new ArgumentNullException(nameof(uploadHistoryService));
+            _networkService = networkService ?? throw new ArgumentNullException(nameof(networkService));
             _maxRetries = maxRetries;
             // Exponential backoff: 1s, 2s, 4s, 8s, 16s
             _retryDelaysMs = new int[maxRetries];
@@ -209,7 +211,7 @@ namespace CameraCopyTool.Services
             IProgress<UploadProgress>? progress = null,
             CancellationToken cancellationToken = default)
         {
-            return await UploadFileWithRetryAsync(filePath, _ => Task.FromResult(false), progress, cancellationToken);
+            return await UploadFileWithRetryAsync(filePath, (_, _, _) => Task.FromResult(false), progress, cancellationToken);
         }
 
         /// <summary>
@@ -217,7 +219,7 @@ namespace CameraCopyTool.Services
         /// </summary>
         public async Task<UploadResult?> UploadFileWithRetryAsync(
             string filePath,
-            Func<UploadError, Task<bool>> onError,
+            Func<UploadError, int, int, Task<bool>> onError,
             IProgress<UploadProgress>? progress = null,
             CancellationToken cancellationToken = default)
         {
@@ -327,7 +329,7 @@ namespace CameraCopyTool.Services
                 // Call external error handler if provided
                 if (onError != null)
                 {
-                    errorArgs.ShouldRetry = await onError(lastError);
+                    errorArgs.ShouldRetry = await onError(lastError, retryCount + 1, _maxRetries);
                 }
 
                 // Raise event
@@ -342,12 +344,37 @@ namespace CameraCopyTool.Services
                     };
                 }
 
-                // Wait before retrying (exponential backoff)
-                var delay = errorArgs.RetryDelayMs > 0 ? errorArgs.RetryDelayMs : _retryDelaysMs[retryCount];
-                FileLogger.Log($"Retrying in {delay}ms...");
-                System.Diagnostics.Debug.WriteLine($"Retrying in {delay}ms...");
+                // For network errors, wait for network to be restored before retrying
+                if (lastError.Category == ErrorCategory.Network)
+                {
+                    FileLogger.Log("Network error - waiting for connection to restore...");
+                    System.Diagnostics.Debug.WriteLine("Network error - waiting for connection to restore...");
+                    
+                    try
+                    {
+                        await _networkService.WaitForNetworkAsync(cancellationToken);
+                        FileLogger.Log("Network restored - resuming upload");
+                        System.Diagnostics.Debug.WriteLine("Network restored - resuming upload");
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        FileLogger.Log("Network wait cancelled");
+                        return new UploadResult
+                        {
+                            Success = false,
+                            Error = "Upload cancelled while waiting for network"
+                        };
+                    }
+                }
+                else
+                {
+                    // For other errors, wait before retrying (exponential backoff)
+                    var delay = errorArgs.RetryDelayMs > 0 ? errorArgs.RetryDelayMs : _retryDelaysMs[retryCount];
+                    FileLogger.Log($"Retrying in {delay}ms...");
+                    System.Diagnostics.Debug.WriteLine($"Retrying in {delay}ms...");
+                    await Task.Delay(delay, cancellationToken);
+                }
                 
-                await Task.Delay(delay, cancellationToken);
                 retryCount++;
             }
 
