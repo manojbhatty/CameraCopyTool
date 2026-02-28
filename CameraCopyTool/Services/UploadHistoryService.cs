@@ -71,12 +71,9 @@ namespace CameraCopyTool.Services
 
         public UploadHistoryService()
         {
-            var appDataPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "CameraCopyTool");
-
-            Directory.CreateDirectory(appDataPath);
-            _historyFilePath = Path.Combine(appDataPath, "upload_history.json");
+            // Save in the same folder as the application executable
+            var appFolder = AppDomain.CurrentDomain.BaseDirectory;
+            _historyFilePath = Path.Combine(appFolder, "upload_history.json");
             _entries = new List<UploadHistoryEntry>();
 
             // Load existing history
