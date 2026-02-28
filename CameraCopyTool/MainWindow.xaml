@@ -335,26 +335,28 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- Instructions - Two Column Layout -->
+                <!-- Instructions - Three Column Layout -->
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="15"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="15"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
                     <!-- Left Column: Copy Instructions -->
                     <StackPanel Grid.Column="0">
-                        <TextBlock FontWeight="Bold" 
+                        <TextBlock FontWeight="Bold"
                                    FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
                                    Margin="0,0,0,5">📋 To Copy Videos:</TextBlock>
-                        <TextBlock Text="1. Select your camera folder using 'Select Folder…'"
+                        <TextBlock Text="1. Select camera folder using 'Select Folder…'"
                                    FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
                                    Margin="0,2"/>
-                        <TextBlock Text="2. Select your computer folder using 'Select Folder…'"
+                        <TextBlock Text="2. Select computer folder using 'Select Folder…'"
                                    FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
                                    Margin="0,2"/>
-                        <TextBlock Text="3. Select the photos you want to copy (click on them)"
+                        <TextBlock Text="3. Select photos to copy (click on them)"
                                    FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
                                    Margin="0,2"/>
                         <TextBlock Text="4. Click the big green 'Copy' button"
@@ -362,12 +364,31 @@
                                    Margin="0,2"/>
                     </StackPanel>
 
-                    <!-- Right Column: Delete Instructions -->
+                    <!-- Middle Column: Google Drive Upload Instructions -->
                     <StackPanel Grid.Column="2">
                         <TextBlock FontWeight="Bold"
                                    FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   Margin="0,0,0,5">☁️ To Upload to Google Drive:</TextBlock>
+                        <TextBlock Text="1. Right-click file in '💻 Videos' list"
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   Margin="0,2"/>
+                        <TextBlock Text="2. Select 'Upload to Google Drive'"
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   Margin="0,2"/>
+                        <TextBlock Text="3. Sign in to Google (first time only)"
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   Margin="0,2"/>
+                        <TextBlock Text="4. Wait for upload (shows ☁️ when done)"
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   Margin="0,2"/>
+                    </StackPanel>
+
+                    <!-- Right Column: Delete Instructions -->
+                    <StackPanel Grid.Column="4">
+                        <TextBlock FontWeight="Bold"
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
                                    Margin="0,0,0,5">🗑️ To Delete Files:</TextBlock>
-                        <TextBlock Text="1. Select file(s) to delete in any list"
+                        <TextBlock Text="1. Select file(s) in any list"
                                    FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
                                    Margin="0,2"/>
                         <TextBlock Text="2. Press Delete key or right-click → Delete"
@@ -388,12 +409,19 @@
                                    FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
                                    FontWeight="Bold" Foreground="#2E7D32"/>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,20,0">
                         <TextBlock Text="✓ " Foreground="#1976D2" FontWeight="Bold"
                                    FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
                         <TextBlock Text="New files = BLUE"
                                    FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
                                    FontWeight="Bold" Foreground="#1565C0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="☁️⬆️" Foreground="#2196F3" FontWeight="Bold"
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                        <TextBlock Text="Uploaded to Google Drive"
+                                   FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   FontWeight="Bold" Foreground="#1976D2"/>
                     </StackPanel>
                 </StackPanel>
             </Grid>
