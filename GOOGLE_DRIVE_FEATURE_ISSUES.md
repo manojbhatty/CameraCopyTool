@@ -839,13 +839,27 @@ public string ComputeFileHash(string filePath)
 
 The following features are NOT included in this initial implementation but can be added later:
 
-- [ ] Select specific Google Drive folder for uploads
-- [ ] View Google Drive files within the application
+See **`POTENTIAL_ENHANCEMENTS.md`** for a comprehensive list of 16 potential enhancements with priority ratings, effort estimates, and implementation notes.
+
+### High Priority Enhancements:
+- [ ] **Upload Status Icons Legend** - Add to help panel (☁️⬆️ = Uploaded, ⚠️ = Changed, ❌ = Deleted)
+- [ ] **Keyboard Shortcuts** - Add to help panel (F5, Delete, Ctrl+Click, Shift+Click)
+- [ ] **Select specific Google Drive folder** for uploads
+- [ ] **View Google Drive files** within the application
+- [ ] **Drag and drop upload** from file explorer
+
+### Medium Priority Enhancements:
 - [ ] Download files from Google Drive
-- [ ] Sync folder with Google Drive
-- [ ] Upload to other cloud services (OneDrive, Dropbox)
-- [ ] Background upload service (upload queue persists after app close)
-- [ ] Upload compression for large video files
 - [ ] Manual upload history cleanup UI (Settings dialog)
+- [ ] First-time setup note in help panel
+- [ ] Background upload service (upload queue persists after app close)
+
+### Low Priority Enhancements:
+- [ ] Upload compression for large video files
 - [ ] File System Watcher for real-time cleanup
 - [ ] Archive old upload history entries
+- [ ] Dark mode support
+- [ ] Upload notifications (toast)
+- [ ] Parallel uploads
+
+For detailed analysis, see `POTENTIAL_ENHANCEMENTS.md`.

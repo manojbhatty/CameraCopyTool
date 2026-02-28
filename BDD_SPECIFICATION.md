@@ -3171,16 +3171,28 @@ The Google Drive integration feature allows users to upload files directly from 
 
 ### Future Enhancements
 
-- [ ] Select specific Google Drive folder for uploads
-- [ ] View Google Drive files within the application
+See **`POTENTIAL_ENHANCEMENTS.md`** for a comprehensive list of 16 potential enhancements.
+
+**High Priority:**
+- [ ] Upload Status Icons Legend in help panel
+- [ ] Keyboard Shortcuts section in help panel
+- [ ] Select specific Google Drive folder
+- [ ] View Google Drive files in application
+- [ ] Drag and drop upload
+
+**Medium Priority:**
 - [ ] Download files from Google Drive
-- [ ] Sync folder with Google Drive
-- [ ] Upload to other cloud services (OneDrive, Dropbox)
+- [ ] Manual upload history management UI
 - [ ] Background upload service
-- [ ] Manual upload history management UI (Settings dialog)
-- [ ] File System Watcher for real-time cleanup
-- [ ] Archive old upload history entries
-- [ ] Upload compression for large video files
+
+**Low Priority:**
+- [ ] Upload compression
+- [ ] File System Watcher
+- [ ] Archive old history
+- [ ] Dark mode
+- [ ] Upload notifications
+
+For detailed analysis with priority ratings and effort estimates, see `POTENTIAL_ENHANCEMENTS.md`.
 
 ---
 
