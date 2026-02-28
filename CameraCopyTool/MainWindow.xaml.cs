@@ -369,6 +369,11 @@ namespace CameraCopyTool
                         MessageBoxButton.OK,
                         MessageBoxImage.Error);
                 }
+                else
+                {
+                    // Upload succeeded - refresh the upload status icons
+                    _viewModel.UpdateUploadStatus();
+                }
                 // Success - dialog already shows "Upload Success!" with sound
             }
             catch (Exception ex)

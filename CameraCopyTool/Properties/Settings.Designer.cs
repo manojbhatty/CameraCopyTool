@@ -58,5 +58,41 @@ namespace CameraCopyTool.Properties {
                 this["FontSize"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("500")]
+        public int UploadHistoryMaxEntries {
+            get {
+                return ((int)(this["UploadHistoryMaxEntries"]));
+            }
+            set {
+                this["UploadHistoryMaxEntries"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5242880")]
+        public long DebugLogMaxFileSize {
+            get {
+                return ((long)(this["DebugLogMaxFileSize"]));
+            }
+            set {
+                this["DebugLogMaxFileSize"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("30")]
+        public int DebugLogRetentionDays {
+            get {
+                return ((int)(this["DebugLogRetentionDays"]));
+            }
+            set {
+                this["DebugLogRetentionDays"] = value;
+            }
+        }
     }
 }

@@ -34,6 +34,16 @@ public class FileItem : INotifyPropertyChanged
     private bool _isAlreadyCopied;
 
     /// <summary>
+    /// Backing field for the upload status to Google Drive.
+    /// </summary>
+    private string? _uploadStatus;
+
+    /// <summary>
+    /// Backing field for the upload tooltip.
+    /// </summary>
+    private string? _uploadTooltip;
+
+    /// <summary>
     /// Gets or sets the name of the file.
     /// When changed, also notifies that DisplayName has changed.
     /// </summary>
@@ -109,6 +119,62 @@ public class FileItem : INotifyPropertyChanged
     /// Used for file operations like open, delete, and copy.
     /// </summary>
     public string FullPath { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the upload status to Google Drive (null, "uploaded", "changed", "deleted").
+    /// </summary>
+    public string? UploadStatus
+    {
+        get => _uploadStatus;
+        set
+        {
+            if (_uploadStatus != value)
+            {
+                _uploadStatus = value;
+                OnPropertyChanged(nameof(UploadStatus));
+                OnPropertyChanged(nameof(UploadIcon));
+                OnPropertyChanged(nameof(UploadIconColor));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the tooltip text for the upload status.
+    /// </summary>
+    public string? UploadTooltip
+    {
+        get => _uploadTooltip;
+        set
+        {
+            if (_uploadTooltip != value)
+            {
+                _uploadTooltip = value;
+                OnPropertyChanged(nameof(UploadTooltip));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the upload status icon based on the upload status.
+    /// </summary>
+    public string UploadIcon => UploadStatus switch
+    {
+        "uploaded" => "☁️⬆️",
+        "changed" => "⚠️",
+        "deleted" => "❌",
+        _ => string.Empty
+    };
+
+    /// <summary>
+    /// Gets the color for the upload status icon.
+    /// </summary>
+    public string UploadIconColor => UploadStatus switch
+    {
+        "uploaded" => "#2196F3", // Blue for uploaded
+        "changed" => "#FF9800",  // Orange for warning
+        "deleted" => "#F44336",  // Red for deleted
+        _ => "#808080"
+    };
 
     /// <summary>
     /// Event raised when a property value changes.

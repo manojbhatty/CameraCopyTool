@@ -40,6 +40,11 @@ public class MainViewModel : ViewModelBase
     private readonly IGoogleDriveService _googleDriveService;
 
     /// <summary>
+    /// Service interface for upload history tracking.
+    /// </summary>
+    private readonly IUploadHistoryService _uploadHistoryService;
+
+    /// <summary>
     /// Backing field for the source path (camera/device folder).
     /// </summary>
     private string _sourcePath = string.Empty;
@@ -109,16 +114,19 @@ public class MainViewModel : ViewModelBase
     /// <param name="dialogService">Service for displaying dialogs.</param>
     /// <param name="settingsService">Service for managing application settings.</param>
     /// <param name="googleDriveService">Service for Google Drive operations.</param>
+    /// <param name="uploadHistoryService">Service for upload history tracking.</param>
     public MainViewModel(
         IFileService fileService,
         IDialogService dialogService,
         ISettingsService settingsService,
-        IGoogleDriveService googleDriveService)
+        IGoogleDriveService googleDriveService,
+        IUploadHistoryService uploadHistoryService)
     {
         _fileService = fileService;
         _dialogService = dialogService;
         _settingsService = settingsService;
         _googleDriveService = googleDriveService;
+        _uploadHistoryService = uploadHistoryService;
 
         // Initialize observable collections for file lists displayed in the UI
         AlreadyCopiedFiles = new ObservableCollection<FileItem>();
@@ -787,6 +795,9 @@ public class MainViewModel : ViewModelBase
 
                     foreach (var f in destFileItems)
                         DestinationFiles.Add(f);
+                    
+                    // Update upload status for destination files
+                    UpdateUploadStatus();
                 });
             }
             else
@@ -804,6 +815,9 @@ public class MainViewModel : ViewModelBase
 
                 foreach (var f in destFileItems)
                     DestinationFiles.Add(f);
+                
+                // Update upload status for destination files
+                UpdateUploadStatus();
             }
 
             StatusMessage = $"Loaded {NewFiles.Count} new files, {AlreadyCopiedFiles.Count} already copied";
@@ -1095,6 +1109,58 @@ public class MainViewModel : ViewModelBase
     #endregion
 
     #region Cleanup
+
+    /// <summary>
+    /// Updates the upload status icons for destination files based on upload history.
+    /// </summary>
+    public void UpdateUploadStatus()
+    {
+        System.Diagnostics.Debug.WriteLine($"UpdateUploadStatus called, _uploadHistoryService={_uploadHistoryService != null}, DestinationFiles.Count={DestinationFiles.Count}");
+        
+        if (_uploadHistoryService == null)
+        {
+            System.Diagnostics.Debug.WriteLine("UpdateUploadStatus: _uploadHistoryService is null");
+            return;
+        }
+
+        // Update each destination file with upload status
+        foreach (var fileItem in DestinationFiles)
+        {
+            var entry = _uploadHistoryService.GetEntryByFilePath(fileItem.FullPath);
+            System.Diagnostics.Debug.WriteLine($"UpdateUploadStatus: Checking file '{fileItem.FullPath}', found entry={entry != null}");
+            
+            if (entry != null)
+            {
+                System.Diagnostics.Debug.WriteLine($"  Entry status={entry.Status}, fileName={entry.FileName}");
+                
+                if (entry.Status == UploadHistoryStatus.LocalFileDeleted)
+                {
+                    // File was uploaded but local file is now deleted
+                    fileItem.UploadStatus = "deleted";
+                    fileItem.UploadTooltip = "Local file deleted after upload";
+                }
+                else if (entry.HasFileChanged())
+                {
+                    // File has changed since upload
+                    fileItem.UploadStatus = "changed";
+                    fileItem.UploadTooltip = $"File changed since upload on {entry.Timestamp:yyyy-MM-dd HH:mm:ss}";
+                }
+                else if (entry.Status == UploadHistoryStatus.Success)
+                {
+                    // Successfully uploaded
+                    fileItem.UploadStatus = "uploaded";
+                    fileItem.UploadTooltip = entry.UploadedDateString;
+                    System.Diagnostics.Debug.WriteLine($"  Set UploadStatus='uploaded' for {fileItem.Name}");
+                }
+            }
+            else
+            {
+                // No upload history
+                fileItem.UploadStatus = null;
+                fileItem.UploadTooltip = null;
+            }
+        }
+    }
 
     /// <summary>
     /// Called when the application or window is closing.
