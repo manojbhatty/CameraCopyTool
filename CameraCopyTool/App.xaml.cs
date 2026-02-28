@@ -58,7 +58,11 @@ namespace CameraCopyTool
             });
 
             // Register Google Drive service
+            services.AddSingleton<INetworkService, NetworkService>();
             services.AddSingleton<IGoogleDriveService, GoogleDriveService>();
+
+            // Register upload history service
+            services.AddSingleton<IUploadHistoryService, UploadHistoryService>();
 
             // Register MainViewModel as transient (new instance each time)
             services.AddTransient<MainViewModel>();
@@ -69,7 +73,7 @@ namespace CameraCopyTool
         }
 
         /// <summary>
-        /// Logs an exception to a file in the application's data directory.
+        /// Logs an exception to a file in the application folder.
         /// </summary>
         /// <param name="ex">The exception to log.</param>
         /// <param name="source">The source of the exception (e.g., "Dispatcher", "AppDomain").</param>
@@ -77,16 +81,9 @@ namespace CameraCopyTool
         {
             try
             {
-                var logPath = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "CameraCopyTool",
-                    "error.log");
-
-                var directory = Path.GetDirectoryName(logPath);
-                if (directory != null && !Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
+                // Save in the same folder as the application executable
+                var appFolder = AppDomain.CurrentDomain.BaseDirectory;
+                var logPath = Path.Combine(appFolder, "error.log");
 
                 var logEntry = new StringBuilder();
                 logEntry.AppendLine($"=== {source} Exception ===");

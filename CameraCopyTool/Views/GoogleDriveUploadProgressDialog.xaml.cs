@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using CameraCopyTool.Models;
@@ -10,6 +11,9 @@ namespace CameraCopyTool.Views
         private bool _isCancelled;
         private bool _isCompleted;
         private DateTime _startTime;
+        private UploadError? _currentError;
+        private bool _isPaused;
+        private TaskCompletionSource<bool>? _pauseCompletionSource;
 
         public GoogleDriveUploadProgressDialog(string fileName, long fileSize, double fontSize = 20)
         {
@@ -18,6 +22,7 @@ namespace CameraCopyTool.Views
             FileSizeText.Text = FormatFileSize(fileSize);
             _isCancelled = false;
             _isCompleted = false;
+            _isPaused = false;
             _startTime = DateTime.Now;
 
             // Apply font size to all elements
@@ -42,6 +47,158 @@ namespace CameraCopyTool.Views
 
         public bool IsCancelled => _isCancelled;
         public bool IsCompleted => _isCompleted;
+        public bool IsPaused => _isPaused;
+
+        /// <summary>
+        /// Shows an error dialog or status message based on error type.
+        /// For network errors, shows a status message and auto-retries.
+        /// For other errors, shows a dialog for user action.
+        /// </summary>
+        /// <param name="error">The upload error.</param>
+        /// <param name="retryCount">Current retry attempt (for non-network errors).</param>
+        /// <param name="maxRetries">Maximum retry attempts.</param>
+        /// <returns>True if the upload should retry, false otherwise.</returns>
+        public async Task<bool> ShowErrorAsync(UploadError error, int retryCount = 0, int maxRetries = 5)
+        {
+            _currentError = error;
+
+            // For network errors, show status message and auto-retry
+            if (error.Category == ErrorCategory.Network)
+            {
+                ShowNetworkWaiting();
+                return true; // Auto-retry for network errors
+            }
+
+            // For other retryable errors, show retry status
+            if (error.IsRetryable && retryCount < maxRetries)
+            {
+                ShowRetryStatus(retryCount + 1, maxRetries);
+                return true; // Auto-retry
+            }
+
+            // For non-retryable or max retries reached, show dialog
+            var tcs = new TaskCompletionSource<bool>();
+            _pauseCompletionSource = tcs;
+
+            // Show error dialog on UI thread
+            await Dispatcher.InvokeAsync(() =>
+            {
+                var dialog = new UploadErrorDialog(error, this);
+                var result = dialog.ShowDialog();
+
+                if (result == true)
+                {
+                    switch (dialog.Result)
+                    {
+                        case UploadErrorResult.Retry:
+                            tcs.SetResult(true);
+                            break;
+                        case UploadErrorResult.Pause:
+                            dialog.ShowPaused();
+                            _isPaused = true;
+                            // Wait for resume or cancel
+                            Task.Run(async () =>
+                            {
+                                await Task.Delay(1000); // Give time for UI to update
+                                if (_pauseCompletionSource != null && !_pauseCompletionSource.Task.IsCompleted)
+                                {
+                                    // User chose pause - wait indefinitely for resume/cancel
+                                    while (_isPaused && !_isCancelled)
+                                    {
+                                        await Task.Delay(500);
+                                    }
+                                    if (!_isCancelled)
+                                    {
+                                        tcs.SetResult(true); // Resume
+                                    }
+                                }
+                            });
+                            break;
+                        case UploadErrorResult.Cancel:
+                            _isCancelled = true;
+                            tcs.SetResult(false);
+                            break;
+                    }
+                }
+                else
+                {
+                    _isCancelled = true;
+                    tcs.SetResult(false);
+                }
+            });
+
+            return await tcs.Task;
+        }
+
+        /// <summary>
+        /// Resumes the upload after being paused.
+        /// </summary>
+        public void ResumeUpload()
+        {
+            _isPaused = false;
+            _pauseCompletionSource?.TrySetResult(true);
+            
+            Dispatcher.Invoke(() =>
+            {
+                StatusMessage.Text = "Resuming upload...";
+                StatusMessage.Foreground = new SolidColorBrush(Color.FromRgb(102, 102, 102));
+                StatusIcon.Text = "☁️";
+                StatusIcon.Foreground = new SolidColorBrush(Colors.Black);
+                TitleText.Text = "Uploading to Google Drive";
+                TitleText.Foreground = new SolidColorBrush(Colors.Black);
+            });
+        }
+
+        /// <summary>
+        /// Shows network waiting status.
+        /// </summary>
+        public void ShowNetworkWaiting()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                StatusMessage.Text = "No internet connection. Waiting to resume...";
+                StatusMessage.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
+                StatusIcon.Text = "🌐";
+                StatusIcon.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
+                ReassuranceText.Text = "⏳ Upload will automatically resume when connection is restored";
+                ReassuranceText.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
+            });
+        }
+
+        /// <summary>
+        /// Shows retry status with countdown.
+        /// </summary>
+        /// <param name="retryCount">Current retry attempt.</param>
+        /// <param name="maxRetries">Maximum retry attempts.</param>
+        public void ShowRetryStatus(int retryCount, int maxRetries)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                StatusMessage.Text = $"Retrying upload... (attempt {retryCount} of {maxRetries})";
+                StatusMessage.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
+                ReassuranceText.Text = "⏳ Please wait, retrying automatically";
+                ReassuranceText.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
+            });
+        }
+
+        /// <summary>
+        /// Shows the file conflict dialog.
+        /// </summary>
+        /// <param name="fileName">Name of the conflicting file.</param>
+        /// <param name="fileSize">Size of the file.</param>
+        /// <returns>The user's choice.</returns>
+        public FileConflictResult ShowFileConflictDialog(string fileName, long fileSize)
+        {
+            var dialog = new FileConflictDialog(fileName, fileSize, this);
+            var result = dialog.ShowDialog();
+
+            if (result == true)
+            {
+                return dialog.Result;
+            }
+
+            return FileConflictResult.Cancel;
+        }
 
         public void Report(UploadProgress progress)
         {
