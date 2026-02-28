@@ -282,7 +282,7 @@ namespace CameraCopyTool
                 // Check if authenticated, if not show auth dialog
                 if (!_googleDriveService.IsAuthenticated)
                 {
-                    var authDialog = new GoogleDriveAuthDialog { Owner = this };
+                    var authDialog = new GoogleDriveAuthDialog(_viewModel.FontSize) { Owner = this };
                     var authResult = authDialog.ShowDialog();
 
                     if (authResult != true || !authDialog.UserConsentGiven)
@@ -310,25 +310,25 @@ namespace CameraCopyTool
                         return;
                     }
 
-                    MessageBox.Show(
-                        "✓ Successfully connected to Google Drive!",
-                        "Authentication Successful",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                    // Authentication successful - no MessageBox needed
+                    // Force refresh the status bar to show connected status
+                    _viewModel.OnPropertyChanged(nameof(MainViewModel.GoogleDriveStatus));
+                    System.Diagnostics.Debug.WriteLine($"Status bar updated: {_viewModel.GoogleDriveStatus}");
                 }
 
                 // Show upload progress dialog
-                var progressDialog = new GoogleDriveUploadProgressDialog(selectedFile.DisplayName) { Owner = this };
-                
+                var fileInfo = new FileInfo(filePath);
+                var progressDialog = new GoogleDriveUploadProgressDialog(selectedFile.DisplayName, fileInfo.Length, _viewModel.FontSize) { Owner = this };
+
                 // Start upload in background
                 var uploadTask = Task.Run(async () =>
                 {
-                    var fileId = await _googleDriveService.UploadFileAsync(
+                    var result = await _googleDriveService.UploadFileAsync(
                         filePath,
                         progressDialog,
                         CancellationToken.None);
-                    
-                    return fileId;
+
+                    return result;
                 });
 
                 // Show dialog while upload runs
@@ -345,24 +345,21 @@ namespace CameraCopyTool
                 }
 
                 // Wait for upload to complete
-                var fileId = await uploadTask;
+                var result = await uploadTask;
 
-                if (fileId != null)
+                if (result?.Success != true)
                 {
+                    // Play error sound and show error message
+                    System.Media.SystemSounds.Hand.Play();
+                    
+                    var errorMessage = result?.Error ?? "Upload failed. Please check your connection and try again.";
                     MessageBox.Show(
-                        $"Successfully uploaded '{selectedFile.DisplayName}' to Google Drive!\n\nFile ID: {fileId}",
-                        "Upload Complete",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "Upload failed. Please check your connection and try again.",
+                        $"Upload failed:\n\n{errorMessage}",
                         "Upload Failed",
                         MessageBoxButton.OK,
                         MessageBoxImage.Error);
                 }
+                // Success - dialog already shows "Upload Success!" with sound
             }
             catch (Exception ex)
             {
@@ -385,6 +382,18 @@ namespace CameraCopyTool
                 item.IsSelected = true;
                 item.Focus();
             }
+        }
+
+        /// <summary>
+        /// Formats a file size in bytes to a human-readable string.
+        /// </summary>
+        private static string FormatFileSize(long bytes)
+        {
+            if (bytes < 0) return "Unknown";
+            if (bytes < 1024) return $"{bytes} B";
+            if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+            if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024 * 1024.0):F1} MB";
+            return $"{bytes / (1024 * 1024 * 1024.0):F1} GB";
         }
 
         /// <summary>

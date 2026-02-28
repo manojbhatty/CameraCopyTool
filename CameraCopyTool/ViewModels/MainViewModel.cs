@@ -339,7 +339,7 @@ public class MainViewModel : ViewModelBase
     /// Gets the Google Drive authentication status message.
     /// </summary>
     public string GoogleDriveStatus => _googleDriveService?.IsAuthenticated == true
-        ? $"Connected: {_googleDriveService.UserEmail}"
+        ? "Connected to Google Drive"
         : "Not connected to Google Drive";
 
     /// <summary>

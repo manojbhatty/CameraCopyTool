@@ -5,7 +5,7 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 2.25.0 |
+| **Version** | 2.26.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
 | **Last Updated** | 2026-02-26 |
@@ -1145,15 +1145,26 @@ Scenario: Upload progress is displayed
     | Information | Format |
     |-------------|--------|
     | Filename | Name of file being uploaded |
+    | File Size | Size in MB/KB |
     | Progress | Percentage (0% - 100%) with progress bar |
-    | Status | "Uploading to Google Drive..." |
+    | Percentage | Displayed inside progress bar |
+    | Time Remaining | Estimated time (e.g., "About 2 minutes") |
+    | Status Messages | Dynamic messages based on progress |
+    | Reassurance Text | "⚠️ Please don't close this window..." |
 
 Scenario: Upload success notification
   Given a file has been successfully uploaded to Google Drive
   When the upload completes
-  Then a success message should display for 5 seconds:
-    "✓ Uploaded to Google Drive: [filename]"
-  And the file should show a cloud icon (☁️) in the list
+  Then the progress dialog should show:
+    | Element | Display |
+    |---------|---------|
+    | Icon | ✅ Green checkmark |
+    | Title | "Upload Success!" (green) |
+    | Status | "✓ Your file is safe on Google Drive!" |
+    | Reassurance | "✓ Upload successful! You can now close this window." |
+  And the OK button should appear (green)
+  And the Cancel button should hide
+  And the user clicks OK to close the dialog
 
 Scenario: Upload error - network failure
   Given the internet connection is lost during upload
@@ -3054,6 +3065,7 @@ The following unit tests have been implemented to verify BDD compliance:
 | 2.22.0 | 2026-02-22 | AI Assistant | **Select Folder Button Styling**: Changed Select Folder buttons from default blue action button style to subdued gray styling (#E0E0E0 background, #424242 text, 12px font). Added hover/pressed states with darker grays. Reduced padding to 8,4. Added design rationale: folder selection is infrequent after initial setup, so buttons should be less visually distracting. Updated Browse Source and Browse Destination button specifications in BDD. Benefits: reduced visual clutter, primary action buttons (Copy, Refresh) stand out more, better visual hierarchy. |
 | 2.23.0 | 2026-02-22 | AI Assistant | **Help Panel Text Update**: Changed "To Copy Photos" to "To Copy Videos" and "Select the photos" to "Select the videos" in help panel instructions to accurately reflect application functionality (video file copying). Updated BDD User Story 0.2 and Help Panel Instructions table. Benefits: documentation accuracy, reduces user confusion about supported file types. |
 | 2.24.0 | 2026-02-22 | AI Assistant | **Settings Button Styling**: Changed Settings button from bright orange (#FF9800) to subdued gray (#757575) with darker hover (#616161) and pressed (#424242) states. Added design rationale: Settings is a secondary action, should be less visually distracting than primary actions like Refresh and Copy. Updated BDD Settings Button specification. Benefits: reduced visual clutter, better visual hierarchy, primary action buttons stand out more. |
+| 2.26.0 | 2026-02-27 | AI Assistant | **Issue #3 Complete**: Updated Google Drive upload dialog BDD scenarios to match implementation (progress bar with percentage inside, dynamic status messages, color-coded states, cancel confirmation, no unnecessary MessageBoxes). Updated ADR-001 status to "Implemented". |
 | 2.25.0 | 2026-02-26 | AI Assistant | **Google Drive Integration Feature**: Added Feature 10: Google Drive Integration with three user stories (10.1 Upload Files, 10.2 Authentication, 10.3 Upload History). Added core capability for Google Drive upload. Created 3 Architecture Decision Records (ADR-001: API Integration, ADR-002: Upload History Storage, ADR-003: Error Handling). Updated Table of Contents with Google Drive Integration appendix. |
 
 ---
