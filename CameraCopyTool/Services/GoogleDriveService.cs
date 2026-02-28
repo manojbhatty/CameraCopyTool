@@ -87,14 +87,16 @@ namespace CameraCopyTool.Services
     public class GoogleDriveService : IGoogleDriveService
     {
         private readonly GoogleDriveSettings _settings;
+        private readonly IUploadHistoryService _uploadHistoryService;
         private UserCredential? _credential;
         private DriveService? _driveService;
         private readonly int _maxRetries;
         private readonly int[] _retryDelaysMs;
 
-        public GoogleDriveService(GoogleDriveSettings settings, int maxRetries = 5)
+        public GoogleDriveService(GoogleDriveSettings settings, IUploadHistoryService uploadHistoryService, int maxRetries = 5)
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _uploadHistoryService = uploadHistoryService ?? throw new ArgumentNullException(nameof(uploadHistoryService));
             _maxRetries = maxRetries;
             // Exponential backoff: 1s, 2s, 4s, 8s, 16s
             _retryDelaysMs = new int[maxRetries];
@@ -224,18 +226,21 @@ namespace CameraCopyTool.Services
                 throw new InvalidOperationException("Not authenticated. Call AuthenticateAsync first.");
             }
 
+            var startTime = DateTime.Now;
             int retryCount = 0;
             UploadError? lastError = null;
+            UploadResult? finalResult = null;
 
             while (retryCount <= _maxRetries)
             {
                 try
                 {
                     var result = await UploadFileInternalAsync(filePath, progress, cancellationToken);
-                    
+
                     if (result.Success)
                     {
-                        return result;
+                        finalResult = result;
+                        break;
                     }
 
                     // Upload failed - create error from result
@@ -278,11 +283,18 @@ namespace CameraCopyTool.Services
                 }
                 catch (TaskCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
-                    return new UploadResult
+                    lastError = new UploadError
+                    {
+                        Category = ErrorCategory.UserCancellation,
+                        Message = "Upload was cancelled by the user",
+                        IsRetryable = false
+                    };
+                    finalResult = new UploadResult
                     {
                         Success = false,
                         Error = "Upload was cancelled by the user"
                     };
+                    break;
                 }
                 catch (Exception ex)
                 {
@@ -339,11 +351,47 @@ namespace CameraCopyTool.Services
                 retryCount++;
             }
 
-            return new UploadResult
+            // Log to upload history
+            await LogUploadToHistory(filePath, finalResult, lastError, startTime);
+
+            return finalResult ?? new UploadResult
             {
                 Success = false,
                 Error = lastError?.GetUserMessage() ?? "Upload failed after maximum retries"
             };
+        }
+
+        /// <summary>
+        /// Logs the upload result to the upload history.
+        /// </summary>
+        private async Task LogUploadToHistory(string filePath, UploadResult? result, UploadError? error, DateTime startTime)
+        {
+            try
+            {
+                var fileName = Path.GetFileName(filePath);
+                var fileSize = new FileInfo(filePath).Length;
+                var duration = (DateTime.Now - startTime).TotalSeconds;
+
+                var historyEntry = new UploadHistoryEntry
+                {
+                    FileName = fileName,
+                    FilePath = filePath,
+                    FileSize = fileSize,
+                    GoogleDriveFileId = result?.FileId,
+                    Status = result?.Success == true ? UploadHistoryStatus.Success :
+                             error?.Category == ErrorCategory.UserCancellation ? UploadHistoryStatus.Cancelled :
+                             UploadHistoryStatus.Failed,
+                    ErrorMessage = result?.Error ?? error?.Message,
+                    ErrorCategory = error?.Category.ToString(),
+                    DurationSeconds = duration
+                };
+
+                await _uploadHistoryService.AddEntryAsync(historyEntry);
+            }
+            catch (Exception ex)
+            {
+                FileLogger.Log($"Failed to log upload to history: {ex.Message}");
+            }
         }
 
         /// <summary>

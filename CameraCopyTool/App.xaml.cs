@@ -60,6 +60,9 @@ namespace CameraCopyTool
             // Register Google Drive service
             services.AddSingleton<IGoogleDriveService, GoogleDriveService>();
 
+            // Register upload history service
+            services.AddSingleton<IUploadHistoryService, UploadHistoryService>();
+
             // Register MainViewModel as transient (new instance each time)
             services.AddTransient<MainViewModel>();
 
