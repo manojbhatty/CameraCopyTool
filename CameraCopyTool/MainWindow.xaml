@@ -729,7 +729,7 @@
                               HorizontalContentAlignment="Stretch">
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn Header="File Name">
+                                <GridViewColumn Header="File Name" Width="400">
                                     <GridViewColumn.HeaderContainerStyle>
                                         <Style BasedOn="{StaticResource SortableGridViewColumnHeader}" TargetType="GridViewColumnHeader">
                                             <EventSetter Event="PreviewMouseLeftButtonDown" Handler="GridViewColumnHeader_PreviewMouseLeftButtonDown"/>
@@ -737,7 +737,27 @@
                                     </GridViewColumn.HeaderContainerStyle>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}" Margin="0,0,10,0"/>
+                                                <TextBlock x:Name="UploadIconText"
+                                                           Text="{Binding UploadIcon}" 
+                                                           FontSize="24" 
+                                                           FontWeight="Bold"
+                                                           Foreground="{Binding UploadIconColor}"
+                                                           Visibility="{Binding UploadStatus, Converter={StaticResource NullToVisibilityConverter}}"
+                                                           Margin="0,0,5,0"
+                                                           VerticalAlignment="Center">
+                                                    <TextBlock.ToolTip>
+                                                        <ToolTip Content="{Binding UploadTooltip}" FontSize="16"/>
+                                                    </TextBlock.ToolTip>
+                                                </TextBlock>
+                                            </StackPanel>
+                                            <DataTemplate.Triggers>
+                                                <!-- Change icon color when row is selected -->
+                                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=IsSelected}" Value="True">
+                                                    <Setter TargetName="UploadIconText" Property="Foreground" Value="White"/>
+                                                </DataTrigger>
+                                            </DataTemplate.Triggers>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>

@@ -8,6 +8,9 @@
         <!-- Converter for inverting boolean values -->
         <converters:BoolInvertConverter x:Key="BoolInvertConverter"/>
         
+        <!-- Converter for null to visibility -->
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+
         <!-- High-Contrast Color Scheme for Accessibility (WCAG AAA) -->
         <!-- Already copied files: High-contrast green background with black text -->
         <SolidColorBrush x:Key="AlreadyCopiedBackgroundBrush" Color="#4CAF50"/>

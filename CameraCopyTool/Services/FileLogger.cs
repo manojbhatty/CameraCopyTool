@@ -12,6 +12,9 @@ namespace CameraCopyTool.Services
             AppDomain.CurrentDomain.BaseDirectory,
             "logs",
             $"upload-{DateTime.UtcNow:yyyy-MM-dd}.log");
+        
+        // Maximum log file size: read from user settings (default: 5 MB)
+        private static readonly long MaxLogFileSize = Properties.Settings.Default.DebugLogMaxFileSize;
 
         static FileLogger()
         {
@@ -32,6 +35,17 @@ namespace CameraCopyTool.Services
         {
             try
             {
+                // Check if log file exists and exceeds max size
+                if (File.Exists(LogFilePath))
+                {
+                    var fileInfo = new FileInfo(LogFilePath);
+                    if (fileInfo.Length >= MaxLogFileSize)
+                    {
+                        // Skip logging - file is too large
+                        return;
+                    }
+                }
+                
                 var timestamp = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff");
                 var logEntry = $"[{timestamp}] {message}{Environment.NewLine}";
                 File.AppendAllText(LogFilePath, logEntry);

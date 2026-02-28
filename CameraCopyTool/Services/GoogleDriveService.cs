@@ -395,25 +395,52 @@ namespace CameraCopyTool.Services
         {
             try
             {
+                FileLogger.Log($"LogUploadToHistory called: filePath='{filePath}', result.Success={result?.Success}, error={error?.Category}");
+                
+                // Don't log if file path is empty or null
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    FileLogger.Log("Skipping history log: file path is empty");
+                    return;
+                }
+                
+                if (!File.Exists(filePath))
+                {
+                    FileLogger.Log($"Skipping history log: file not found - {filePath}");
+                    return;
+                }
+                
+                // Don't log if upload was never attempted (no result and no error)
+                if (result == null && error == null)
+                {
+                    FileLogger.Log("Skipping history log: no result and no error (upload not attempted)");
+                    return;
+                }
+                
                 var fileName = Path.GetFileName(filePath);
                 var fileSize = new FileInfo(filePath).Length;
                 var duration = (DateTime.Now - startTime).TotalSeconds;
+
+                FileLogger.Log($"Creating history entry: fileName={fileName}, fileSize={fileSize}, duration={duration}");
 
                 var historyEntry = new UploadHistoryEntry
                 {
                     FileName = fileName,
                     FilePath = filePath,
                     FileSize = fileSize,
+                    FileHash = UploadHistoryEntry.ComputeFileHash(filePath),
                     GoogleDriveFileId = result?.FileId,
                     Status = result?.Success == true ? UploadHistoryStatus.Success :
                              error?.Category == ErrorCategory.UserCancellation ? UploadHistoryStatus.Cancelled :
                              UploadHistoryStatus.Failed,
                     ErrorMessage = result?.Error ?? error?.Message,
                     ErrorCategory = error?.Category.ToString(),
-                    DurationSeconds = duration
+                    DurationSeconds = duration,
+                    LastVerified = DateTime.Now
                 };
 
                 await _uploadHistoryService.AddEntryAsync(historyEntry);
+                FileLogger.Log("History entry saved successfully");
             }
             catch (Exception ex)
             {

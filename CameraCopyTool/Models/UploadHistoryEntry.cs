@@ -1,4 +1,6 @@
 using System;
+using System.Security.Cryptography;
+using System.IO;
 
 namespace CameraCopyTool.Models
 {
@@ -10,7 +12,9 @@ namespace CameraCopyTool.Models
         Success,
         Failed,
         Cancelled,
-        Skipped
+        Skipped,
+        LocalFileDeleted,
+        FileChanged
     }
 
     /// <summary>
@@ -44,6 +48,11 @@ namespace CameraCopyTool.Models
         public long FileSize { get; set; }
 
         /// <summary>
+        /// Gets or sets the SHA256 hash of the file at upload time.
+        /// </summary>
+        public string? FileHash { get; set; }
+
+        /// <summary>
         /// Gets or sets the Google Drive file ID if uploaded successfully.
         /// </summary>
         public string? GoogleDriveFileId { get; set; }
@@ -67,6 +76,16 @@ namespace CameraCopyTool.Models
         /// Gets or sets the duration of the upload in seconds.
         /// </summary>
         public double DurationSeconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the timestamp when the file was last verified to exist.
+        /// </summary>
+        public DateTime? LastVerified { get; set; }
+
+        /// <summary>
+        /// Gets or sets the timestamp when the entry was marked for cleanup (e.g., file deleted).
+        /// </summary>
+        public DateTime? MarkedForCleanup { get; set; }
 
         /// <summary>
         /// Gets a human-readable file size string.
@@ -97,6 +116,44 @@ namespace CameraCopyTool.Models
                 var mins = (int)((DurationSeconds % 3600) / 60);
                 return $"{hours}h {mins}m";
             }
+        }
+
+        /// <summary>
+        /// Gets a human-readable upload date string for tooltips.
+        /// </summary>
+        public string UploadedDateString => $"Uploaded to Google Drive on {Timestamp:yyyy-MM-dd hh:mm:ss tt}";
+
+        /// <summary>
+        /// Computes the SHA256 hash of a file.
+        /// </summary>
+        public static string? ComputeFileHash(string filePath)
+        {
+            try
+            {
+                if (!File.Exists(filePath))
+                    return null;
+
+                using var sha256 = SHA256.Create();
+                using var stream = File.OpenRead(filePath);
+                var hash = sha256.ComputeHash(stream);
+                return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Checks if the local file has changed since upload by comparing hashes.
+        /// </summary>
+        public bool HasFileChanged()
+        {
+            if (string.IsNullOrEmpty(FileHash) || !File.Exists(FilePath))
+                return false;
+
+            var currentHash = ComputeFileHash(FilePath);
+            return currentHash != FileHash;
         }
 
         private static string FormatFileSize(long bytes)

@@ -30,7 +30,8 @@ public class MainViewModelTests
             _mockFileService.Object,
             _mockDialogService.Object,
             _mockSettingsService.Object,
-            Mock.Of<IGoogleDriveService>());
+            Mock.Of<IGoogleDriveService>(),
+            Mock.Of<IUploadHistoryService>());
     }
 
     #region Constructor Tests
@@ -58,7 +59,8 @@ public class MainViewModelTests
             _mockFileService.Object,
             _mockDialogService.Object,
             _mockSettingsService.Object,
-            Mock.Of<IGoogleDriveService>());
+            Mock.Of<IGoogleDriveService>(),
+            Mock.Of<IUploadHistoryService>());
 
         // Assert
         Assert.That(viewModel.SourcePath, Is.EqualTo("C:\\Saved\\Source"));
@@ -87,7 +89,8 @@ public class MainViewModelTests
             _mockFileService.Object,
             _mockDialogService.Object,
             _mockSettingsService.Object,
-            Mock.Of<IGoogleDriveService>());
+            Mock.Of<IGoogleDriveService>(),
+            Mock.Of<IUploadHistoryService>());
 
         Assert.That(viewModel.FontSize, Is.EqualTo(20));
     }
@@ -102,7 +105,8 @@ public class MainViewModelTests
             _mockFileService.Object,
             _mockDialogService.Object,
             _mockSettingsService.Object,
-            Mock.Of<IGoogleDriveService>());
+            Mock.Of<IGoogleDriveService>(),
+            Mock.Of<IUploadHistoryService>());
 
         Assert.That(viewModel.FontSize, Is.EqualTo(24));
     }
@@ -999,7 +1003,8 @@ public class MainViewModelTests
             _mockFileService.Object,
             _mockDialogService.Object,
             _mockSettingsService.Object,
-            Mock.Of<IGoogleDriveService>());
+            Mock.Of<IGoogleDriveService>(),
+            Mock.Of<IUploadHistoryService>());
 
         Assert.That(viewModel.FontSize, Is.EqualTo(20));
     }
