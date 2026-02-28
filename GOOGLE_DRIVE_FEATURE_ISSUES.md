@@ -270,14 +270,68 @@ Scenario: Upload cancellation
 | Error messages | Plain language, actionable guidance |
 
 ### Definition of Done
-- [ ] Single file upload implemented
-- [ ] Progress dialog with detailed information
-- [ ] Success notification displayed
-- [ ] Error handling for network failures
-- [ ] Error handling for file size limits
-- [ ] Upload cancellation works
-- [ ] UI remains responsive during upload
-- [ ] Code reviewed and merged
+- [x] Single file upload implemented
+- [x] Progress dialog with detailed information
+- [x] Success notification displayed
+- [x] Error handling for network failures
+- [x] Error handling for file size limits
+- [x] Upload cancellation works
+- [x] UI remains responsive during upload
+- [x] Code reviewed and merged
+
+### Implementation Status: ✅ COMPLETE
+
+**Completed:** 2026-02-27
+
+**Summary:**
+Issue #3 has been fully implemented with extensive UX improvements for elderly users. The upload dialog now provides clear, reassuring feedback throughout the upload process.
+
+**Key Features Implemented:**
+
+1. **Visual Progress Indicators**
+   - ✅ Green progress bar with percentage displayed inside bar
+   - ✅ Large status icon (☁️ → ✅ → ⚠️)
+   - ✅ Color-coded text (orange during upload, green on success)
+   - ✅ File name and size displayed in gray info box
+
+2. **Dynamic Status Messages**
+   - ✅ "Starting upload... please wait" (0-10%)
+   - ✅ "Uploading... please wait" (10-50%)
+   - ✅ "Making good progress..." (50-90%)
+   - ✅ "Almost done..." (90-100%)
+   - ✅ "✓ Your file is safe on Google Drive!" (complete)
+
+3. **User Guidance & Reassurance**
+   - ✅ Warning message: "⚠️ Please don't close this window until the upload finishes"
+   - ✅ Success message: "✓ Upload successful! You can now close this window."
+   - ✅ Cancel confirmation dialog prevents accidental cancellation
+   - ✅ No unnecessary MessageBoxes (cleaner UX)
+
+4. **Accessibility**
+   - ✅ Dynamic font sizing (scales with user's settings)
+   - ✅ Larger dialog (500px × 520px)
+   - ✅ High contrast colors (Material Design palette)
+   - ✅ Clear visual separation of elements
+
+5. **Cancel Functionality**
+   - ✅ Confirmation: "Are you sure you want to stop the upload?"
+   - ✅ Properly stops upload using CancellationToken
+   - ✅ Shows orange warning state on cancellation
+   - ✅ Message: "Your file was not uploaded. You can try again."
+
+**Files Modified:**
+- `Views/GoogleDriveUploadProgressDialog.xaml` - Complete UI redesign
+- `Views/GoogleDriveUploadProgressDialog.xaml.cs` - State management and color coding
+- `MainWindow.xaml.cs` - Removed unnecessary MessageBoxes
+
+**Testing:**
+- ✅ Upload progress displays correctly
+- ✅ Success state shows green checkmark and messages
+- ✅ Cancel confirmation works and stops upload
+- ✅ All text readable at different font sizes
+- ✅ Layout works without overlapping elements
+
+---
 
 ---
 
