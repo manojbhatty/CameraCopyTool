@@ -52,6 +52,30 @@ You can delete files from any of the three lists (New, Already Copied, or Destin
 - **Accessibility**: Configurable font sizes for users with visual impairments
 - **Keyboard Shortcuts**: `F5` to refresh, `Delete` to remove selected files
 - **Resumable Operations**: Handles disconnections gracefully
+- **Google Drive Upload**: Upload files directly to Google Drive with automatic retry on network errors
+
+## Google Drive Upload
+
+Upload files from the destination folder directly to Google Drive:
+
+1. **Select a file** in the "💻 Videos on Your Computer" list
+2. **Right-click and select "Upload to Google Drive"** from the context menu
+3. **Authenticate** with Google (first time only)
+4. **Monitor progress** in the upload dialog
+
+### Error Handling
+
+- 🌐 **Network Loss**: Automatically pauses and resumes when connection is restored
+- 🔄 **Auto-Retry**: Retries failed uploads with exponential backoff (1s, 2s, 4s, 8s, 16s)
+- 📊 **Upload History**: All uploads logged to `upload_history.json` for troubleshooting
+- ⚠️ **Clear Status**: Shows "No internet connection. Waiting to resume..." during outages
+
+### Log Files
+
+All logs are saved in the application folder:
+- `upload_history.json` - Complete upload history with status and duration
+- `error.log` - Application errors and exceptions
+- `logs/upload-YYYY-MM-DD.log` - Daily upload debug logs
 
 ## CI/CD
 

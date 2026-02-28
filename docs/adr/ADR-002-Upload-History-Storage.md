@@ -1,8 +1,37 @@
 # ADR 002: Upload History Storage Format
 
 **Date:** 2026-02-26  
-**Status:** Proposed  
+**Status:** ✅ Implemented (2026-02-28)  
 **Deciders:** Development Team
+
+---
+
+## Implementation Update
+
+**Actual Implementation:** Simplified JSON storage in application folder.
+
+### Storage Location (Implemented)
+```
+<ApplicationFolder>\upload_history.json
+```
+
+### File Format (Implemented)
+```json
+[
+  {
+    "id": "guid-here",
+    "timestamp": "2026-02-28T15:30:45",
+    "fileName": "video.mp4",
+    "filePath": "C:\\Source\\video.mp4",
+    "fileSize": 10485760,
+    "googleDriveFileId": "1abc123xyz",
+    "status": "Success",
+    "durationSeconds": 45.2
+  }
+]
+```
+
+**Note:** Simplified from original proposal - no hash computation, no cleanup logic yet. Max 1000 entries enforced.
 
 ---
 
