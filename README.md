@@ -15,6 +15,53 @@ A Windows desktop application that simplifies copying photos and videos from a c
    - Use `Shift+Click` to select a range of files
 4. **Click the green "Copy" button** to start the copy operation
 
+### Uploading to Google Drive
+
+After copying files to your computer, you can upload them to Google Drive:
+
+1. **Wait for files to appear** in the "💻 Videos on Your Computer" list (right side)
+2. **Right-click on a file** you want to upload
+3. **Select "Upload to Google Drive"** from the context menu
+4. **Authenticate with Google** (first time only):
+   - Click "Sign in with Google" in the dialog
+   - Your browser will open for Google authentication
+   - Sign in to your Google account
+   - Grant CameraCopyTool permission to access Google Drive
+   - Return to the application
+5. **Monitor upload progress**:
+   - Progress dialog shows upload percentage and time remaining
+   - If network is lost: Shows "Waiting for network..." and auto-resumes
+   - Upload completes with success message and sound
+6. **Verify upload status**:
+   - Cloud icon (☁️⬆️) appears next to uploaded files
+   - Hover over icon to see upload date/time
+   - Warning icon (⚠️) if file changed since upload
+   - Cross icon (❌) if local file was deleted
+
+**Important Notes about Google Drive Upload:**
+- Files are uploaded to your Google Drive root folder
+- Upload requires internet connection
+- Large files may take several minutes to upload
+- Upload history is tracked locally (max 500 entries)
+- Failed uploads automatically retry with exponential backoff
+
+### First-Time Google Drive Setup
+
+Before uploading, you need to configure Google Drive credentials:
+
+1. **Go to Google Cloud Console**: https://console.cloud.google.com/apis/credentials
+2. **Create a new project** (or select existing)
+3. **Enable Google Drive API** for your project
+4. **Create OAuth 2.0 Client ID**:
+   - Application type: Desktop app
+   - Copy the Client ID and Client Secret
+5. **Edit App.config** in the application folder:
+   - Replace `YOUR_CLIENT_ID_HERE` with your Client ID
+   - Replace `YOUR_CLIENT_SECRET_HERE` with your Client Secret
+6. **Restart the application**
+
+See `App.config.example` for a template with placeholder values.
+
 ### Deleting Files
 
 You can delete files from any of the three lists (New, Already Copied, or Destination):
