@@ -9,7 +9,7 @@
     <appSettings>
         <!-- Google Drive Integration Settings (REQUIRED) -->
         <!-- All settings must be configured - no hardcoded defaults -->
-        
+
         <!-- OAuth 2.0 Scope - Controls what access the app has -->
         <!-- Recommended: https://www.googleapis.com/auth/drive.file (only files created by this app) -->
         <add key="GoogleDrive.Scope" value="https://www.googleapis.com/auth/drive.file" />
@@ -26,8 +26,9 @@
         <!-- 2. Enable Google Drive API -->
         <!-- 3. Create OAuth 2.0 Client ID (Desktop app) -->
         <!-- 4. Copy Client ID and Client Secret below -->
-        <add key="GoogleDrive.ClientId" value="" />
-        <add key="GoogleDrive.ClientSecret" value="" />
+        <add key="GoogleDrive.ClientId" value="YOUR_CLIENT_ID_HERE" />
+        <add key="GoogleDrive.ClientSecret" value="YOUR_CLIENT_SECRET_HERE" />
+
     </appSettings>
     
     <userSettings>
@@ -37,6 +38,18 @@
             </setting>
             <setting name="LastDestinationFolder" serializeAs="String">
                 <value />
+            </setting>
+            <setting name="FontSize" serializeAs="String">
+                <value>20</value>
+            </setting>
+            <setting name="UploadHistoryMaxEntries" serializeAs="String">
+                <value>500</value>
+            </setting>
+            <setting name="DebugLogMaxFileSize" serializeAs="String">
+                <value>5242880</value>
+            </setting>
+            <setting name="DebugLogRetentionDays" serializeAs="String">
+                <value>30</value>
             </setting>
         </CameraCopyTool.Properties.Settings>
     </userSettings>
