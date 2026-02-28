@@ -50,6 +50,8 @@ namespace CameraCopyTool.Services
         public NetworkService()
         {
             _lastKnownStatus = GetIsNetworkAvailable();
+            // Start monitoring immediately so events are captured
+            StartMonitoring();
         }
 
         public bool IsNetworkAvailable => GetIsNetworkAvailable();
@@ -74,15 +76,23 @@ namespace CameraCopyTool.Services
 
         public async Task WaitForNetworkAsync(CancellationToken cancellationToken = default)
         {
+            FileLogger.Log($"WaitForNetworkAsync started. Current network status: {IsNetworkAvailable}");
+            
             if (IsNetworkAvailable)
+            {
+                FileLogger.Log("Network already available, returning immediately");
                 return;
+            }
 
             var tcs = new TaskCompletionSource<bool>();
+            var pollCount = 0;
 
             void OnNetworkAvailable(object? sender, bool isAvailable)
             {
+                FileLogger.Log($"NetworkAvailabilityChanged event fired: {isAvailable}");
                 if (isAvailable)
                 {
+                    FileLogger.Log("Network restored via event");
                     tcs.TrySetResult(true);
                 }
             }
@@ -94,8 +104,17 @@ namespace CameraCopyTool.Services
                 // Poll every 500ms as a fallback
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    if (IsNetworkAvailable)
+                    pollCount++;
+                    var networkStatus = IsNetworkAvailable;
+                    
+                    if (pollCount % 10 == 0) // Log every 5 seconds
                     {
+                        FileLogger.Log($"Waiting for network... (poll {pollCount}, status: {networkStatus})");
+                    }
+                    
+                    if (networkStatus)
+                    {
+                        FileLogger.Log($"Network restored via polling after {pollCount} attempts");
                         tcs.TrySetResult(true);
                         break;
                     }
@@ -105,6 +124,7 @@ namespace CameraCopyTool.Services
 
                 if (cancellationToken.IsCancellationRequested)
                 {
+                    FileLogger.Log("Network wait cancelled by token");
                     tcs.TrySetCanceled(cancellationToken);
                 }
             }
@@ -114,27 +134,48 @@ namespace CameraCopyTool.Services
             }
 
             await tcs.Task.ConfigureAwait(false);
+            FileLogger.Log("WaitForNetworkAsync completed");
         }
 
         private bool GetIsNetworkAvailable()
         {
             try
             {
-                return NetworkInterface.GetIsNetworkAvailable();
-            }
-            catch
-            {
-                // Fallback: try to ping a reliable host
-                try
-                {
-                    using var ping = new System.Net.NetworkInformation.Ping();
-                    var reply = ping.Send("8.8.8.8", 1000);
-                    return reply.Status == IPStatus.Success;
-                }
-                catch
+                // First check if any network interface is up
+                if (!NetworkInterface.GetIsNetworkAvailable())
                 {
                     return false;
                 }
+
+                // Try to ping multiple reliable hosts for better accuracy
+                var hostsToPing = new[] { "8.8.8.8", "1.1.1.1", "www.google.com" };
+                
+                foreach (var host in hostsToPing)
+                {
+                    try
+                    {
+                        using var ping = new System.Net.NetworkInformation.Ping();
+                        var reply = ping.Send(host, 2000); // 2 second timeout
+                        if (reply.Status == IPStatus.Success)
+                        {
+                            return true;
+                        }
+                    }
+                    catch
+                    {
+                        // Try next host
+                        continue;
+                    }
+                }
+
+                // If all pings fail, fall back to just checking if network interface is up
+                // This handles cases where internet is down but local network is up
+                return NetworkInterface.GetIsNetworkAvailable();
+            }
+            catch (Exception ex)
+            {
+                FileLogger.Log($"GetIsNetworkAvailable error: {ex.Message}");
+                return false;
             }
         }
 
