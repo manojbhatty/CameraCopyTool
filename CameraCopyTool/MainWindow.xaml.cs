@@ -320,13 +320,22 @@ namespace CameraCopyTool
                 var fileInfo = new FileInfo(filePath);
                 var progressDialog = new GoogleDriveUploadProgressDialog(selectedFile.DisplayName, fileInfo.Length, _viewModel.FontSize) { Owner = this };
 
-                // Start upload in background
+                // Create cancellation token source
+                var cts = new CancellationTokenSource();
+
+                // Start upload in background with error handling
                 var uploadTask = Task.Run(async () =>
                 {
-                    var result = await _googleDriveService.UploadFileAsync(
+                    var result = await _googleDriveService.UploadFileWithRetryAsync(
                         filePath,
+                        async (error) =>
+                        {
+                            // This callback is invoked on error
+                            // Show error dialog and wait for user action
+                            return await progressDialog.ShowErrorAsync(error);
+                        },
                         progressDialog,
-                        CancellationToken.None);
+                        cts.Token);
 
                     return result;
                 });
@@ -336,6 +345,7 @@ namespace CameraCopyTool
 
                 if (progressDialog.IsCancelled)
                 {
+                    cts.Cancel();
                     MessageBox.Show(
                         "Upload was cancelled.",
                         "Upload Cancelled",
@@ -351,7 +361,7 @@ namespace CameraCopyTool
                 {
                     // Play error sound and show error message
                     System.Media.SystemSounds.Hand.Play();
-                    
+
                     var errorMessage = result?.Error ?? "Upload failed. Please check your connection and try again.";
                     MessageBox.Show(
                         $"Upload failed:\n\n{errorMessage}",
