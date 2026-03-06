@@ -14,5 +14,4 @@ CameraCopyTool.Tests/bin/
 
 # Configuration files with secrets
 /CameraCopyTool/App.config
-CameraCopyTool/AppIcon.ico
 CameraCopyTool/AppIcon.ico.old
