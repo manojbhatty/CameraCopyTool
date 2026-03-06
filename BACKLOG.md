@@ -1,6 +1,6 @@
 # CameraCopyTool Development Backlog
 
-**Last Updated:** 2026-03-06 (After Issue #22 Implementation)
+**Last Updated:** 2026-03-06 (New Issues #27, #28)
 **Branch:** `feature/issue-22-relative-dates`
 **Sprint:** Google Drive Integration v1.0
 
@@ -10,9 +10,9 @@
 
 | Status | Count |
 |--------|-------|
-| Open | 7 |
+| Open | 9 |
 | Closed (Last 30 Days) | 1 (#22) |
-| Total | 8 |
+| Total | 10 |
 
 ---
 
@@ -20,6 +20,8 @@
 
 | # | Title | Labels | Priority | Status |
 |---|-------|--------|----------|--------|
+| #28 | ENHANCEMENT 008: UI IMPROVEMENT TO EASILY DISTINGUISH BETWEEN DIFFERENT DATES | UI Refinements | 🟢 Medium | 🆕 Open |
+| #27 | ENHANCEMENT 007: ADD AN APPLICATION ICON | UI Refinements | 🟢 Medium | 🆕 Open |
 | #22 | ENHANCEMENT 005: ALL LISTVIEWS SHOULD BE SORTED BY MODIFIED DATE IN DESCENDING ORDER | enhancement | 🟡 High | ✅ Implemented |
 | #20 | ENHANCEMENT 004: MAKE THE ICON THAT EXPANDS THE ALREADY COPIED FILES LISTVIEW, MORE PROMINENT | enhancement | 🟡 High | Open |
 | #19 | ENHANCEMENT 003: MAKE SORTING DIRECTION INDICATORS MORE PROMINENT | enhancement | 🟡 High | Open |
@@ -83,10 +85,24 @@
 
 | # | Title | Labels | Priority | Estimated Effort |
 |---|-------|--------|----------|-----------------|
+| #28 | ENHANCEMENT 008: UI Improvement to easily distinguish between different dates | UI Refinements | 🟢 Medium | Low |
+
+**Status:** 🆕 **New Issue** (Created: Mar 6, 2026)
+**Implementation:** Add visual separators or background color variations between different date groups in ListView
+**Notes:** Helps users quickly scan and identify files by date. May involve alternating row colors or date group headers.
+
+| #27 | ENHANCEMENT 007: Add an application icon | UI Refinements | 🟢 Medium | Low |
+
+**Status:** 🆕 **New Issue** (Created: Mar 6, 2026)
+**Implementation:** Create and add .ico file for application executable and window icon
+**Notes:** Improves professional appearance and makes application easily identifiable in taskbar. Consider camera/video themed icon.
+
+| # | Title | Labels | Priority | Estimated Effort |
+|---|-------|--------|----------|-----------------|
 | #14 | ENHANCEMENT 001: Options to use browsers that are not system default | enhancement | 🟢 Medium | Medium |
 
-**Status:** 📋 **Backlog**  
-**Implementation:** Add browser selection in Settings  
+**Status:** 📋 **Backlog**
+**Implementation:** Add browser selection in Settings
 **Notes:** Allow users to choose Chrome, Firefox, Edge, etc. for Google authentication
 
 | #7 | #4 - Support uploading multiple selected files to Google Drive | - | 🟢 Medium | High |
@@ -182,12 +198,14 @@
 
 **Issues:**
 - [x] #22 - All listviews sorted by modified date (descending) on startup/refresh ✅
+- [ ] #28 - UI improvement to distinguish between different dates
+- [ ] #27 - Add an application icon
 - [ ] Create new GitHub issue for upload status icons legend
 - [ ] Create new GitHub issue for keyboard shortcuts section
 - [ ] #19 - Make sorting indicators more prominent
 - [ ] #20 - Make expand icon more prominent
 
-**Estimated Duration:** 1-2 days
+**Estimated Duration:** 2-3 days
 
 ---
 
