@@ -226,7 +226,7 @@
                                                       Margin="0,0,25,0"/>
                                     <TextBlock x:Name="SortIndicator"
                                                Text="▲"
-                                               FontSize="14"
+                                               FontSize="18"
                                                Foreground="#0D47A1"
                                                FontWeight="Bold"
                                                VerticalAlignment="Center"
