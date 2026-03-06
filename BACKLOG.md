@@ -1,7 +1,7 @@
 # CameraCopyTool Development Backlog
 
-**Last Updated:** 2026-03-06
-**Branch:** `dev/issue-6-upload-history`
+**Last Updated:** 2026-03-06 (After Issue #22 Implementation)
+**Branch:** `feature/issue-22-relative-dates`
 **Sprint:** Google Drive Integration v1.0
 
 ---
@@ -11,7 +11,7 @@
 | Status | Count |
 |--------|-------|
 | Open | 7 |
-| Closed (Last 30 Days) | 0 |
+| Closed (Last 30 Days) | 1 (#22) |
 | Total | 8 |
 
 ---
@@ -52,9 +52,10 @@
 | #22 | ENHANCEMENT 005: All listviews should be sorted by modified date in descending order on startup/refresh | enhancement | 🟡 High | Low |
 
 **Status:** ✅ **IMPLEMENTED** (Mar 6, 2026)
-**Implementation:** Default sort applied to all three listviews (Already Copied, New Files, Destination Files) by Modified Date descending. Sort indicator (▼) shows on the Modified Date column header after loading.
-**Files Changed:** `MainViewModel.cs` (added `ApplyDefaultSort()` method and `FilesLoaded` event), `MainWindow.xaml.cs` (added `OnFilesLoaded()` handler and `UpdateSortIndicatorForModifiedDate()`)
-**Notes:** Sort applies on application startup and when refresh is triggered. Users can still click column headers to change sort order manually.
+**Implementation:** Default sort by Modified DateTime descending. Relative date display: "Today, 10:30 AM", "Yesterday, 3:45 PM", day names for recent files, full dates for older files. Sort indicator (▼) shows automatically.
+**Files Changed:** `FileItem.cs` (added `ModifiedDateTime` property, `FormatRelativeDate()` method), `MainViewModel.cs` (updated sorting and date formatting), `MainWindow.xaml.cs` (updated sort indicator logic)
+**Documentation:** ADR-004 (Default Sorting), ADR-005 (Relative Date Display), BDD v2.28.0
+**Notes:** Sort applies on startup/refresh. Users can override by clicking column headers. Relative dates improve usability for elderly users.
 
 | # | Title | Labels | Priority | Estimated Effort |
 |---|-------|--------|----------|-----------------|
