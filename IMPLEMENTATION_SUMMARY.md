@@ -2,29 +2,50 @@
 
 ## Recent Implementations
 
-### Issue #22 Complete ✅ - Default List Sorting
+### Issue #22 Complete ✅ - Default List Sorting with Relative Date Display
 
-**Status:** ✅ COMPLETE (2026-03-06)
+**Status:** ✅ COMPLETE (2026-03-06)  
+**Branch:** `feature/issue-22-relative-dates`
 
 **Implementation Details:**
 
-All three ListViews now automatically sort by Modified Date descending (newest first) on application startup and refresh.
+All three ListViews now automatically sort by Modified DateTime descending (newest first) on application startup and refresh. Dates display in human-friendly relative format.
 
 **Files Modified:**
-- `ViewModels/MainViewModel.cs` - Added `ApplyDefaultSort()` method and `FilesLoaded` event
-- `MainWindow.xaml.cs` - Added `OnFilesLoaded()` handler and sort indicator update logic
+- `Models/FileItem.cs` - Added `ModifiedDateTime` property and `FormatRelativeDate()` method
+- `ViewModels/MainViewModel.cs` - Updated to populate both display and sort properties
+- `MainWindow.xaml.cs` - Updated `GetPropertyName()` to map to `ModifiedDateTime`
 
 **Key Features:**
-1. **Default Sort** - Modified Date descending (▼) on startup/refresh
+1. **Default Sort** - Modified DateTime descending (▼) on startup/refresh
 2. **Visual Indicator** - Sort arrow (▼) shows on Modified Date column
-3. **User Override** - Click any column header to change sort
-4. **Consistent Behavior** - Applies to all three ListViews
+3. **Relative Date Display** - Human-friendly date format:
+   - Today: "Today, 10:30 AM"
+   - Yesterday: "Yesterday, 3:45 PM"
+   - < 7 days: "Friday, 10:30 AM"
+   - >= 7 days: "Mar 06, 2026 10:30 PM"
+4. **User Override** - Click any column header to change sort
+5. **Consistent Behavior** - Applies to all three ListViews
+
+**Technical Approach:**
+- **Sorting**: Uses `ModifiedDateTime` (DateTime type) for accurate chronological sorting
+- **Display**: Uses `ModifiedDate` (string type) with relative format
+- **Separation of Concerns**: Ensures both correct sorting and readable display
 
 **Benefits:**
 - Newest files appear first
 - Reduced scroll time to find recent content
 - Consistent experience across sessions
 - Clear visual feedback with sort indicator
+- Easier to understand file recency (no mental date parsing)
+- Reduced cognitive load for elderly users
+- More intuitive than ISO date format
+
+**Documentation:**
+- ADR-004: Default List Sorting Strategy
+- ADR-005: Relative Date Display Format
+- BDD_SPECIFICATION.md v2.28.0 updated
+- ISSUE_22_STATUS.md created
 
 ---
 

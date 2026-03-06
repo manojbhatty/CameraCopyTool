@@ -5,7 +5,7 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 2.27.0 |
+| **Version** | 2.28.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
 | **Last Updated** | 2026-03-06 |
@@ -415,7 +415,7 @@ Scenario: New files are displayed correctly
     | Field         | Format                     |
     |---------------|----------------------------|
     | Name          | Full filename with extension |
-    | Modified Date | `yyyy-MM-dd hh:mm tt` (12-hour format with AM/PM) |
+    | Modified Date | Relative date format (see Business Rule 1.1) |
 
   And the section header should display: "🆕 New Videos to Copy (count)" where count is the number of NEW VIDEO files only
 
@@ -467,7 +467,7 @@ Scenario: Already copied files are displayed
     | Field         | Format                     |
     |---------------|----------------------------|
     | Name          | Full filename with extension |
-    | Modified Date | `yyyy-MM-dd hh:mm tt` (12-hour format with AM/PM) |
+    | Modified Date | Relative date format (see Business Rule 1.1) |
 
   And the section header should display: "✅ Already Copied Videos (count)" where count is the number of already copied VIDEO files only
 
@@ -506,7 +506,7 @@ Scenario: Destination files are displayed
     | Field         | Format                                  |
     |---------------|-----------------------------------------|
     | Name          | Filename with ✅ prefix if also in source |
-    | Modified Date | `yyyy-MM-dd hh:mm tt` (12-hour format with AM/PM) |
+    | Modified Date | Relative date format (see Business Rule 1.1) |
 
   And the section header should display: "💻 Videos on Your Computer (count)" where count is the total number of VIDEO files in the destination folder
 ```
@@ -1852,25 +1852,36 @@ flowchart TD
 - Only file size is compared, not modification date or hash
 - A file with same name but different size is considered "new" (will be recopied)
 
-### Rule 1.1: File Sorting Behavior
+### Rule 1.1: File Sorting and Date Display Behavior
 
-**Description**: Determines the sort order of files in each list
+**Description**: Determines the sort order of files in each list and the date display format
 
 **Specification**:
-- **Default Sort on Startup/Refresh**: Files in all three lists (Already Copied, New Files, Destination) are sorted by Modified Date in **descending order** (newest first)
+- **Default Sort on Startup/Refresh**: Files in all three lists (Already Copied, New Files, Destination) are sorted by Modified DateTime in **descending order** (newest first)
 - **Manual Sort**: Users can click any column header to sort by that column
 - **Sort Toggle**: First click = Ascending (▲), Second click = Descending (▼)
 - **Sort Indicator**: Only the actively sorted column shows the direction indicator (▲ or ▼)
 - **Sorting is case-insensitive**
 - **Sort Properties**:
   - File Name: Sorts by `DisplayName` (case-insensitive, alphabetical)
-  - Modified Date: Sorts by `ModifiedDate` (chronological)
+  - Modified Date: Sorts by `ModifiedDateTime` (DateTime, chronological)
+
+**Date Display Format** (Relative Date):
+The Modified Date column displays dates in a human-friendly relative format:
+
+| File Age | Display Format | Example |
+|----------|---------------|---------|
+| Modified today | `Today, h:mm tt` | `Today, 10:30 AM` |
+| Modified yesterday | `Yesterday, h:mm tt` | `Yesterday, 3:45 PM` |
+| Modified within last 7 days | `dddd, h:mm tt` | `Friday, 10:30 AM` |
+| Modified older than 7 days | `MMM dd, yyyy h:mm tt` | `Mar 06, 2026 10:30 PM` |
 
 **Example**:
 ```
-Given files with modified dates: 2026-03-01, 2026-03-05, 2026-03-03
-When application starts or refreshes
-Then order is: 2026-03-05, 2026-03-03, 2026-03-01 (newest first, descending)
+Given files with modified dates: Today 10:30 AM, Yesterday 3:45 PM, Mar 04 9:15 AM
+When displayed in any list
+Then order is: Today 10:30 AM, Yesterday 3:45 PM, Mar 04 9:15 AM (newest first)
+And display shows: "Today, 10:30 AM", "Yesterday, 3:45 PM", "Mar 04, 2026 9:15 AM"
 
 Given files: IMG_10.jpg, IMG_2.jpg, IMG_1.jpg
 When sorted by File Name ascending
@@ -1883,6 +1894,9 @@ Future: Then order should be: IMG_1.jpg, IMG_2.jpg, IMG_10.jpg (natural sort)
 - Sort indicator (▼) is shown on the Modified Date column header after loading
 - Users can override the default sort by clicking any column header
 - Sort state is NOT persisted between sessions (resets on each load/refresh)
+- Date display uses `FileItem.FormatRelativeDate()` static method
+- Sorting uses `ModifiedDateTime` (DateTime type) for accurate chronological ordering
+- Display uses `ModifiedDate` (string type) with relative format for readability
 
 ### Rule 2: Copy Operation Precedence
 
@@ -3080,6 +3094,7 @@ The following unit tests have been implemented to verify BDD compliance:
 | 2.23.0 | 2026-02-22 | AI Assistant | **Help Panel Text Update**: Changed "To Copy Photos" to "To Copy Videos" and "Select the photos" to "Select the videos" in help panel instructions to accurately reflect application functionality (video file copying). Updated BDD User Story 0.2 and Help Panel Instructions table. Benefits: documentation accuracy, reduces user confusion about supported file types. |
 | 2.24.0 | 2026-02-22 | AI Assistant | **Settings Button Styling**: Changed Settings button from bright orange (#FF9800) to subdued gray (#757575) with darker hover (#616161) and pressed (#424242) states. Added design rationale: Settings is a secondary action, should be less visually distracting than primary actions like Refresh and Copy. Updated BDD Settings Button specification. Benefits: reduced visual clutter, better visual hierarchy, primary action buttons stand out more. |
 | 2.26.0 | 2026-02-27 | AI Assistant | **Issue #3 Complete**: Updated Google Drive upload dialog BDD scenarios to match implementation (progress bar with percentage inside, dynamic status messages, color-coded states, cancel confirmation, no unnecessary MessageBoxes). Updated ADR-001 status to "Implemented". |
+| 2.28.0 | 2026-03-06 | AI Assistant | **Issue #22 Enhancement - Relative Date Display**: Implemented human-friendly relative date display. Shows "Today, 10:30 AM" for today's files, "Yesterday, 3:45 PM" for yesterday, day name for recent files ("Friday, 10:30 AM"), and full date for older files ("Mar 06, 2026 10:30 PM"). Added ModifiedDateTime property for accurate DateTime sorting. Sorting still works correctly while displaying readable dates. Updated Business Rule 1.1 with date display specification. Benefits: easier to understand file recency, reduces cognitive load, more intuitive than ISO date format. |
 | 2.27.0 | 2026-03-06 | AI Assistant | **Issue #22 Complete - Default List Sorting**: Added default sort by Modified Date descending (newest first) on application startup and refresh. Sort indicator (▼) automatically shows on Modified Date column header. Users can still click column headers to change sort. Updated Business Rule 1.1 with default sort specification. Benefits: newest files appear first, improved user experience, visual consistency across sessions. |
 | 2.25.0 | 2026-02-26 | AI Assistant | **Google Drive Integration Feature**: Added Feature 10: Google Drive Integration with three user stories (10.1 Upload Files, 10.2 Authentication, 10.3 Upload History). Added core capability for Google Drive upload. Created 3 Architecture Decision Records (ADR-001: API Integration, ADR-002: Upload History Storage, ADR-003: Error Handling). Updated Table of Contents with Google Drive Integration appendix. |
 
