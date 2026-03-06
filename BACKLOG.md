@@ -10,8 +10,8 @@
 
 | Status | Count |
 |--------|-------|
-| Open | 9 |
-| Closed (Last 30 Days) | 1 (#22) |
+| Open | 8 |
+| Closed (Last 30 Days) | 2 (#22, #27) |
 | Total | 10 |
 
 ---
@@ -93,9 +93,10 @@
 
 | #27 | ENHANCEMENT 007: Add an application icon | UI Refinements | 🟢 Medium | Low |
 
-**Status:** 🆕 **New Issue** (Created: Mar 6, 2026)
-**Implementation:** Create and add .ico file for application executable and window icon
-**Notes:** Improves professional appearance and makes application easily identifiable in taskbar. Consider camera/video themed icon.
+**Status:** ✅ **COMPLETE** (Mar 6, 2026)
+**Implementation:** Added `AppIcon.ico` as application icon. Icon appears in window title bar, taskbar, Alt+Tab, .exe file, and Start Menu.
+**Files Changed:** `CameraCopyTool.csproj` (added ApplicationIcon and Resource), `MainWindow.xaml` (added Icon attribute)
+**Notes:** Professional camera icon improves application appearance and identifiability.
 
 | # | Title | Labels | Priority | Estimated Effort |
 |---|-------|--------|----------|-----------------|
@@ -198,8 +199,8 @@
 
 **Issues:**
 - [x] #22 - All listviews sorted by modified date (descending) on startup/refresh ✅
+- [x] #27 - Add an application icon ✅
 - [ ] #28 - UI improvement to distinguish between different dates
-- [ ] #27 - Add an application icon
 - [ ] Create new GitHub issue for upload status icons legend
 - [ ] Create new GitHub issue for keyboard shortcuts section
 - [ ] #19 - Make sorting indicators more prominent
