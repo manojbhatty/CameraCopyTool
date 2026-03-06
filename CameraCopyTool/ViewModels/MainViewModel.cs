@@ -439,6 +439,12 @@ public class MainViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// Event raised when files have been loaded and sorted.
+    /// Allows the View to update sort indicators.
+    /// </summary>
+    public event Action? FilesLoaded;
+
+    /// <summary>
     /// Gets the collection of files that have already been copied to the destination.
     /// Displayed in the "Already copied files" ListView.
     /// </summary>
@@ -795,9 +801,17 @@ public class MainViewModel : ViewModelBase
 
                     foreach (var f in destFileItems)
                         DestinationFiles.Add(f);
-                    
+
                     // Update upload status for destination files
                     UpdateUploadStatus();
+
+                    // Apply default sort by ModifiedDate descending
+                    ApplyDefaultSort(AlreadyCopiedFiles);
+                    ApplyDefaultSort(NewFiles);
+                    ApplyDefaultSort(DestinationFiles);
+
+                    // Notify View that files are loaded and sorted (for sort indicator update)
+                    FilesLoaded?.Invoke();
                 });
             }
             else
@@ -815,9 +829,17 @@ public class MainViewModel : ViewModelBase
 
                 foreach (var f in destFileItems)
                     DestinationFiles.Add(f);
-                
+
                 // Update upload status for destination files
                 UpdateUploadStatus();
+
+                // Apply default sort by ModifiedDate descending
+                ApplyDefaultSort(AlreadyCopiedFiles);
+                ApplyDefaultSort(NewFiles);
+                ApplyDefaultSort(DestinationFiles);
+
+                // Notify View that files are loaded and sorted (for sort indicator update)
+                FilesLoaded?.Invoke();
             }
 
             StatusMessage = $"Loaded {NewFiles.Count} new files, {AlreadyCopiedFiles.Count} already copied";
@@ -1171,6 +1193,16 @@ public class MainViewModel : ViewModelBase
         _settingsService.Save();
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
+    }
+
+    /// <summary>
+    /// Applies default sort by ModifiedDate descending to an ObservableCollection.
+    /// </summary>
+    private static void ApplyDefaultSort(ObservableCollection<FileItem> collection)
+    {
+        var view = System.Windows.Data.CollectionViewSource.GetDefaultView(collection);
+        view.SortDescriptions.Clear();
+        view.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(FileItem.ModifiedDate), System.ComponentModel.ListSortDirection.Descending));
     }
 
     #endregion

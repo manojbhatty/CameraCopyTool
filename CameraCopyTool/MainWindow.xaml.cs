@@ -70,6 +70,9 @@ namespace CameraCopyTool
 
             // Subscribe to ViewModel property changes for Copy button animation
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+
+            // Subscribe to FilesLoaded event to update sort indicators after loading
+            _viewModel.FilesLoaded += OnFilesLoaded;
         }
 
         /// <summary>
@@ -83,6 +86,71 @@ namespace CameraCopyTool
             {
                 UpdateCopyButtonAnimation();
             }
+        }
+
+        /// <summary>
+        /// Handles the FilesLoaded event from the ViewModel.
+        /// Updates sort indicators to show default sort (Modified Date, descending) after loading.
+        /// </summary>
+        private void OnFilesLoaded()
+        {
+            System.Diagnostics.Debug.WriteLine("OnFilesLoaded: Event received");
+            
+            // Dispatch to ensure UI is ready
+            Dispatcher.InvokeAsync(() =>
+            {
+                System.Diagnostics.Debug.WriteLine("OnFilesLoaded: Updating sort indicators");
+                
+                // Update sort indicators for all three ListViews
+                UpdateSortIndicatorForModifiedDate(lvAlreadyCopied, ListSortDirection.Descending);
+                UpdateSortIndicatorForModifiedDate(lvNewFiles, ListSortDirection.Descending);
+                UpdateSortIndicatorForModifiedDate(lvDestinationFiles, ListSortDirection.Descending);
+            });
+        }
+
+        /// <summary>
+        /// Updates the sort indicator on the Modified Date column header.
+        /// </summary>
+        private void UpdateSortIndicatorForModifiedDate(ListView listView, ListSortDirection direction)
+        {
+            if (listView.View is GridView gridView && gridView.Columns.Count >= 2)
+            {
+                System.Diagnostics.Debug.WriteLine($"UpdateSortIndicatorForModifiedDate: ListView has {gridView.Columns.Count} columns");
+                
+                // Find the GridViewColumnHeader container for the Modified Date column
+                var modifiedDateHeader = FindColumnHeader(listView, gridView.Columns[1]);
+                if (modifiedDateHeader != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"UpdateSortIndicatorForModifiedDate: Found header, updating indicator");
+                    UpdateHeaderIndicator(listView, modifiedDateHeader, direction);
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"UpdateSortIndicatorForModifiedDate: Header not found");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Finds the GridViewColumnHeader container for a specific column.
+        /// </summary>
+        private GridViewColumnHeader? FindColumnHeader(ListView listView, GridViewColumn column)
+        {
+            // Search for all GridViewColumnHeader elements and find the one for our column
+            var headers = FindChildren<GridViewColumnHeader>(listView);
+            System.Diagnostics.Debug.WriteLine($"FindColumnHeader: Found {headers.Count} headers for ListView");
+            
+            foreach (var header in headers)
+            {
+                System.Diagnostics.Debug.WriteLine($"  Header: {header.Column?.Header}, Match: {header.Column == column}");
+                if (header.Column == column)
+                {
+                    System.Diagnostics.Debug.WriteLine($"  Found matching header!");
+                    return header;
+                }
+            }
+            System.Diagnostics.Debug.WriteLine($"  No matching header found");
+            return null;
         }
 
         /// <summary>
@@ -522,6 +590,25 @@ namespace CameraCopyTool
                 if (result != null) return result;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Finds all child elements of a specific type in the visual tree.
+        /// </summary>
+        private static List<T> FindChildren<T>(DependencyObject parent) where T : DependencyObject
+        {
+            var result = new List<T>();
+            if (parent == null) return result;
+
+            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+                if (child is T typedChild)
+                    result.Add(typedChild);
+
+                result.AddRange(FindChildren<T>(child));
+            }
+            return result;
         }
 
         /// <summary>

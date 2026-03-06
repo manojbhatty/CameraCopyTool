@@ -1,6 +1,34 @@
-# Google Drive Feature - Implementation Summary
+# Implementation Summary
 
-## Issue #3 Complete ✅
+## Recent Implementations
+
+### Issue #22 Complete ✅ - Default List Sorting
+
+**Status:** ✅ COMPLETE (2026-03-06)
+
+**Implementation Details:**
+
+All three ListViews now automatically sort by Modified Date descending (newest first) on application startup and refresh.
+
+**Files Modified:**
+- `ViewModels/MainViewModel.cs` - Added `ApplyDefaultSort()` method and `FilesLoaded` event
+- `MainWindow.xaml.cs` - Added `OnFilesLoaded()` handler and sort indicator update logic
+
+**Key Features:**
+1. **Default Sort** - Modified Date descending (▼) on startup/refresh
+2. **Visual Indicator** - Sort arrow (▼) shows on Modified Date column
+3. **User Override** - Click any column header to change sort
+4. **Consistent Behavior** - Applies to all three ListViews
+
+**Benefits:**
+- Newest files appear first
+- Reduced scroll time to find recent content
+- Consistent experience across sessions
+- Clear visual feedback with sort indicator
+
+---
+
+## Issue #3 Complete ✅ - Google Drive Single File Upload
 
 Single file upload with progress indicator has been fully implemented with extensive UX improvements for elderly users.
 

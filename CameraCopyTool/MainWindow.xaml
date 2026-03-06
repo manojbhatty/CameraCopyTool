@@ -10,10 +10,13 @@
     <Window.Resources>
         <!-- Boolean to Visibility converter for help panel toggle -->
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        
+
         <!-- Boolean to Show/Hide text converter for help panel button -->
         <converters:BooleanToTextConverter x:Key="BooleanToTextConverter"/>
-        
+
+        <!-- Half height converter for limiting expanded ListView height -->
+        <converters:HalfHeightConverter x:Key="HalfHeightConverter"/>
+
         <!-- Action button style -->
         <Style x:Key="ActionButtonStyle" TargetType="Button">
             <Setter Property="FontFamily" Value="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
@@ -222,13 +225,13 @@
                                                       Margin="0,0,25,0"/>
                                     <TextBlock x:Name="SortIndicator"
                                                Text="▲"
-                                               FontSize="10"
-                                               Foreground="#1976D2"
+                                               FontSize="14"
+                                               Foreground="#0D47A1"
                                                FontWeight="Bold"
                                                VerticalAlignment="Center"
                                                Visibility="Collapsed"
                                                HorizontalAlignment="Right"
-                                               Margin="0,0,10,0"/>
+                                               Margin="0,0,8,0"/>
                                 </Grid>
                             </Border>
                             <!-- Resize thumb - MUST be at Grid level, not inside Border -->
@@ -262,6 +265,83 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="HeaderBorder" Property="Background" Value="#BBDEFB"/>
                                 <Setter TargetName="HeaderBorder" Property="BorderBrush" Value="#64B5F6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Enhanced Expander style with prominent toggle arrow -->
+        <Style x:Key="EnhancedExpanderStyle" TargetType="Expander">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#1B5E20"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Expander">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <ToggleButton Grid.Row="0"
+                                          IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          Background="Transparent"
+                                          HorizontalAlignment="Stretch"
+                                          HorizontalContentAlignment="Left"
+                                          Cursor="Hand">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Grid Background="{TemplateBinding Background}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <!-- Large arrow icon -->
+                                            <Path x:Name="Arrow"
+                                                  Grid.Column="0"
+                                                  Data="M 0 0 L 8 8 L 16 0 Z"
+                                                  Fill="#2E7D32"
+                                                  Stroke="#1B5E20"
+                                                  StrokeThickness="1.5"
+                                                  Width="16"
+                                                  Height="16"
+                                                  Margin="8,4"
+                                                  VerticalAlignment="Center"
+                                                  RenderTransformOrigin="0.5,0.5">
+                                                <Path.RenderTransform>
+                                                    <RotateTransform Angle="-90"/>
+                                                </Path.RenderTransform>
+                                            </Path>
+                                            <ContentPresenter Grid.Column="1"
+                                                              Content="{TemplateBinding Content}"
+                                                              VerticalAlignment="Center"
+                                                              Margin="4,0,0,0"/>
+                                        </Grid>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter TargetName="Arrow" Property="RenderTransform">
+                                                    <Setter.Value>
+                                                        <RotateTransform Angle="0"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Arrow" Property="Fill" Value="#43A047"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                                <ContentPresenter ContentSource="Header"/>
+                            </ToggleButton>
+                            <ContentPresenter Grid.Row="1" ContentSource="Content" x:Name="ExpandedContent"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsExpanded" Value="False">
+                                <Setter TargetName="ExpandedContent" Property="Visibility" Value="Collapsed"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -489,8 +569,9 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="📷 Your Camera Videos" FontWeight="Bold" Grid.Row="0"
-                           FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                <TextBlock Text="📷 Your Camera Videos" Grid.Row="0"
+                           FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                           Foreground="#555555"/>
 
                 <Grid Margin="0,5" Grid.Row="1">
                     <Grid.ColumnDefinitions>
@@ -539,10 +620,28 @@
                 <Border Grid.Row="2" Margin="0,10,0,5" Background="#E8F5E9" BorderBrush="#81C784" BorderThickness="1" CornerRadius="4">
                     <Expander Header="{Binding AlreadyCopiedFilesHeader}"
                               IsExpanded="False"
-                              Background="Transparent">
+                              Style="{StaticResource EnhancedExpanderStyle}">
                         <Expander.HeaderTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding}" FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}" FontWeight="Bold"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding}" FontWeight="Bold" VerticalAlignment="Center" FontSize="16"/>
+                                    <TextBlock x:Name="ExpandHint" Grid.Column="2" Text="Click to expand" 
+                                               FontSize="12" 
+                                               Foreground="#666666" 
+                                               FontStyle="Italic"
+                                               VerticalAlignment="Center"
+                                               Margin="10,0,0,0"/>
+                                </Grid>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Expander}, Path=IsExpanded}" Value="True">
+                                        <Setter TargetName="ExpandHint" Property="Text" Value="Click to collapse"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
                             </DataTemplate>
                         </Expander.HeaderTemplate>
                         <ListView x:Name="lvAlreadyCopied" SelectionMode="Extended"
@@ -552,7 +651,8 @@
                                   HorizontalAlignment="Stretch"
                                   VerticalAlignment="Stretch"
                                   HorizontalContentAlignment="Stretch"
-                                  Background="Transparent">
+                                  Background="Transparent"
+                                  MaxHeight="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource HalfHeightConverter}}">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="File Name">
@@ -695,8 +795,9 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="💻 Your Computer Videos" FontWeight="Bold" Grid.Row="0"
-                           FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                <TextBlock Text="💻 Your Computer Videos" Grid.Row="0"
+                           FontSize="{Binding DataContext.FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                           Foreground="#555555"/>
 
                 <Grid Margin="0,5" Grid.Row="1">
                     <Grid.ColumnDefinitions>
@@ -783,6 +884,10 @@
                                             <DataTemplate.Triggers>
                                                 <!-- Change icon color when row is selected -->
                                                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=IsSelected}" Value="True">
+                                                    <Setter TargetName="UploadIconText" Property="Foreground" Value="White"/>
+                                                </DataTrigger>
+                                                <!-- Change icon color when row has green 'already copied' background -->
+                                                <DataTrigger Binding="{Binding IsAlreadyCopied}" Value="True">
                                                     <Setter TargetName="UploadIconText" Property="Foreground" Value="White"/>
                                                 </DataTrigger>
                                             </DataTemplate.Triggers>

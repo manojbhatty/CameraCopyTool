@@ -17,6 +17,7 @@ An Architecture Decision Record is a document that captures an important archite
 | [ADR-001](./ADR-001-Google-Drive-API.md) | Google Drive API Integration | ✅ Implemented | 2026-02-26 |
 | [ADR-002](./ADR-002-Upload-History-Storage.md) | Upload History Storage Format | ✅ Implemented | 2026-02-26 |
 | [ADR-003](./ADR-003-Error-Handling-Retry.md) | Error Handling and Retry Strategy | ✅ Implemented | 2026-02-28 |
+| [ADR-004](./ADR-004-Default-List-Sorting.md) | Default List Sorting Strategy | ✅ Implemented | 2026-03-06 |
 
 ## ADR Template
 
@@ -51,9 +52,10 @@ Each ADR follows this structure:
 
 The following ADRs may be created as enhancements are implemented:
 
-- **ADR-004**: Google Drive Folder Selection Strategy
-- **ADR-005**: Background Upload Service Architecture
-- **ADR-006**: Real-Time File System Watching
-- **ADR-007**: Upload History Archive Strategy
+- **ADR-005**: Google Drive Folder Selection Strategy
+- **ADR-006**: Background Upload Service Architecture
+- **ADR-007**: Real-Time File System Watching
+- **ADR-008**: Upload History Archive Strategy
+- **ADR-009**: Natural Sort Implementation for Filenames
 
 See `../../POTENTIAL_ENHANCEMENTS.md` for details.
