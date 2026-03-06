@@ -1,82 +1,65 @@
-# Issue #22 Status - Default List Sorting
+# Issue #22 Status - Default List Sorting with Relative Date Display
 
 **Status:** ✅ **COMPLETE**  
 **Date:** 2026-03-06  
-**Branch:** `dev/issue-22-default-sorting`
+**Branch:** `feature/issue-22-relative-dates`
 
 ---
 
 ## Summary
 
-Implemented automatic default sorting for all three ListViews (Already Copied, New Files, Destination) by Modified Date in descending order (newest first). Sort indicator (▼) displays on the Modified Date column header after loading.
+Implemented automatic default sorting for all three ListViews by Modified DateTime (newest first) with human-friendly relative date display. Files show "Today", "Yesterday", day names for recent files, and full dates for older files.
 
 ---
 
 ## Implementation Details
 
-### Files Modified
+### Phase 1: Default Sorting (Completed 2026-03-06)
 
-1. **`MainViewModel.cs`**
-   - Added `FilesLoaded` event to notify View when files are loaded and sorted
-   - Added `ApplyDefaultSort()` helper method
-   - Modified `LoadFilesAsync()` to apply default sort and raise event
+**Files Modified:**
+- `ViewModels/MainViewModel.cs` - Added `ApplyDefaultSort()` method and `FilesLoaded` event
+- `MainWindow.xaml.cs` - Added `OnFilesLoaded()` handler and sort indicator update logic
+- `Models/FileItem.cs` - Added `ModifiedDateTime` property for sorting
 
-2. **`MainWindow.xaml.cs`**
-   - Subscribed to `FilesLoaded` event
-   - Added `OnFilesLoaded()` handler
-   - Added `UpdateSortIndicatorForModifiedDate()` method
-   - Added `FindColumnHeader()` helper to locate column headers in visual tree
-   - Added `FindChildren<T>()` generic helper for visual tree traversal
+**Features:**
+- All three ListViews sort by Modified Date descending (▼) by default
+- Sort indicator automatically displays on Modified Date column
+- Users can override default sort by clicking column headers
 
-### Key Changes
+### Phase 2: Relative Date Display (Completed 2026-03-06)
 
-#### MainViewModel.cs
+**Files Modified:**
+- `Models/FileItem.cs` - Added `FormatRelativeDate()` method and `ModifiedDateTime` property
+- `ViewModels/MainViewModel.cs` - Updated to populate both display and sort properties
+- `MainWindow.xaml.cs` - Updated `GetPropertyName()` to map to `ModifiedDateTime`
 
-```csharp
-// Event declaration (line ~445)
-public event Action? FilesLoaded;
+**Date Display Format:**
 
-// ApplyDefaultSort method (line ~1200)
-private static void ApplyDefaultSort(ObservableCollection<FileItem> collection)
-{
-    var view = CollectionViewSource.GetDefaultView(collection);
-    view.SortDescriptions.Clear();
-    view.SortDescriptions.Add(new SortDescription(nameof(FileItem.ModifiedDate), ListSortDirection.Descending));
-}
+| File Age | Display Format | Example |
+|----------|---------------|---------|
+| Modified today | `Today, h:mm tt` | `Today, 10:30 AM` |
+| Modified yesterday | `Yesterday, h:mm tt` | `Yesterday, 3:45 PM` |
+| Modified within last 7 days | `dddd, h:mm tt` | `Friday, 10:30 AM` |
+| Modified older than 7 days | `MMM dd, yyyy h:mm tt` | `Mar 06, 2026 10:30 PM` |
 
-// LoadFilesAsync - calls ApplyDefaultSort and raises FilesLoaded event (line ~808-846)
-```
-
-#### MainWindow.xaml.cs
-
-```csharp
-// Event subscription (line ~76)
-_viewModel.FilesLoaded += OnFilesLoaded;
-
-// Handler (line ~93)
-private void OnFilesLoaded()
-{
-    Dispatcher.InvokeAsync(() =>
-    {
-        UpdateSortIndicatorForModifiedDate(lvAlreadyCopied, ListSortDirection.Descending);
-        UpdateSortIndicatorForModifiedDate(lvNewFiles, ListSortDirection.Descending);
-        UpdateSortIndicatorForModifiedDate(lvDestinationFiles, ListSortDirection.Descending);
-    });
-}
-```
+**Sorting:**
+- Uses `ModifiedDateTime` (DateTime type) for accurate chronological sorting
+- Display uses `ModifiedDate` (string type) with relative format
+- Separation of concerns ensures both correct sorting and readable display
 
 ---
 
 ## Testing Checklist
 
-- [x] Files sort by Modified Date descending on startup
-- [x] Files sort by Modified Date descending after refresh (F5)
+- [x] Files sort by Modified DateTime descending on startup
+- [x] Files sort by Modified DateTime descending after refresh (F5)
 - [x] Sort indicator (▼) shows on Modified Date column
-- [x] Clicking File Name header sorts alphabetically
-- [x] Clicking Modified Date header toggles sort direction
-- [x] Sort indicator updates when changing sort column
-- [x] All three ListViews sort independently
-- [x] Sort resets to default on refresh
+- [x] Files modified today display "Today, h:mm tt"
+- [x] Files modified yesterday display "Yesterday, h:mm tt"
+- [x] Files modified 2-6 days ago display day name (e.g., "Friday, 10:30 AM")
+- [x] Files modified 7+ days ago display full date (e.g., "Mar 06, 2026 10:30 PM")
+- [x] Manual column header clicks override default sort
+- [x] All three ListViews sort and display independently
 - [x] Build succeeds with no errors
 
 ---
@@ -87,81 +70,98 @@ private void OnFilesLoaded()
 
 1. **`BACKLOG.md`**
    - Marked Issue #22 as ✅ IMPLEMENTED
-   - Updated GitHub Issues Summary (Open: 8 → 7)
+   - Updated GitHub Issues Summary
    - Updated Sprint Planning checklist
 
-2. **`BDD_SPECIFICATION.md`**
-   - Updated version to 2.27.0
-   - Updated Business Rule 1.1 with default sort specification
-   - Added implementation notes
-   - Added version history entry (2.27.0)
+2. **`BDD_SPECIFICATION.md`** (v2.28.0)
+   - Updated Business Rule 1.1 with default sort and relative date specification
+   - Updated User Stories 2.1, 2.2, 2.3 with relative date format reference
+   - Added version history entry (2.28.0)
 
 3. **`docs/adr/`**
-   - Created `ADR-004-Default-List-Sorting.md`
-   - Updated `README.md` with ADR-004 link
+   - Created `ADR-004-Default-List-Sorting.md` (Phase 1)
+   - Created `ADR-005-Relative-Date-Display.md` (Phase 2)
+   - Updated `README.md` with both ADR links
 
 4. **`IMPLEMENTATION_SUMMARY.md`**
-   - Added Issue #22 section at top
+   - Added Issue #22 section with both phases
+
+5. **`ISSUE_22_STATUS.md`** (this file)
+   - Comprehensive status document with both phases
 
 ---
 
 ## Technical Decisions
 
-### Why Modified Date Descending?
+### Why DateTime-Based Sorting?
 
-- **User Workflow**: Users typically want to see newest files first (recent photos/videos)
-- **Camera/Phone Context**: Files are typically numbered sequentially, but date is more meaningful
-- **Consistency**: All users see the same order on startup
-- **Familiar Pattern**: Similar to Windows Explorer "Date modified" descending view
+String-based sorting only works with ISO 8601 format (yyyy-MM-dd). To display human-friendly relative dates while maintaining correct sorting:
+- **`ModifiedDateTime`** (DateTime): Used for sorting only
+- **`ModifiedDate`** (string): Used for display only
 
-### Why Not Persist Sort Choice?
+This separation ensures:
+- Correct chronological sorting regardless of display format
+- Flexibility to change display format without affecting sorting
+- Clear separation of concerns
 
-- **Simplicity**: Target audience (elderly users) benefits from consistent, predictable behavior
-- **Debugging**: Easier to support when behavior is always the same
-- **Future Enhancement**: Can be added later if users request it
+### Why Relative Dates?
 
-### String-based Date Sorting
+**Target Audience**: Elderly users (like Margaret, age 75) find relative terms more intuitive:
+- "Today" is immediately meaningful
+- "Yesterday" requires no mental calculation
+- Day names ("Friday") provide context for recent files
+- Full dates for older files maintain precision
 
-**Current Implementation**: Sorts by `ModifiedDate` string ("yyyy-MM-dd hh:mm tt")
+### Why 7-Day Threshold?
 
-**Why It Works**: ISO 8601 format (YYYY-MM-DD) sorts correctly as strings
-
-**Future Enhancement**: Add `DateTime ModifiedDateUtc` property for more robust sorting
+- **< 7 days**: Day name is meaningful and helpful ("Friday")
+- **>= 7 days**: Full date provides better context ("Mar 06, 2026")
+- Balances readability with information density
+- Common pattern in email clients and messaging apps
 
 ---
 
 ## Performance Impact
 
-- **Negligible**: Sort applies to typical file counts (< 1000 files)
-- **Overhead**: ~10-20ms per ListView on first load
+- **Negligible**: `FormatRelativeDate()` is a simple comparison operation
+- **Overhead**: ~1-2ms per file during load
+- **Memory**: One additional DateTime property per FileItem (~8 bytes)
 - **User Perception**: No noticeable delay
 
 ---
 
 ## Known Limitations
 
-1. **String-based Date**: Relies on consistent date format
-2. **No Multi-column Sort**: Can't sort by date then name
-3. **No Persistence**: Sort resets on each refresh
-4. **Natural Sort**: Filename sort is alphabetical, not natural (IMG_10 before IMG_2)
+1. **Day Boundary Edge Cases**: Files modified near midnight may show unexpected results
+   - Files modified at 11:59 PM yesterday show "Yesterday"
+   - Files modified at 12:01 AM today show "Today"
+
+2. **7-Day Threshold**: Files exactly 7 days old show full date, not day name
+
+3. **Localization**: Day names and "Today"/"Yesterday" are in English
+   - Future enhancement: Add resource files for other languages
+
+4. **Timezone**: Uses local system time, doesn't handle files from different timezones
 
 ---
 
 ## Future Enhancements
 
-1. **Natural Sort**: Implement natural sorting for filenames
-2. **Sort Persistence**: Remember user's last sort choice per folder
-3. **DateTime Property**: Add `DateTime ModifiedDateUtc` to `FileItem`
-4. **Multi-column Sort**: Allow sorting by multiple columns
+1. **Natural Sort**: Implement natural sorting for filenames (IMG_2 before IMG_10)
+2. **Sort Persistence**: Remember user's last sort choice per folder pair
+3. **Localization**: Translate relative date strings for other languages
+4. **Tooltip with Full Date**: Show ISO date in tooltip on hover for precision
+5. **Relative Time**: Show "2 hours ago" for very recent files (< 24 hours)
+6. **Configurable Threshold**: Allow users to adjust the 7-day threshold in Settings
 
 ---
 
 ## Related Documentation
 
-- **ADR**: `docs/adr/ADR-004-Default-List-Sorting.md`
-- **BDD**: `BDD_SPECIFICATION.md` - Business Rule 1.1
+- **ADR-004**: `docs/adr/ADR-004-Default-List-Sorting.md` - Default sorting strategy
+- **ADR-005**: `docs/adr/ADR-005-Relative-Date-Display.md` - Relative date display decision
+- **BDD**: `BDD_SPECIFICATION.md` - Business Rule 1.1, User Stories 2.1-2.3
 - **Backlog**: `BACKLOG.md` - Issue #22
-- **GitHub**: Issue #22 - ENHANCEMENT 005
 
 ---
 

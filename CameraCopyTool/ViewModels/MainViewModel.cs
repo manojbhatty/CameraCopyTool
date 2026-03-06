@@ -755,7 +755,8 @@ public class MainViewModel : ViewModelBase
                     destFileItems.Add(new FileItem
                     {
                         Name = f.Name,
-                        ModifiedDate = f.LastWriteTime.ToString("yyyy-MM-dd hh:mm tt"),
+                        ModifiedDate = FileItem.FormatRelativeDate(f.LastWriteTime),
+                        ModifiedDateTime = f.LastWriteTime,
                         IsAlreadyCopied = sourceNames.Contains(f.Name),
                         FileSize = f.Length,
                         FullPath = f.FullName
@@ -770,7 +771,8 @@ public class MainViewModel : ViewModelBase
                     var fileItem = new FileItem
                     {
                         Name = src.Name,
-                        ModifiedDate = src.LastWriteTime.ToString("yyyy-MM-dd hh:mm tt"),
+                        ModifiedDate = FileItem.FormatRelativeDate(src.LastWriteTime),
+                        ModifiedDateTime = src.LastWriteTime,
                         IsAlreadyCopied = existsInDest,
                         FileSize = src.Length,
                         FullPath = src.FullName
@@ -1196,13 +1198,13 @@ public class MainViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Applies default sort by ModifiedDate descending to an ObservableCollection.
+    /// Applies default sort by ModifiedDateTime descending to an ObservableCollection.
     /// </summary>
     private static void ApplyDefaultSort(ObservableCollection<FileItem> collection)
     {
         var view = System.Windows.Data.CollectionViewSource.GetDefaultView(collection);
         view.SortDescriptions.Clear();
-        view.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(FileItem.ModifiedDate), System.ComponentModel.ListSortDirection.Descending));
+        view.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(FileItem.ModifiedDateTime), System.ComponentModel.ListSortDirection.Descending));
     }
 
     #endregion
