@@ -23,7 +23,7 @@ public class ViewModelBase : INotifyPropertyChanged
     /// </summary>
     /// <param name="propertyName">The name of the property that changed.
     /// If not provided, the caller member name is used automatically.</param>
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    public virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }

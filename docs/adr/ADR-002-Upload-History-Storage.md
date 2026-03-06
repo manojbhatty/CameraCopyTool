@@ -1,8 +1,51 @@
 # ADR 002: Upload History Storage Format
 
 **Date:** 2026-02-26  
-**Status:** Proposed  
+**Status:** ✅ Implemented (2026-02-28)  
 **Deciders:** Development Team
+
+---
+
+## Implementation Update
+
+**Actual Implementation:** Simplified JSON storage in application folder with automatic cleanup.
+
+### Storage Location (Implemented)
+```
+<ApplicationFolder>\upload_history.json
+```
+
+### File Format (Implemented)
+```json
+[
+  {
+    "id": "guid-here",
+    "timestamp": "2026-02-28T15:30:45",
+    "fileName": "video.mp4",
+    "filePath": "C:\\Source\\video.mp4",
+    "fileSize": 10485760,
+    "fileHash": "sha256-hash-here",
+    "googleDriveFileId": "1abc123xyz",
+    "status": "Success",
+    "durationSeconds": 45.2,
+    "lastVerified": "2026-02-28T15:30:45"
+  }
+]
+```
+
+**Settings (User-Configurable):**
+- Max entries: 500 (via `UploadHistoryMaxEntries` user setting)
+- Cleanup frequency: Every 7 days
+- Grace period: 30 days
+
+**Cleanup Logic:**
+- Runs on startup if 7+ days since last cleanup
+- Removes entries older than 30 days
+- Enforces max entry limit (oldest first)
+- Deletes debug logs older than 30 days
+- Enforces 5 MB max per debug log file
+
+**Note:** SHA256 hash computation added for change detection. Cleanup logic implemented with configurable retention.
 
 ---
 

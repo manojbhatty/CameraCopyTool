@@ -1,8 +1,84 @@
-# Google Drive Feature - Implementation Summary
+# Implementation Summary
 
-## Documentation Complete ✅
+## Recent Implementations
 
-All documentation for the Google Drive integration feature has been created and is ready for implementation.
+### Issue #22 Complete ✅ - Default List Sorting with Relative Date Display
+
+**Status:** ✅ COMPLETE (2026-03-06)  
+**Branch:** `feature/issue-22-relative-dates`
+
+**Implementation Details:**
+
+All three ListViews now automatically sort by Modified DateTime descending (newest first) on application startup and refresh. Dates display in human-friendly relative format.
+
+**Files Modified:**
+- `Models/FileItem.cs` - Added `ModifiedDateTime` property and `FormatRelativeDate()` method
+- `ViewModels/MainViewModel.cs` - Updated to populate both display and sort properties
+- `MainWindow.xaml.cs` - Updated `GetPropertyName()` to map to `ModifiedDateTime`
+
+**Key Features:**
+1. **Default Sort** - Modified DateTime descending (▼) on startup/refresh
+2. **Visual Indicator** - Sort arrow (▼) shows on Modified Date column
+3. **Relative Date Display** - Human-friendly date format:
+   - Today: "Today, 10:30 AM"
+   - Yesterday: "Yesterday, 3:45 PM"
+   - < 7 days: "Friday, 10:30 AM"
+   - >= 7 days: "Mar 06, 2026 10:30 PM"
+4. **User Override** - Click any column header to change sort
+5. **Consistent Behavior** - Applies to all three ListViews
+
+**Technical Approach:**
+- **Sorting**: Uses `ModifiedDateTime` (DateTime type) for accurate chronological sorting
+- **Display**: Uses `ModifiedDate` (string type) with relative format
+- **Separation of Concerns**: Ensures both correct sorting and readable display
+
+**Benefits:**
+- Newest files appear first
+- Reduced scroll time to find recent content
+- Consistent experience across sessions
+- Clear visual feedback with sort indicator
+- Easier to understand file recency (no mental date parsing)
+- Reduced cognitive load for elderly users
+- More intuitive than ISO date format
+
+**Documentation:**
+- ADR-004: Default List Sorting Strategy
+- ADR-005: Relative Date Display Format
+- BDD_SPECIFICATION.md v2.28.0 updated
+- ISSUE_22_STATUS.md created
+
+---
+
+## Issue #3 Complete ✅ - Google Drive Single File Upload
+
+Single file upload with progress indicator has been fully implemented with extensive UX improvements for elderly users.
+
+### Implementation Details
+
+**Status:** ✅ COMPLETE (2026-02-27)
+
+**Files Implemented:**
+- `Views/GoogleDriveUploadProgressDialog.xaml` - Upload dialog UI
+- `Views/GoogleDriveUploadProgressDialog.xaml.cs` - Upload logic and state management
+- `Views/GoogleDriveAuthDialog.xaml` - Authentication dialog UI
+- `Views/GoogleDriveAuthDialog.xaml.cs` - Authentication flow
+- `Services/GoogleDriveService.cs` - Google Drive API integration
+- `MainWindow.xaml.cs` - Upload initiation and error handling
+
+**Key Features:**
+1. **Progress Tracking** - Real-time percentage, speed, and time remaining
+2. **Visual Feedback** - Status icon (☁️/✅/⚠️), color-coded messages
+3. **User Guidance** - Reassurance text, cancel confirmation
+4. **Accessibility** - Dynamic font sizing, high contrast colors
+5. **Error Handling** - CancellationToken support, proper cleanup
+
+**UX Improvements:**
+- Larger dialog (500px × 520px) with better spacing
+- File info in gray box for visual separation
+- Percentage displayed inside progress bar
+- Dynamic status messages based on progress
+- No unnecessary MessageBoxes
+- Red Cancel button, Green OK button
 
 ---
 

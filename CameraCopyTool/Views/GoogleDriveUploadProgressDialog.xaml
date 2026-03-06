@@ -1,0 +1,146 @@
+<Window x:Class="CameraCopyTool.Views.GoogleDriveUploadProgressDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Uploading to Google Drive"
+        Height="600" Width="520"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Topmost="True"
+        Background="White">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header with Icon -->
+        <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,0,0,15">
+            <TextBlock x:Name="StatusIcon"
+                       Text="☁️"
+                       FontSize="48"
+                       HorizontalAlignment="Center"/>
+
+            <TextBlock Text="Uploading to Google Drive"
+                       x:Name="TitleText"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       Margin="0,10,0,5"/>
+
+            <TextBlock x:Name="StatusMessage"
+                       Text="Starting upload... please wait"
+                       Foreground="#666666"
+                       FontSize="14"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,15"/>
+        </StackPanel>
+
+        <!-- File Info in Gray Box -->
+        <Border Grid.Row="1"
+                Background="#F5F5F5"
+                BorderBrush="#E0E0E0"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="15"
+                Margin="0,0,0,15">
+            <StackPanel>
+                <StackPanel Margin="0,0,0,10">
+                    <TextBlock Text="File Name:"
+                               x:Name="FileNameLabel"
+                               Foreground="#666666"/>
+                    <TextBlock x:Name="FileNameText"
+                               Text="filename.mp4"
+                               TextTrimming="CharacterEllipsis"
+                               FontWeight="Medium"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Size:"
+                               x:Name="SizeLabel"
+                               Foreground="#666666"/>
+                    <TextBlock x:Name="FileSizeText"
+                               Text="0 MB"
+                               FontWeight="Medium"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Progress Section -->
+        <StackPanel Grid.Row="2" VerticalAlignment="Center">
+            <!-- Progress Bar with Percentage Inside -->
+            <Grid Height="35" Margin="0,0,0,20">
+                <ProgressBar x:Name="UploadProgressBar"
+                             Minimum="0"
+                             Maximum="100"
+                             Value="5"
+                             HorizontalAlignment="Stretch"
+                             VerticalAlignment="Stretch"
+                             Panel.ZIndex="0"/>
+                <TextBlock x:Name="ProgressPercentageText"
+                           Text="0%"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontWeight="Bold"
+                           FontSize="26"
+                           Foreground="#000000"
+                           Panel.ZIndex="1"/>
+            </Grid>
+
+            <!-- Percentage and Time -->
+            <Grid Margin="0,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" HorizontalAlignment="Left">
+                    <TextBlock x:Name="TimeLabel"
+                               Text="Time Remaining:"
+                               Foreground="#666666"
+                               HorizontalAlignment="Right"/>
+                    <TextBlock x:Name="TimeText"
+                               Text="Calculating..."
+                               FontWeight="Medium"
+                               HorizontalAlignment="Right"/>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+
+        <!-- Reassurance Text -->
+        <TextBlock x:Name="ReassuranceText"
+                   Grid.Row="3"
+                   Text="⚠️ Please don't close this window until the upload finishes"
+                   Foreground="#FF9800"
+                   FontSize="13"
+                   HorizontalAlignment="Center"
+                   Margin="0,20,0,10"/>
+
+        <!-- Cancel and OK Buttons -->
+        <StackPanel Grid.Row="4"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Margin="0,20,0,0">
+            <Button x:Name="CancelButton"
+                    Content="Cancel Upload"
+                    Padding="30,12"
+                    MinWidth="140"
+                    Background="#F44336"
+                    Foreground="White"
+                    BorderThickness="0"
+                    Click="CancelButton_Click"/>
+            <Button x:Name="OkButton"
+                    Content="OK"
+                    Padding="40,12"
+                    MinWidth="140"
+                    Margin="20,0,0,0"
+                    Background="#4CAF50"
+                    Foreground="White"
+                    BorderThickness="0"
+                    Click="OkButton_Click"
+                    Visibility="Collapsed"/>
+        </StackPanel>
+    </Grid>
+</Window>

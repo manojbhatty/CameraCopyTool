@@ -71,7 +71,7 @@ Scenario: Context menu styling matches existing items
 - [ ] Context menu item added to destination ListView
 - [ ] Cloud icon displayed next to menu item
 - [ ] Click handler shows placeholder MessageBox
-- [ ] UI tested with screen reader (accessibility)
+- [ ] UI tested with screen reader (accessibility)h
 - [ ] Code reviewed and merged
 
 ---
@@ -270,14 +270,68 @@ Scenario: Upload cancellation
 | Error messages | Plain language, actionable guidance |
 
 ### Definition of Done
-- [ ] Single file upload implemented
-- [ ] Progress dialog with detailed information
-- [ ] Success notification displayed
-- [ ] Error handling for network failures
-- [ ] Error handling for file size limits
-- [ ] Upload cancellation works
-- [ ] UI remains responsive during upload
-- [ ] Code reviewed and merged
+- [x] Single file upload implemented
+- [x] Progress dialog with detailed information
+- [x] Success notification displayed
+- [x] Error handling for network failures
+- [x] Error handling for file size limits
+- [x] Upload cancellation works
+- [x] UI remains responsive during upload
+- [x] Code reviewed and merged
+
+### Implementation Status: ✅ COMPLETE
+
+**Completed:** 2026-02-27
+
+**Summary:**
+Issue #3 has been fully implemented with extensive UX improvements for elderly users. The upload dialog now provides clear, reassuring feedback throughout the upload process.
+
+**Key Features Implemented:**
+
+1. **Visual Progress Indicators**
+   - ✅ Green progress bar with percentage displayed inside bar
+   - ✅ Large status icon (☁️ → ✅ → ⚠️)
+   - ✅ Color-coded text (orange during upload, green on success)
+   - ✅ File name and size displayed in gray info box
+
+2. **Dynamic Status Messages**
+   - ✅ "Starting upload... please wait" (0-10%)
+   - ✅ "Uploading... please wait" (10-50%)
+   - ✅ "Making good progress..." (50-90%)
+   - ✅ "Almost done..." (90-100%)
+   - ✅ "✓ Your file is safe on Google Drive!" (complete)
+
+3. **User Guidance & Reassurance**
+   - ✅ Warning message: "⚠️ Please don't close this window until the upload finishes"
+   - ✅ Success message: "✓ Upload successful! You can now close this window."
+   - ✅ Cancel confirmation dialog prevents accidental cancellation
+   - ✅ No unnecessary MessageBoxes (cleaner UX)
+
+4. **Accessibility**
+   - ✅ Dynamic font sizing (scales with user's settings)
+   - ✅ Larger dialog (500px × 520px)
+   - ✅ High contrast colors (Material Design palette)
+   - ✅ Clear visual separation of elements
+
+5. **Cancel Functionality**
+   - ✅ Confirmation: "Are you sure you want to stop the upload?"
+   - ✅ Properly stops upload using CancellationToken
+   - ✅ Shows orange warning state on cancellation
+   - ✅ Message: "Your file was not uploaded. You can try again."
+
+**Files Modified:**
+- `Views/GoogleDriveUploadProgressDialog.xaml` - Complete UI redesign
+- `Views/GoogleDriveUploadProgressDialog.xaml.cs` - State management and color coding
+- `MainWindow.xaml.cs` - Removed unnecessary MessageBoxes
+
+**Testing:**
+- ✅ Upload progress displays correctly
+- ✅ Success state shows green checkmark and messages
+- ✅ Cancel confirmation works and stops upload
+- ✅ All text readable at different font sizes
+- ✅ Layout works without overlapping elements
+
+---
 
 ---
 
@@ -714,12 +768,59 @@ public string ComputeFileHash(string filePath)
 
 | Issue | Title | Estimated Complexity | Dependencies |
 |-------|-------|---------------------|--------------|
-| #1 | Context Menu Infrastructure | Low | None |
-| #2 | Google Drive Authentication | Medium | None |
-| #3 | Single File Upload | Medium | Issue #2 |
-| #4 | Multiple File Upload | Medium | Issue #3 |
-| #5 | Error Handling & Recovery | High | Issue #3, #4 |
-| #6 | Upload History Tracking | Medium | Issue #3 |
+| #1 | Context Menu Infrastructure | Low | None | ✅ COMPLETE |
+| #2 | Google Drive Authentication | Medium | None | ✅ COMPLETE |
+| #3 | Single File Upload | Medium | Issue #2 | ✅ COMPLETE |
+| #4 | Multiple File Upload | Medium | Issue #3 | ✅ COMPLETE |
+| #5 | Error Handling & Recovery | High | Issue #3, #4 | ✅ COMPLETE |
+| #6 | Upload History Tracking | Medium | Issue #3 | ✅ COMPLETE |
+
+---
+
+## Issue #6 Completion Status
+
+### Completed Features ✅
+
+- [x] Upload history created on successful upload
+- [x] History entry includes: Local Path, File Name, File Size, SHA256 Hash, Google Drive ID, Timestamp, Status
+- [x] Upload status shown in file list with cloud icon (☁️⬆️)
+- [x] Tooltip on hover shows "Uploaded to Google Drive on [date]" (12-hour format)
+- [x] Changed files detected via SHA256 hash comparison
+- [x] Warning icon (⚠️) for changed files
+- [x] Deleted icon (❌) for missing local files
+- [x] Upload history loaded on startup
+- [x] File statuses updated on load
+- [x] Automatic cleanup on startup
+- [x] Missing files marked with LocalFileDeleted status
+- [x] 30-day grace period before deletion
+- [x] Max 500 entries enforced (configurable via user settings)
+- [x] Oldest entries removed first
+- [x] Cleanup logged
+- [x] 7-day cleanup frequency (configurable)
+- [x] lastCleanup timestamp tracked
+- [x] Log file size limits (5 MB max per file, configurable)
+- [x] Log retention (30 days, configurable)
+- [x] All settings stored in user settings for runtime configuration
+
+### Implementation Details
+
+**Files Created/Modified:**
+- `Models/UploadHistoryEntry.cs` - Added SHA256 hash, change detection
+- `Models/FileItem.cs` - Added UploadStatus, UploadIcon, UploadIconColor
+- `Services/UploadHistoryService.cs` - Cleanup logic, settings management
+- `Services/FileLogger.cs` - Max file size enforcement
+- `ViewModels/MainViewModel.cs` - UpdateUploadStatus() method
+- `Views/MainWindow.xaml` - Cloud icon display with color coding
+- `Properties/Settings.settings` - User-configurable settings
+
+**User Settings (Configurable at Runtime):**
+- `UploadHistoryMaxEntries` (default: 500)
+- `DebugLogMaxFileSize` (default: 5 MB)
+- `DebugLogRetentionDays` (default: 30 days)
+
+**Storage Location:**
+- Upload history: `<AppFolder>\upload_history.json`
+- Debug logs: `<AppFolder>\logs\upload-YYYY-MM-DD.log`
 
 ---
 
@@ -738,13 +839,27 @@ public string ComputeFileHash(string filePath)
 
 The following features are NOT included in this initial implementation but can be added later:
 
-- [ ] Select specific Google Drive folder for uploads
-- [ ] View Google Drive files within the application
+See **`POTENTIAL_ENHANCEMENTS.md`** for a comprehensive list of 16 potential enhancements with priority ratings, effort estimates, and implementation notes.
+
+### High Priority Enhancements:
+- [ ] **Upload Status Icons Legend** - Add to help panel (☁️⬆️ = Uploaded, ⚠️ = Changed, ❌ = Deleted)
+- [ ] **Keyboard Shortcuts** - Add to help panel (F5, Delete, Ctrl+Click, Shift+Click)
+- [ ] **Select specific Google Drive folder** for uploads
+- [ ] **View Google Drive files** within the application
+- [ ] **Drag and drop upload** from file explorer
+
+### Medium Priority Enhancements:
 - [ ] Download files from Google Drive
-- [ ] Sync folder with Google Drive
-- [ ] Upload to other cloud services (OneDrive, Dropbox)
-- [ ] Background upload service (upload queue persists after app close)
-- [ ] Upload compression for large video files
 - [ ] Manual upload history cleanup UI (Settings dialog)
+- [ ] First-time setup note in help panel
+- [ ] Background upload service (upload queue persists after app close)
+
+### Low Priority Enhancements:
+- [ ] Upload compression for large video files
 - [ ] File System Watcher for real-time cleanup
 - [ ] Archive old upload history entries
+- [ ] Dark mode support
+- [ ] Upload notifications (toast)
+- [ ] Parallel uploads
+
+For detailed analysis, see `POTENTIAL_ENHANCEMENTS.md`.

@@ -5,10 +5,10 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 2.25.0 |
+| **Version** | 2.28.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
-| **Last Updated** | 2026-02-26 |
+| **Last Updated** | 2026-03-06 |
 
 ---
 
@@ -415,7 +415,7 @@ Scenario: New files are displayed correctly
     | Field         | Format                     |
     |---------------|----------------------------|
     | Name          | Full filename with extension |
-    | Modified Date | `yyyy-MM-dd hh:mm tt` (12-hour format with AM/PM) |
+    | Modified Date | Relative date format (see Business Rule 1.1) |
 
   And the section header should display: "🆕 New Videos to Copy (count)" where count is the number of NEW VIDEO files only
 
@@ -467,7 +467,7 @@ Scenario: Already copied files are displayed
     | Field         | Format                     |
     |---------------|----------------------------|
     | Name          | Full filename with extension |
-    | Modified Date | `yyyy-MM-dd hh:mm tt` (12-hour format with AM/PM) |
+    | Modified Date | Relative date format (see Business Rule 1.1) |
 
   And the section header should display: "✅ Already Copied Videos (count)" where count is the number of already copied VIDEO files only
 
@@ -506,7 +506,7 @@ Scenario: Destination files are displayed
     | Field         | Format                                  |
     |---------------|-----------------------------------------|
     | Name          | Filename with ✅ prefix if also in source |
-    | Modified Date | `yyyy-MM-dd hh:mm tt` (12-hour format with AM/PM) |
+    | Modified Date | Relative date format (see Business Rule 1.1) |
 
   And the section header should display: "💻 Videos on Your Computer (count)" where count is the total number of VIDEO files in the destination folder
 ```
@@ -1145,15 +1145,26 @@ Scenario: Upload progress is displayed
     | Information | Format |
     |-------------|--------|
     | Filename | Name of file being uploaded |
+    | File Size | Size in MB/KB |
     | Progress | Percentage (0% - 100%) with progress bar |
-    | Status | "Uploading to Google Drive..." |
+    | Percentage | Displayed inside progress bar |
+    | Time Remaining | Estimated time (e.g., "About 2 minutes") |
+    | Status Messages | Dynamic messages based on progress |
+    | Reassurance Text | "⚠️ Please don't close this window..." |
 
 Scenario: Upload success notification
   Given a file has been successfully uploaded to Google Drive
   When the upload completes
-  Then a success message should display for 5 seconds:
-    "✓ Uploaded to Google Drive: [filename]"
-  And the file should show a cloud icon (☁️) in the list
+  Then the progress dialog should show:
+    | Element | Display |
+    |---------|---------|
+    | Icon | ✅ Green checkmark |
+    | Title | "Upload Success!" (green) |
+    | Status | "✓ Your file is safe on Google Drive!" |
+    | Reassurance | "✓ Upload successful! You can now close this window." |
+  And the OK button should appear (green)
+  And the Cancel button should hide
+  And the user clicks OK to close the dialog
 
 Scenario: Upload error - network failure
   Given the internet connection is lost during upload
@@ -1841,23 +1852,51 @@ flowchart TD
 - Only file size is compared, not modification date or hash
 - A file with same name but different size is considered "new" (will be recopied)
 
-### Rule 1.1: File Sorting Behavior
+### Rule 1.1: File Sorting and Date Display Behavior
 
-**Description**: Determines the sort order of files in each list
+**Description**: Determines the sort order of files in each list and the date display format
 
 **Specification**:
-- Files in all three lists (Already Copied, New Files, Destination) are sorted alphabetically by filename
-- Sorting is case-insensitive
-- **Current Implementation**: Basic alphabetical sort (e.g., "IMG_1.jpg, IMG_10.jpg, IMG_2.jpg")
-- **Future Enhancement**: Natural sort for numbers (e.g., "IMG_1.jpg, IMG_2.jpg, IMG_10.jpg")
+- **Default Sort on Startup/Refresh**: Files in all three lists (Already Copied, New Files, Destination) are sorted by Modified DateTime in **descending order** (newest first)
+- **Manual Sort**: Users can click any column header to sort by that column
+- **Sort Toggle**: First click = Ascending (▲), Second click = Descending (▼)
+- **Sort Indicator**: Only the actively sorted column shows the direction indicator (▲ or ▼)
+- **Sorting is case-insensitive**
+- **Sort Properties**:
+  - File Name: Sorts by `DisplayName` (case-insensitive, alphabetical)
+  - Modified Date: Sorts by `ModifiedDateTime` (DateTime, chronological)
+
+**Date Display Format** (Relative Date):
+The Modified Date column displays dates in a human-friendly relative format:
+
+| File Age | Display Format | Example |
+|----------|---------------|---------|
+| Modified today | `Today, h:mm tt` | `Today, 10:30 AM` |
+| Modified yesterday | `Yesterday, h:mm tt` | `Yesterday, 3:45 PM` |
+| Modified within last 7 days | `dddd, h:mm tt` | `Friday, 10:30 AM` |
+| Modified older than 7 days | `MMM dd, yyyy h:mm tt` | `Mar 06, 2026 10:30 PM` |
 
 **Example**:
 ```
-Given files: IMG_10.jpg, IMG_2.jpg, IMG_1.jpg
+Given files with modified dates: Today 10:30 AM, Yesterday 3:45 PM, Mar 04 9:15 AM
 When displayed in any list
+Then order is: Today 10:30 AM, Yesterday 3:45 PM, Mar 04 9:15 AM (newest first)
+And display shows: "Today, 10:30 AM", "Yesterday, 3:45 PM", "Mar 04, 2026 9:15 AM"
+
+Given files: IMG_10.jpg, IMG_2.jpg, IMG_1.jpg
+When sorted by File Name ascending
 Then order is: IMG_1.jpg, IMG_10.jpg, IMG_2.jpg (current behavior)
 Future: Then order should be: IMG_1.jpg, IMG_2.jpg, IMG_10.jpg (natural sort)
 ```
+
+**Implementation Notes**:
+- Default sort is applied automatically in `MainViewModel.LoadFilesAsync()` after populating collections
+- Sort indicator (▼) is shown on the Modified Date column header after loading
+- Users can override the default sort by clicking any column header
+- Sort state is NOT persisted between sessions (resets on each load/refresh)
+- Date display uses `FileItem.FormatRelativeDate()` static method
+- Sorting uses `ModifiedDateTime` (DateTime type) for accurate chronological ordering
+- Display uses `ModifiedDate` (string type) with relative format for readability
 
 ### Rule 2: Copy Operation Precedence
 
@@ -3054,6 +3093,9 @@ The following unit tests have been implemented to verify BDD compliance:
 | 2.22.0 | 2026-02-22 | AI Assistant | **Select Folder Button Styling**: Changed Select Folder buttons from default blue action button style to subdued gray styling (#E0E0E0 background, #424242 text, 12px font). Added hover/pressed states with darker grays. Reduced padding to 8,4. Added design rationale: folder selection is infrequent after initial setup, so buttons should be less visually distracting. Updated Browse Source and Browse Destination button specifications in BDD. Benefits: reduced visual clutter, primary action buttons (Copy, Refresh) stand out more, better visual hierarchy. |
 | 2.23.0 | 2026-02-22 | AI Assistant | **Help Panel Text Update**: Changed "To Copy Photos" to "To Copy Videos" and "Select the photos" to "Select the videos" in help panel instructions to accurately reflect application functionality (video file copying). Updated BDD User Story 0.2 and Help Panel Instructions table. Benefits: documentation accuracy, reduces user confusion about supported file types. |
 | 2.24.0 | 2026-02-22 | AI Assistant | **Settings Button Styling**: Changed Settings button from bright orange (#FF9800) to subdued gray (#757575) with darker hover (#616161) and pressed (#424242) states. Added design rationale: Settings is a secondary action, should be less visually distracting than primary actions like Refresh and Copy. Updated BDD Settings Button specification. Benefits: reduced visual clutter, better visual hierarchy, primary action buttons stand out more. |
+| 2.26.0 | 2026-02-27 | AI Assistant | **Issue #3 Complete**: Updated Google Drive upload dialog BDD scenarios to match implementation (progress bar with percentage inside, dynamic status messages, color-coded states, cancel confirmation, no unnecessary MessageBoxes). Updated ADR-001 status to "Implemented". |
+| 2.28.0 | 2026-03-06 | AI Assistant | **Issue #22 Enhancement - Relative Date Display**: Implemented human-friendly relative date display. Shows "Today, 10:30 AM" for today's files, "Yesterday, 3:45 PM" for yesterday, day name for recent files ("Friday, 10:30 AM"), and full date for older files ("Mar 06, 2026 10:30 PM"). Added ModifiedDateTime property for accurate DateTime sorting. Sorting still works correctly while displaying readable dates. Updated Business Rule 1.1 with date display specification. Benefits: easier to understand file recency, reduces cognitive load, more intuitive than ISO date format. |
+| 2.27.0 | 2026-03-06 | AI Assistant | **Issue #22 Complete - Default List Sorting**: Added default sort by Modified Date descending (newest first) on application startup and refresh. Sort indicator (▼) automatically shows on Modified Date column header. Users can still click column headers to change sort. Updated Business Rule 1.1 with default sort specification. Benefits: newest files appear first, improved user experience, visual consistency across sessions. |
 | 2.25.0 | 2026-02-26 | AI Assistant | **Google Drive Integration Feature**: Added Feature 10: Google Drive Integration with three user stories (10.1 Upload Files, 10.2 Authentication, 10.3 Upload History). Added core capability for Google Drive upload. Created 3 Architecture Decision Records (ADR-001: API Integration, ADR-002: Upload History Storage, ADR-003: Error Handling). Updated Table of Contents with Google Drive Integration appendix. |
 
 ---
@@ -3150,22 +3192,37 @@ The Google Drive integration feature allows users to upload files directly from 
 
 | Issue | Title | Status |
 |-------|-------|--------|
-| #1 | Context Menu Infrastructure | Planned |
-| #2 | Google Drive Authentication | Planned |
-| #3 | Single File Upload | Planned |
-| #4 | Multiple File Upload | Planned |
-| #5 | Error Handling & Recovery | Planned |
-| #6 | Upload History Tracking | Planned |
+| #1 | Context Menu Infrastructure | ✅ COMPLETE |
+| #2 | Google Drive Authentication | ✅ COMPLETE |
+| #3 | Single File Upload | ✅ COMPLETE |
+| #4 | Multiple File Upload | ✅ COMPLETE |
+| #5 | Error Handling & Recovery | ✅ COMPLETE |
+| #6 | Upload History Tracking | ✅ COMPLETE |
 
 ### Future Enhancements
 
-- [ ] Select specific Google Drive folder for uploads
-- [ ] View Google Drive files within the application
+See **`POTENTIAL_ENHANCEMENTS.md`** for a comprehensive list of 16 potential enhancements.
+
+**High Priority:**
+- [ ] Upload Status Icons Legend in help panel
+- [ ] Keyboard Shortcuts section in help panel
+- [ ] Select specific Google Drive folder
+- [ ] View Google Drive files in application
+- [ ] Drag and drop upload
+
+**Medium Priority:**
 - [ ] Download files from Google Drive
-- [ ] Sync folder with Google Drive
-- [ ] Upload to other cloud services (OneDrive, Dropbox)
-- [ ] Background upload service
 - [ ] Manual upload history management UI
+- [ ] Background upload service
+
+**Low Priority:**
+- [ ] Upload compression
+- [ ] File System Watcher
+- [ ] Archive old history
+- [ ] Dark mode
+- [ ] Upload notifications
+
+For detailed analysis with priority ratings and effort estimates, see `POTENTIAL_ENHANCEMENTS.md`.
 
 ---
 

@@ -29,7 +29,9 @@ public class MainViewModelTests
         _viewModel = new MainViewModel(
             _mockFileService.Object,
             _mockDialogService.Object,
-            _mockSettingsService.Object);
+            _mockSettingsService.Object,
+            Mock.Of<IGoogleDriveService>(),
+            Mock.Of<IUploadHistoryService>());
     }
 
     #region Constructor Tests
@@ -56,7 +58,9 @@ public class MainViewModelTests
         var viewModel = new MainViewModel(
             _mockFileService.Object,
             _mockDialogService.Object,
-            _mockSettingsService.Object);
+            _mockSettingsService.Object,
+            Mock.Of<IGoogleDriveService>(),
+            Mock.Of<IUploadHistoryService>());
 
         // Assert
         Assert.That(viewModel.SourcePath, Is.EqualTo("C:\\Saved\\Source"));
@@ -80,11 +84,13 @@ public class MainViewModelTests
     {
         // BDD v1.4: Default font size is 20px for elderly users
         _mockSettingsService.SetupGet(x => x.FontSize).Returns(0); // 0 means not set
-        
+
         var viewModel = new MainViewModel(
             _mockFileService.Object,
             _mockDialogService.Object,
-            _mockSettingsService.Object);
+            _mockSettingsService.Object,
+            Mock.Of<IGoogleDriveService>(),
+            Mock.Of<IUploadHistoryService>());
 
         Assert.That(viewModel.FontSize, Is.EqualTo(20));
     }
@@ -94,11 +100,13 @@ public class MainViewModelTests
     {
         // BDD v1.4: Font size persists across sessions
         _mockSettingsService.SetupGet(x => x.FontSize).Returns(24);
-        
+
         var viewModel = new MainViewModel(
             _mockFileService.Object,
             _mockDialogService.Object,
-            _mockSettingsService.Object);
+            _mockSettingsService.Object,
+            Mock.Of<IGoogleDriveService>(),
+            Mock.Of<IUploadHistoryService>());
 
         Assert.That(viewModel.FontSize, Is.EqualTo(24));
     }
@@ -990,11 +998,13 @@ public class MainViewModelTests
     {
         // BDD v1.4: Default font size is 20px for elderly users
         _mockSettingsService.SetupGet(x => x.FontSize).Returns(0);
-        
+
         var viewModel = new MainViewModel(
             _mockFileService.Object,
             _mockDialogService.Object,
-            _mockSettingsService.Object);
+            _mockSettingsService.Object,
+            Mock.Of<IGoogleDriveService>(),
+            Mock.Of<IUploadHistoryService>());
 
         Assert.That(viewModel.FontSize, Is.EqualTo(20));
     }

@@ -35,6 +35,16 @@ public class MainViewModel : ViewModelBase
     private readonly ISettingsService _settingsService;
 
     /// <summary>
+    /// Service interface for Google Drive operations.
+    /// </summary>
+    private readonly IGoogleDriveService _googleDriveService;
+
+    /// <summary>
+    /// Service interface for upload history tracking.
+    /// </summary>
+    private readonly IUploadHistoryService _uploadHistoryService;
+
+    /// <summary>
     /// Backing field for the source path (camera/device folder).
     /// </summary>
     private string _sourcePath = string.Empty;
@@ -103,14 +113,20 @@ public class MainViewModel : ViewModelBase
     /// <param name="fileService">Service for file operations.</param>
     /// <param name="dialogService">Service for displaying dialogs.</param>
     /// <param name="settingsService">Service for managing application settings.</param>
+    /// <param name="googleDriveService">Service for Google Drive operations.</param>
+    /// <param name="uploadHistoryService">Service for upload history tracking.</param>
     public MainViewModel(
         IFileService fileService,
         IDialogService dialogService,
-        ISettingsService settingsService)
+        ISettingsService settingsService,
+        IGoogleDriveService googleDriveService,
+        IUploadHistoryService uploadHistoryService)
     {
         _fileService = fileService;
         _dialogService = dialogService;
         _settingsService = settingsService;
+        _googleDriveService = googleDriveService;
+        _uploadHistoryService = uploadHistoryService;
 
         // Initialize observable collections for file lists displayed in the UI
         AlreadyCopiedFiles = new ObservableCollection<FileItem>();
@@ -143,6 +159,7 @@ public class MainViewModel : ViewModelBase
         OpenCommand = new RelayCommand(OpenSelected);
         OpenSettingsCommand = new RelayCommand(_ => OpenSettings());
         ToggleHelpCommand = new RelayCommand(_ => ToggleHelpPanel());
+        LogoutGoogleDriveCommand = new RelayCommand(_ => LogoutGoogleDrive());
 
         // Load saved settings from previous session
         _sourcePath = _settingsService.LastSourceFolder ?? string.Empty;
@@ -322,6 +339,18 @@ public class MainViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// Gets a value indicating whether Google Drive authentication is available.
+    /// </summary>
+    public bool IsGoogleDriveConfigured => _googleDriveService != null;
+
+    /// <summary>
+    /// Gets the Google Drive authentication status message.
+    /// </summary>
+    public string GoogleDriveStatus => _googleDriveService?.IsAuthenticated == true
+        ? "Connected to Google Drive"
+        : "Not connected to Google Drive";
+
+    /// <summary>
     /// Gets the status bar icon (emoji) based on current state.
     /// </summary>
     public string StatusBarIcon
@@ -408,6 +437,12 @@ public class MainViewModel : ViewModelBase
         get => _showHelpPanel;
         set => SetProperty(ref _showHelpPanel, value);
     }
+
+    /// <summary>
+    /// Event raised when files have been loaded and sorted.
+    /// Allows the View to update sort indicators.
+    /// </summary>
+    public event Action? FilesLoaded;
 
     /// <summary>
     /// Gets the collection of files that have already been copied to the destination.
@@ -514,6 +549,11 @@ public class MainViewModel : ViewModelBase
     /// Bound to the "How to Use" button.
     /// </summary>
     public ICommand ToggleHelpCommand { get; }
+
+    /// <summary>
+    /// Gets the command to logout from Google Drive.
+    /// </summary>
+    public ICommand LogoutGoogleDriveCommand { get; }
 
     #endregion
 
@@ -628,6 +668,21 @@ public class MainViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// Logs out from Google Drive by deleting stored credentials.
+    /// </summary>
+    private void LogoutGoogleDrive()
+    {
+        _googleDriveService?.Logout();
+        OnPropertyChanged(nameof(GoogleDriveStatus));
+        
+        _dialogService.ShowMessage(
+            "Disconnected from Google Drive.\n\nYou will need to sign in again to upload files.",
+            "Logged Out",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
+    }
+
+    /// <summary>
     /// Backing field for the debounce cancellation token source.
     /// Used to cancel previous pending file load operations when the path changes rapidly.
     /// </summary>
@@ -700,7 +755,8 @@ public class MainViewModel : ViewModelBase
                     destFileItems.Add(new FileItem
                     {
                         Name = f.Name,
-                        ModifiedDate = f.LastWriteTime.ToString("yyyy-MM-dd hh:mm tt"),
+                        ModifiedDate = FileItem.FormatRelativeDate(f.LastWriteTime),
+                        ModifiedDateTime = f.LastWriteTime,
                         IsAlreadyCopied = sourceNames.Contains(f.Name),
                         FileSize = f.Length,
                         FullPath = f.FullName
@@ -715,7 +771,8 @@ public class MainViewModel : ViewModelBase
                     var fileItem = new FileItem
                     {
                         Name = src.Name,
-                        ModifiedDate = src.LastWriteTime.ToString("yyyy-MM-dd hh:mm tt"),
+                        ModifiedDate = FileItem.FormatRelativeDate(src.LastWriteTime),
+                        ModifiedDateTime = src.LastWriteTime,
                         IsAlreadyCopied = existsInDest,
                         FileSize = src.Length,
                         FullPath = src.FullName
@@ -746,6 +803,17 @@ public class MainViewModel : ViewModelBase
 
                     foreach (var f in destFileItems)
                         DestinationFiles.Add(f);
+
+                    // Update upload status for destination files
+                    UpdateUploadStatus();
+
+                    // Apply default sort by ModifiedDate descending
+                    ApplyDefaultSort(AlreadyCopiedFiles);
+                    ApplyDefaultSort(NewFiles);
+                    ApplyDefaultSort(DestinationFiles);
+
+                    // Notify View that files are loaded and sorted (for sort indicator update)
+                    FilesLoaded?.Invoke();
                 });
             }
             else
@@ -763,6 +831,17 @@ public class MainViewModel : ViewModelBase
 
                 foreach (var f in destFileItems)
                     DestinationFiles.Add(f);
+
+                // Update upload status for destination files
+                UpdateUploadStatus();
+
+                // Apply default sort by ModifiedDate descending
+                ApplyDefaultSort(AlreadyCopiedFiles);
+                ApplyDefaultSort(NewFiles);
+                ApplyDefaultSort(DestinationFiles);
+
+                // Notify View that files are loaded and sorted (for sort indicator update)
+                FilesLoaded?.Invoke();
             }
 
             StatusMessage = $"Loaded {NewFiles.Count} new files, {AlreadyCopiedFiles.Count} already copied";
@@ -1056,6 +1135,58 @@ public class MainViewModel : ViewModelBase
     #region Cleanup
 
     /// <summary>
+    /// Updates the upload status icons for destination files based on upload history.
+    /// </summary>
+    public void UpdateUploadStatus()
+    {
+        System.Diagnostics.Debug.WriteLine($"UpdateUploadStatus called, _uploadHistoryService={_uploadHistoryService != null}, DestinationFiles.Count={DestinationFiles.Count}");
+        
+        if (_uploadHistoryService == null)
+        {
+            System.Diagnostics.Debug.WriteLine("UpdateUploadStatus: _uploadHistoryService is null");
+            return;
+        }
+
+        // Update each destination file with upload status
+        foreach (var fileItem in DestinationFiles)
+        {
+            var entry = _uploadHistoryService.GetEntryByFilePath(fileItem.FullPath);
+            System.Diagnostics.Debug.WriteLine($"UpdateUploadStatus: Checking file '{fileItem.FullPath}', found entry={entry != null}");
+            
+            if (entry != null)
+            {
+                System.Diagnostics.Debug.WriteLine($"  Entry status={entry.Status}, fileName={entry.FileName}");
+                
+                if (entry.Status == UploadHistoryStatus.LocalFileDeleted)
+                {
+                    // File was uploaded but local file is now deleted
+                    fileItem.UploadStatus = "deleted";
+                    fileItem.UploadTooltip = "Local file deleted after upload";
+                }
+                else if (entry.HasFileChanged())
+                {
+                    // File has changed since upload
+                    fileItem.UploadStatus = "changed";
+                    fileItem.UploadTooltip = $"File changed since upload on {entry.Timestamp:yyyy-MM-dd HH:mm:ss}";
+                }
+                else if (entry.Status == UploadHistoryStatus.Success)
+                {
+                    // Successfully uploaded
+                    fileItem.UploadStatus = "uploaded";
+                    fileItem.UploadTooltip = entry.UploadedDateString;
+                    System.Diagnostics.Debug.WriteLine($"  Set UploadStatus='uploaded' for {fileItem.Name}");
+                }
+            }
+            else
+            {
+                // No upload history
+                fileItem.UploadStatus = null;
+                fileItem.UploadTooltip = null;
+            }
+        }
+    }
+
+    /// <summary>
     /// Called when the application or window is closing.
     /// Saves current settings and cleans up resources.
     /// </summary>
@@ -1064,6 +1195,16 @@ public class MainViewModel : ViewModelBase
         _settingsService.Save();
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
+    }
+
+    /// <summary>
+    /// Applies default sort by ModifiedDateTime descending to an ObservableCollection.
+    /// </summary>
+    private static void ApplyDefaultSort(ObservableCollection<FileItem> collection)
+    {
+        var view = System.Windows.Data.CollectionViewSource.GetDefaultView(collection);
+        view.SortDescriptions.Clear();
+        view.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(FileItem.ModifiedDateTime), System.ComponentModel.ListSortDirection.Descending));
     }
 
     #endregion

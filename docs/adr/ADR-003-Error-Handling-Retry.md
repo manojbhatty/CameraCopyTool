@@ -1,8 +1,59 @@
 # ADR 003: Error Handling and Retry Strategy
 
 **Date:** 2026-02-26  
-**Status:** Proposed  
+**Status:** ✅ Implemented (2026-02-28, Updated 2026-02-28 for Issue #6)  
 **Deciders:** Development Team
+
+---
+
+## Implementation Update (Issue #5)
+
+**Network Error Handling:**
+- Automatically detects network loss during upload
+- Shows "No internet connection. Waiting to resume..." message
+- Uses `NetworkService.WaitForNetworkAsync()` to wait for restoration
+- Automatically resumes upload when network is restored
+- Upload continues from same percentage (Google API handles resume)
+
+**Retry Strategy:**
+- Max retries: 5
+- Exponential backoff: 1s, 2s, 4s, 8s, 16s
+- Network errors: Wait for network restoration (no backoff)
+- Other errors: Exponential backoff with user notification
+
+**Error Categories Implemented:**
+- Network (connection lost, timeout)
+- API (quota exceeded, rate limits - 429, 503)
+- File (disk space, file in use)
+- Authentication (token expired - 401, 403)
+- User cancellation
+
+**User Feedback:**
+- Progress dialog shows network status
+- Orange warning colors during issues
+- Auto-retry without interrupting user
+- Error dialog for non-recoverable errors
+
+---
+
+## Implementation Update (Issue #6 - Log Size Controls)
+
+**Debug Log Size Controls:**
+- Max file size: 5 MB per daily log (configurable via `DebugLogMaxFileSize` user setting)
+- Retention period: 30 days (configurable via `DebugLogRetentionDays` user setting)
+- Auto-cleanup on startup (if 7+ days since last cleanup)
+- Skips logging when file exceeds max size
+
+**Upload History Controls:**
+- Max entries: 500 (configurable via `UploadHistoryMaxEntries` user setting)
+- Grace period: 30 days before deletion
+- Cleanup frequency: Every 7 days
+- Oldest entries removed first when limit exceeded
+
+**Settings Storage:**
+- All size limits stored in user settings (`Properties.Settings`)
+- Configurable at runtime without recompilation
+- Default values provided if not set
 
 ---
 

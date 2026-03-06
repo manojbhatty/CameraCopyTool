@@ -14,9 +14,11 @@ An Architecture Decision Record is a document that captures an important archite
 
 | Number | Title | Status | Date |
 |--------|-------|--------|------|
-| [ADR-001](./ADR-001-Google-Drive-API.md) | Google Drive API Integration | Proposed | 2026-02-26 |
-| [ADR-002](./ADR-002-Upload-History-Storage.md) | Upload History Storage Format | Proposed | 2026-02-26 |
-| [ADR-003](./ADR-003-Error-Handling-Retry.md) | Error Handling and Retry Strategy | Proposed | 2026-02-26 |
+| [ADR-001](./ADR-001-Google-Drive-API.md) | Google Drive API Integration | ✅ Implemented | 2026-02-26 |
+| [ADR-002](./ADR-002-Upload-History-Storage.md) | Upload History Storage Format | ✅ Implemented | 2026-02-26 |
+| [ADR-003](./ADR-003-Error-Handling-Retry.md) | Error Handling and Retry Strategy | ✅ Implemented | 2026-02-28 |
+| [ADR-004](./ADR-004-Default-List-Sorting.md) | Default List Sorting Strategy | ✅ Implemented | 2026-03-06 |
+| [ADR-005](./ADR-005-Relative-Date-Display.md) | Relative Date Display Format | ✅ Implemented | 2026-03-06 |
 
 ## ADR Template
 
@@ -43,3 +45,19 @@ Each ADR follows this structure:
 
 - [BDD Specification](../../BDD_SPECIFICATION.md) - Feature 10: Google Drive Integration
 - [GitHub Issues](../../GOOGLE_DRIVE_FEATURE_ISSUES.md) - Issues #1-#6
+- [Issue #5 Status](../../ISSUE_5_STATUS.md) - Error Handling implementation
+- [Issue #6 Status](../../ISSUE_6_STATUS.md) - Upload History implementation
+- [Potential Enhancements](../../POTENTIAL_ENHANCEMENTS.md) - Future feature proposals
+
+## Future ADRs (Potential)
+
+The following ADRs may be created as enhancements are implemented:
+
+- **ADR-006**: Google Drive Folder Selection Strategy
+- **ADR-007**: Background Upload Service Architecture
+- **ADR-008**: Real-Time File System Watching
+- **ADR-009**: Upload History Archive Strategy
+- **ADR-010**: Natural Sort Implementation for Filenames
+- **ADR-011**: Date Display Localization Strategy
+
+See `../../POTENTIAL_ENHANCEMENTS.md` for details.

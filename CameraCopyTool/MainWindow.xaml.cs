@@ -8,7 +8,9 @@ using System.Windows.Input;
 using System.Windows.Media.Animation;
 using CameraCopyTool.Commands;
 using CameraCopyTool.Models;
+using CameraCopyTool.Services;
 using CameraCopyTool.ViewModels;
+using CameraCopyTool.Views;
 
 namespace CameraCopyTool
 {
@@ -26,6 +28,11 @@ namespace CameraCopyTool
         private readonly MainViewModel _viewModel;
 
         /// <summary>
+        /// The Google Drive service for upload operations.
+        /// </summary>
+        private readonly IGoogleDriveService _googleDriveService;
+
+        /// <summary>
         /// Tracks the last sorted header for each ListView to clear its indicator.
         /// </summary>
         private readonly Dictionary<ListView, GridViewColumnHeader?> _lastSortedHeaders = new();
@@ -35,9 +42,11 @@ namespace CameraCopyTool
         /// Sets up data binding, event subscriptions, and UI initialization.
         /// </summary>
         /// <param name="viewModel">The MainViewModel instance, injected via DI.</param>
-        public MainWindow(MainViewModel viewModel)
+        /// <param name="googleDriveService">The Google Drive service, injected via DI.</param>
+        public MainWindow(MainViewModel viewModel, IGoogleDriveService googleDriveService)
         {
             _viewModel = viewModel;
+            _googleDriveService = googleDriveService;
             DataContext = _viewModel;
 
             InitializeComponent();
@@ -61,6 +70,9 @@ namespace CameraCopyTool
 
             // Subscribe to ViewModel property changes for Copy button animation
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+
+            // Subscribe to FilesLoaded event to update sort indicators after loading
+            _viewModel.FilesLoaded += OnFilesLoaded;
         }
 
         /// <summary>
@@ -74,6 +86,71 @@ namespace CameraCopyTool
             {
                 UpdateCopyButtonAnimation();
             }
+        }
+
+        /// <summary>
+        /// Handles the FilesLoaded event from the ViewModel.
+        /// Updates sort indicators to show default sort (Modified Date, descending) after loading.
+        /// </summary>
+        private void OnFilesLoaded()
+        {
+            System.Diagnostics.Debug.WriteLine("OnFilesLoaded: Event received");
+            
+            // Dispatch to ensure UI is ready
+            Dispatcher.InvokeAsync(() =>
+            {
+                System.Diagnostics.Debug.WriteLine("OnFilesLoaded: Updating sort indicators");
+                
+                // Update sort indicators for all three ListViews
+                UpdateSortIndicatorForModifiedDate(lvAlreadyCopied, ListSortDirection.Descending);
+                UpdateSortIndicatorForModifiedDate(lvNewFiles, ListSortDirection.Descending);
+                UpdateSortIndicatorForModifiedDate(lvDestinationFiles, ListSortDirection.Descending);
+            });
+        }
+
+        /// <summary>
+        /// Updates the sort indicator on the Modified Date column header.
+        /// </summary>
+        private void UpdateSortIndicatorForModifiedDate(ListView listView, ListSortDirection direction)
+        {
+            if (listView.View is GridView gridView && gridView.Columns.Count >= 2)
+            {
+                System.Diagnostics.Debug.WriteLine($"UpdateSortIndicatorForModifiedDate: ListView has {gridView.Columns.Count} columns");
+                
+                // Find the GridViewColumnHeader container for the Modified Date column
+                var modifiedDateHeader = FindColumnHeader(listView, gridView.Columns[1]);
+                if (modifiedDateHeader != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"UpdateSortIndicatorForModifiedDate: Found header, updating indicator");
+                    UpdateHeaderIndicator(listView, modifiedDateHeader, direction);
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"UpdateSortIndicatorForModifiedDate: Header not found");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Finds the GridViewColumnHeader container for a specific column.
+        /// </summary>
+        private GridViewColumnHeader? FindColumnHeader(ListView listView, GridViewColumn column)
+        {
+            // Search for all GridViewColumnHeader elements and find the one for our column
+            var headers = FindChildren<GridViewColumnHeader>(listView);
+            System.Diagnostics.Debug.WriteLine($"FindColumnHeader: Found {headers.Count} headers for ListView");
+            
+            foreach (var header in headers)
+            {
+                System.Diagnostics.Debug.WriteLine($"  Header: {header.Column?.Header}, Match: {header.Column == column}");
+                if (header.Column == column)
+                {
+                    System.Diagnostics.Debug.WriteLine($"  Found matching header!");
+                    return header;
+                }
+            }
+            System.Diagnostics.Debug.WriteLine($"  No matching header found");
+            return null;
         }
 
         /// <summary>
@@ -218,6 +295,166 @@ namespace CameraCopyTool
         }
 
         /// <summary>
+        /// Handles the Upload to Google Drive menu item click from the context menu.
+        /// Initiates upload to Google Drive with authentication and progress tracking.
+        /// </summary>
+        private async void Menu_UploadToGoogleDrive_Click(object sender, RoutedEventArgs e)
+        {
+            // Get the selected file from the destination ListView
+            if (lvDestinationFiles.SelectedItem is not FileItem selectedFile)
+            {
+                MessageBox.Show(
+                    "Please select a file to upload to Google Drive.",
+                    "No File Selected",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
+            // Check if Google Drive service is configured
+            if (!_viewModel.IsGoogleDriveConfigured)
+            {
+                MessageBox.Show(
+                    "Google Drive is not configured.\n\n" +
+                    "To use this feature, you need to:\n\n" +
+                    "1. Go to Google Cloud Console:\n" +
+                    "   https://console.cloud.google.com/apis/credentials\n\n" +
+                    "2. Create a new project (or select existing)\n\n" +
+                    "3. Enable Google Drive API\n\n" +
+                    "4. Create OAuth 2.0 Client ID (Desktop app)\n\n" +
+                    "5. Copy Client ID and Client Secret to:\n" +
+                    "   App.config (GoogleDrive.ClientId)\n" +
+                    "   App.config (GoogleDrive.ClientSecret)\n\n" +
+                    "See README.md for detailed setup instructions.",
+                    "Google Drive Not Configured",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
+            // Get the full file path
+            var filePath = Path.Combine(_viewModel.DestinationPath, selectedFile.Name);
+            
+            if (!File.Exists(filePath))
+            {
+                MessageBox.Show(
+                    $"The file '{selectedFile.Name}' was not found.",
+                    "File Not Found",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+
+            try
+            {
+                // Check if authenticated, if not show auth dialog
+                if (!_googleDriveService.IsAuthenticated)
+                {
+                    var authDialog = new GoogleDriveAuthDialog(_viewModel.FontSize) { Owner = this };
+                    var authResult = authDialog.ShowDialog();
+
+                    if (authResult != true || !authDialog.UserConsentGiven)
+                    {
+                        return; // User cancelled authentication
+                    }
+
+                    // User consented - now authenticate (this will open the browser)
+                    // The Google API will open the browser and wait for user to complete auth
+                    var authSuccess = await _googleDriveService.AuthenticateAsync();
+                    
+                    if (!authSuccess)
+                    {
+                        MessageBox.Show(
+                            "Authentication failed.\n\n" +
+                            "Possible causes:\n" +
+                            "• Invalid Client ID or Client Secret in App.config\n" +
+                            "• Google Drive API not enabled in Google Cloud Console\n" +
+                            "• Network connection issues\n" +
+                            "• User cancelled the authentication\n\n" +
+                            "Please check your credentials and try again.",
+                            "Authentication Failed",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                        return;
+                    }
+
+                    // Authentication successful - no MessageBox needed
+                    // Force refresh the status bar to show connected status
+                    _viewModel.OnPropertyChanged(nameof(MainViewModel.GoogleDriveStatus));
+                    System.Diagnostics.Debug.WriteLine($"Status bar updated: {_viewModel.GoogleDriveStatus}");
+                }
+
+                // Show upload progress dialog
+                var fileInfo = new FileInfo(filePath);
+                var progressDialog = new GoogleDriveUploadProgressDialog(selectedFile.DisplayName, fileInfo.Length, _viewModel.FontSize) { Owner = this };
+
+                // Create cancellation token source
+                var cts = new CancellationTokenSource();
+
+                // Start upload in background with error handling
+                var uploadTask = Task.Run(async () =>
+                {
+                    var result = await _googleDriveService.UploadFileWithRetryAsync(
+                        filePath,
+                        async (error, retryCount, maxRetries) =>
+                        {
+                            // This callback is invoked on error
+                            // Show error dialog or status message based on error type
+                            return await progressDialog.ShowErrorAsync(error, retryCount, maxRetries);
+                        },
+                        progressDialog,
+                        cts.Token);
+
+                    return result;
+                });
+
+                // Show dialog while upload runs
+                var dialogResult = progressDialog.ShowDialog();
+
+                if (progressDialog.IsCancelled)
+                {
+                    cts.Cancel();
+                    MessageBox.Show(
+                        "Upload was cancelled.",
+                        "Upload Cancelled",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return;
+                }
+
+                // Wait for upload to complete
+                var result = await uploadTask;
+
+                if (result?.Success != true)
+                {
+                    // Play error sound and show error message
+                    System.Media.SystemSounds.Hand.Play();
+
+                    var errorMessage = result?.Error ?? "Upload failed. Please check your connection and try again.";
+                    MessageBox.Show(
+                        $"Upload failed:\n\n{errorMessage}",
+                        "Upload Failed",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+                else
+                {
+                    // Upload succeeded - refresh the upload status icons
+                    _viewModel.UpdateUploadStatus();
+                }
+                // Success - dialog already shows "Upload Success!" with sound
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"An error occurred during upload:\n\n{ex.Message}",
+                    "Upload Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
         /// Handles right-click on ListView items.
         /// Selects the item and gives it focus so context menu actions apply to it.
         /// </summary>
@@ -228,6 +465,18 @@ namespace CameraCopyTool
                 item.IsSelected = true;
                 item.Focus();
             }
+        }
+
+        /// <summary>
+        /// Formats a file size in bytes to a human-readable string.
+        /// </summary>
+        private static string FormatFileSize(long bytes)
+        {
+            if (bytes < 0) return "Unknown";
+            if (bytes < 1024) return $"{bytes} B";
+            if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+            if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024 * 1024.0):F1} MB";
+            return $"{bytes / (1024 * 1024 * 1024.0):F1} GB";
         }
 
         /// <summary>
@@ -344,6 +593,25 @@ namespace CameraCopyTool
         }
 
         /// <summary>
+        /// Finds all child elements of a specific type in the visual tree.
+        /// </summary>
+        private static List<T> FindChildren<T>(DependencyObject parent) where T : DependencyObject
+        {
+            var result = new List<T>();
+            if (parent == null) return result;
+
+            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+                if (child is T typedChild)
+                    result.Add(typedChild);
+
+                result.AddRange(FindChildren<T>(child));
+            }
+            return result;
+        }
+
+        /// <summary>
         /// Checks if a header belongs to a specific ListView.
         /// </summary>
         private bool IsHeaderInListView(ListView listView, GridViewColumnHeader header)
@@ -363,7 +631,7 @@ namespace CameraCopyTool
             return header switch
             {
                 "File Name" => nameof(FileItem.DisplayName),
-                "Modified Date" => nameof(FileItem.ModifiedDate),
+                "Modified Date" => nameof(FileItem.ModifiedDateTime),
                 _ => header
             };
         }
