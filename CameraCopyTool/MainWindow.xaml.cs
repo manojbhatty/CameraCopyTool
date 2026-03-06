@@ -631,7 +631,7 @@ namespace CameraCopyTool
             return header switch
             {
                 "File Name" => nameof(FileItem.DisplayName),
-                "Modified Date" => nameof(FileItem.ModifiedDate),
+                "Modified Date" => nameof(FileItem.ModifiedDateTime),
                 _ => header
             };
         }

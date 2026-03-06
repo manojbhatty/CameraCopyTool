@@ -29,6 +29,11 @@ public class FileItem : INotifyPropertyChanged
     private string _modifiedDate = string.Empty;
 
     /// <summary>
+    /// Backing field for the actual modified date/time (used for sorting).
+    /// </summary>
+    private DateTime _modifiedDateTime;
+
+    /// <summary>
     /// Backing field indicating whether this file has already been copied to the destination.
     /// </summary>
     private bool _isAlreadyCopied;
@@ -64,7 +69,8 @@ public class FileItem : INotifyPropertyChanged
 
     /// <summary>
     /// Gets or sets the formatted last modified date string.
-    /// Display format is "yyyy-MM-dd HH:mm".
+    /// Display format shows relative time for recent files (e.g., "Today, 10:30 AM", "Yesterday, 3:45 PM")
+    /// or full date for older files (e.g., "Mar 06, 2026 10:30 PM").
     /// </summary>
     public string ModifiedDate
     {
@@ -75,6 +81,23 @@ public class FileItem : INotifyPropertyChanged
             {
                 _modifiedDate = value;
                 OnPropertyChanged(nameof(ModifiedDate));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the actual modified date/time.
+    /// Used for sorting (not displayed directly).
+    /// </summary>
+    public DateTime ModifiedDateTime
+    {
+        get => _modifiedDateTime;
+        set
+        {
+            if (_modifiedDateTime != value)
+            {
+                _modifiedDateTime = value;
+                OnPropertyChanged(nameof(ModifiedDateTime));
             }
         }
     }
@@ -189,5 +212,36 @@ public class FileItem : INotifyPropertyChanged
     protected void OnPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    /// <summary>
+    /// Formats a DateTime into a human-readable relative date string.
+    /// Shows "Today" or "Yesterday" for recent files, otherwise shows "Mar 06, 2026 10:30 PM".
+    /// </summary>
+    public static string FormatRelativeDate(DateTime dateTime)
+    {
+        var now = DateTime.Now;
+        var timeSpan = now - dateTime;
+
+        // Today: Show "Today, 10:30 AM"
+        if (dateTime.Date == now.Date)
+        {
+            return $"Today, {dateTime:h:mm tt}";
+        }
+
+        // Yesterday: Show "Yesterday, 3:45 PM"
+        if (dateTime.Date == now.AddDays(-1).Date)
+        {
+            return $"Yesterday, {dateTime:h:mm tt}";
+        }
+
+        // Within last 7 days: Show day name "Friday, 10:30 AM"
+        if (timeSpan.TotalDays < 7)
+        {
+            return $"{dateTime:dddd}, {dateTime:h:mm tt}";
+        }
+
+        // Older: Show full date "Mar 06, 2026 10:30 PM"
+        return $"{dateTime:MMM dd, yyyy} {dateTime:h:mm tt}";
     }
 }
