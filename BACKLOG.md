@@ -1,8 +1,8 @@
 # CameraCopyTool Development Backlog
 
-**Last Updated:** 2026-03-06 (New Issues #27, #28)
-**Branch:** `feature/issue-22-relative-dates`
-**Sprint:** Google Drive Integration v1.0
+**Last Updated:** 2026-03-07 (New Issue #30, Issue #27 Complete)
+**Branch:** `feature/UIEnhancements`
+**Sprint:** UI Refinements & Google Drive Integration v1.0
 
 ---
 
@@ -10,21 +10,22 @@
 
 | Status | Count |
 |--------|-------|
-| Open | 8 |
-| Closed (Last 30 Days) | 2 (#22, #27) |
-| Total | 10 |
+| Open | 10 |
+| Closed (Last 30 Days) | 1 (#27) |
+| Total | 11 |
 
 ---
 
-## Latest GitHub Issues (as of 2026-03-06)
+## Latest GitHub Issues (as of 2026-03-07)
 
 | # | Title | Labels | Priority | Status |
 |---|-------|--------|----------|--------|
-| #28 | ENHANCEMENT 008: UI IMPROVEMENT TO EASILY DISTINGUISH BETWEEN DIFFERENT DATES | UI Refinements | 🟢 Medium | 🆕 Open |
-| #27 | ENHANCEMENT 007: ADD AN APPLICATION ICON | UI Refinements | 🟢 Medium | 🆕 Open |
+| #30 | ENHANCEMENT 009: ADD TOOLTIPS | UI Refinements | 🟢 Medium | 🆕 Open |
+| #28 | ENHANCEMENT 008: UI IMPROVEMENT TO EASILY DISTINGUISH BETWEEN DIFFERENT DATES | UI Refinements | 🟢 Medium | Open |
+| #27 | ENHANCEMENT 007: ADD AN APPLICATION ICON | UI Refinements | 🟢 Medium | ✅ Complete |
 | #22 | ENHANCEMENT 005: ALL LISTVIEWS SHOULD BE SORTED BY MODIFIED DATE IN DESCENDING ORDER | enhancement | 🟡 High | ✅ Implemented |
 | #20 | ENHANCEMENT 004: MAKE THE ICON THAT EXPANDS THE ALREADY COPIED FILES LISTVIEW, MORE PROMINENT | enhancement | 🟡 High | Open |
-| #19 | ENHANCEMENT 003: MAKE SORTING DIRECTION INDICATORS MORE PROMINENT | enhancement | 🟡 High | Open |
+| #19 | ENHANCEMENT 003: MAKE SORTING DIRECTION INDICATORS MORE PROMINENT | enhancement | 🟡 High | ✅ Improved |
 | #17 | ENHANCEMENT 002: DUPLICATE CHECK FOR WHEN FILE BEING UPLOADED ALREADY EXISTS ON GOOGLE DRIVE | enhancement | 🟡 High | Deferred |
 | #16 | BUG 001: UPLOAD SHOULD RESUME IF NETWORK COMES BACK | bug | 🔴 Critical | ✅ Resolved |
 | #14 | ENHANCEMENT 001: OPTIONS TO USE BROWSERS THAT ARE NOT SYSTEM DEFAULT | enhancement | 🟢 Medium | Open |
@@ -69,9 +70,11 @@
 
 | #19 | ENHANCEMENT 003: Make sorting direction indicators more prominent | enhancement | 🟡 High | Low |
 
-**Status:** 📋 **Backlog**
-**Implementation:** Update sort indicators (▲▼) in GridView headers
-**Notes:** Consider larger font, bold weight, or color contrast
+**Status:** ✅ **IMPROVED** (Mar 7, 2026)
+**Implementation:** Increased sort indicator arrow size in GridView headers for better visibility
+**Files Changed:** `MainWindow.xaml` (increased font size of sort indicators ▲▼)
+**Branch:** `dev/issue-19-sort-indicators` → Merged to `feature/UIEnhancements`
+**Notes:** Larger arrows make sort direction more visible. Issue can be considered complete or kept open for further enhancements.
 
 | #20 | ENHANCEMENT 004: Make the icon that expands the already copied files listview, more prominent | enhancement | 🟡 High | Low |
 
@@ -85,18 +88,27 @@
 
 | # | Title | Labels | Priority | Estimated Effort |
 |---|-------|--------|----------|-----------------|
-| #28 | ENHANCEMENT 008: UI Improvement to easily distinguish between different dates | UI Refinements | 🟢 Medium | Low |
+| #30 | ENHANCEMENT 009: Add tooltips to UI elements | UI Refinements | 🟢 Medium | Low |
 
 **Status:** 🆕 **New Issue** (Created: Mar 6, 2026)
+**Implementation:** Add tooltips to copy button ("Select a file to copy" when disabled) and uploaded files (show tooltip on hover instead of on icons)
+**Notes:** Improves discoverability and user experience, especially for elderly users
+
+| # | Title | Labels | Priority | Estimated Effort |
+|---|-------|--------|----------|-----------------|
+| #28 | ENHANCEMENT 008: UI Improvement to easily distinguish between different dates | UI Refinements | 🟢 Medium | Low |
+
+**Status:** 📋 **Backlog** (Previously: 🆕 New Issue)
 **Implementation:** Add visual separators or background color variations between different date groups in ListView
 **Notes:** Helps users quickly scan and identify files by date. May involve alternating row colors or date group headers.
 
 | #27 | ENHANCEMENT 007: Add an application icon | UI Refinements | 🟢 Medium | Low |
 
-**Status:** ✅ **COMPLETE** (Mar 6, 2026)
+**Status:** ✅ **COMPLETE** (Mar 7, 2026)
 **Implementation:** Added `AppIcon.ico` as application icon. Icon appears in window title bar, taskbar, Alt+Tab, .exe file, and Start Menu.
 **Files Changed:** `CameraCopyTool.csproj` (added ApplicationIcon and Resource), `MainWindow.xaml` (added Icon attribute)
-**Notes:** Professional camera icon improves application appearance and identifiability.
+**Branch:** `dev/add-cion` → Merged to `feature/UIEnhancements`
+**Notes:** Professional camera icon improves application appearance and identifiability. See `ISSUE_27_STATUS.md` for details.
 
 | # | Title | Labels | Priority | Estimated Effort |
 |---|-------|--------|----------|-----------------|
@@ -193,17 +205,31 @@
 
 ## Sprint Planning
 
+### Current Sprint (UI Enhancements - March 2026)
+
+**Goal:** Polish UI with better visual indicators and tooltips
+
+**Issues:**
+- [x] #22 - All listviews sorted by modified date (descending) on startup/refresh ✅
+- [x] #27 - Add an application icon ✅ (Mar 7, 2026)
+- [x] #19 - Make sorting indicators more prominent ✅ IMPROVED (Mar 7, 2026)
+- [ ] #30 - Add tooltips to UI elements 🆕
+- [ ] #28 - UI improvement to distinguish between different dates
+- [ ] #20 - Make expand icon more prominent
+
+**Estimated Duration:** 2-3 days
+**Branch:** `feature/UIEnhancements`
+
+---
+
 ### Next Sprint (Issue #7 - Help Panel & UX Improvements)
 
 **Goal:** Improve user experience with better help documentation and UX polish
 
 **Issues:**
-- [x] #22 - All listviews sorted by modified date (descending) on startup/refresh ✅
-- [x] #27 - Add an application icon ✅
 - [ ] #28 - UI improvement to distinguish between different dates
 - [ ] Create new GitHub issue for upload status icons legend
 - [ ] Create new GitHub issue for keyboard shortcuts section
-- [ ] #19 - Make sorting indicators more prominent
 - [ ] #20 - Make expand icon more prominent
 
 **Estimated Duration:** 2-3 days
@@ -323,5 +349,5 @@ Add any other context or screenshots about the feature request here.
 
 ---
 
-*Last Updated: 2026-03-06*
+*Last Updated: 2026-03-07*
 *Maintained by: Development Team*
