@@ -1,7 +1,7 @@
 # CameraCopyTool Development Backlog
 
-**Last Updated:** 2026-02-28  
-**Branch:** `dev/issue-6-upload-history`  
+**Last Updated:** 2026-03-06
+**Branch:** `dev/issue-6-upload-history`
 **Sprint:** Google Drive Integration v1.0
 
 ---
@@ -10,9 +10,24 @@
 
 | Status | Count |
 |--------|-------|
-| Open | 8 |
+| Open | 7 |
 | Closed (Last 30 Days) | 0 |
 | Total | 8 |
+
+---
+
+## Latest GitHub Issues (as of 2026-03-06)
+
+| # | Title | Labels | Priority | Status |
+|---|-------|--------|----------|--------|
+| #22 | ENHANCEMENT 005: ALL LISTVIEWS SHOULD BE SORTED BY MODIFIED DATE IN DESCENDING ORDER | enhancement | 🟡 High | ✅ Implemented |
+| #20 | ENHANCEMENT 004: MAKE THE ICON THAT EXPANDS THE ALREADY COPIED FILES LISTVIEW, MORE PROMINENT | enhancement | 🟡 High | Open |
+| #19 | ENHANCEMENT 003: MAKE SORTING DIRECTION INDICATORS MORE PROMINENT | enhancement | 🟡 High | Open |
+| #17 | ENHANCEMENT 002: DUPLICATE CHECK FOR WHEN FILE BEING UPLOADED ALREADY EXISTS ON GOOGLE DRIVE | enhancement | 🟡 High | Deferred |
+| #16 | BUG 001: UPLOAD SHOULD RESUME IF NETWORK COMES BACK | bug | 🔴 Critical | ✅ Resolved |
+| #14 | ENHANCEMENT 001: OPTIONS TO USE BROWSERS THAT ARE NOT SYSTEM DEFAULT | enhancement | 🟢 Medium | Open |
+| #11 | TECH DEBT - MAKE UNIT TESTS COVERAGE REPORT WORK IN CI/CD PIPELINE | tech debt | 🔵 Low | Open |
+| #7 | #4 - SUPPORT UPLOADING MULTIPLE SELECTED FILES TO GOOGLE DRIVE | enhancement | 🟢 Medium | Open |
 
 ---
 
@@ -34,22 +49,31 @@
 
 | # | Title | Labels | Priority | Estimated Effort |
 |---|-------|--------|----------|-----------------|
+| #22 | ENHANCEMENT 005: All listviews should be sorted by modified date in descending order on startup/refresh | enhancement | 🟡 High | Low |
+
+**Status:** ✅ **IMPLEMENTED** (Mar 6, 2026)
+**Implementation:** Default sort applied to all three listviews (Already Copied, New Files, Destination Files) by Modified Date descending. Sort indicator (▼) shows on the Modified Date column header after loading.
+**Files Changed:** `MainViewModel.cs` (added `ApplyDefaultSort()` method and `FilesLoaded` event), `MainWindow.xaml.cs` (added `OnFilesLoaded()` handler and `UpdateSortIndicatorForModifiedDate()`)
+**Notes:** Sort applies on application startup and when refresh is triggered. Users can still click column headers to change sort order manually.
+
+| # | Title | Labels | Priority | Estimated Effort |
+|---|-------|--------|----------|-----------------|
 | #17 | ENHANCEMENT 002: Duplicate check for when file being uploaded already exists on Google Drive | enhancement | 🟡 High | Medium |
 
-**Status:** ⏳ **Deferred** - FileConflictDialog created but not integrated  
-**Related:** `Views/FileConflictDialog.xaml` already implemented  
+**Status:** ⏳ **Deferred** - FileConflictDialog created but not integrated
+**Related:** `Views/FileConflictDialog.xaml` already implemented
 **Notes:** See `POTENTIAL_ENHANCEMENTS.md` - "Select specific Google Drive folder" enhancement
 
 | #19 | ENHANCEMENT 003: Make sorting direction indicators more prominent | enhancement | 🟡 High | Low |
 
-**Status:** 📋 **Backlog**  
-**Implementation:** Update sort indicators (▲▼) in GridView headers  
+**Status:** 📋 **Backlog**
+**Implementation:** Update sort indicators (▲▼) in GridView headers
 **Notes:** Consider larger font, bold weight, or color contrast
 
 | #20 | ENHANCEMENT 004: Make the icon that expands the already copied files listview, more prominent | enhancement | 🟡 High | Low |
 
-**Status:** 📋 **Backlog**  
-**Implementation:** Update expand/collapse icon in Already Copied list  
+**Status:** 📋 **Backlog**
+**Implementation:** Update expand/collapse icon in Already Copied list
 **Notes:** Consider larger size, color, or animation
 
 ---
@@ -156,6 +180,7 @@
 **Goal:** Improve user experience with better help documentation and UX polish
 
 **Issues:**
+- [x] #22 - All listviews sorted by modified date (descending) on startup/refresh ✅
 - [ ] Create new GitHub issue for upload status icons legend
 - [ ] Create new GitHub issue for keyboard shortcuts section
 - [ ] #19 - Make sorting indicators more prominent
@@ -278,5 +303,5 @@ Add any other context or screenshots about the feature request here.
 
 ---
 
-*Last Updated: 2026-02-28*  
+*Last Updated: 2026-03-06*
 *Maintained by: Development Team*
