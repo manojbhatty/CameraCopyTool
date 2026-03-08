@@ -52,6 +52,57 @@ namespace CameraCopyTool
             InitializeComponent();
             InitializeSelectionBindings();
             InitializeEventSubscriptions();
+            
+            // Check for existing Google Drive authentication on startup
+            CheckExistingAuthentication();
+        }
+
+        /// <summary>
+        /// Checks for existing Google Drive authentication and updates UI accordingly.
+        /// Called on startup to show correct connection status if already authenticated.
+        /// </summary>
+        private async void CheckExistingAuthentication()
+        {
+            // First check if we're already authenticated in memory
+            if (_googleDriveService.IsAuthenticated)
+            {
+                UpdateAuthStatus();
+                System.Diagnostics.Debug.WriteLine($"Startup: Already authenticated as {_googleDriveService.UserEmail}");
+                return;
+            }
+            
+            // Check if cached credentials exist from previous session
+            if (_googleDriveService.HasCachedCredentials())
+            {
+                System.Diagnostics.Debug.WriteLine("Startup: Found cached credentials, attempting to restore session...");
+                
+                // Try to authenticate silently (won't open browser if credentials are valid)
+                var success = await _googleDriveService.AuthenticateAsync(CancellationToken.None);
+                
+                if (success)
+                {
+                    UpdateAuthStatus();
+                    System.Diagnostics.Debug.WriteLine($"Startup: Restored session for {_googleDriveService.UserEmail}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("Startup: Failed to restore session");
+                }
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("Startup: No cached credentials found");
+            }
+        }
+        
+        /// <summary>
+        /// Updates all authentication-related properties in the ViewModel.
+        /// </summary>
+        private void UpdateAuthStatus()
+        {
+            _viewModel.OnPropertyChanged(nameof(MainViewModel.GoogleDriveStatus));
+            _viewModel.OnPropertyChanged(nameof(MainViewModel.GoogleDriveUserEmail));
+            _viewModel.OnPropertyChanged(nameof(MainViewModel.IsGoogleDriveAuthenticated));
         }
 
         /// <summary>
