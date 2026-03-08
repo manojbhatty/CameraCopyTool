@@ -1,6 +1,6 @@
 # CameraCopyTool Development Backlog
 
-**Last Updated:** 2026-03-07 (New Issue #30, Issue #27 Complete)
+**Last Updated:** 2026-03-09 (New Issue #32)
 **Branch:** `feature/UIEnhancements`
 **Sprint:** UI Refinements & Google Drive Integration v1.0
 
@@ -10,17 +10,18 @@
 
 | Status | Count |
 |--------|-------|
-| Open | 10 |
-| Closed (Last 30 Days) | 1 (#27) |
+| Open | 11 |
+| Closed (Last 30 Days) | 0 |
 | Total | 11 |
 
 ---
 
-## Latest GitHub Issues (as of 2026-03-07)
+## Latest GitHub Issues (as of 2026-03-09)
 
 | # | Title | Labels | Priority | Status |
 |---|-------|--------|----------|--------|
-| #30 | ENHANCEMENT 009: ADD TOOLTIPS | UI Refinements | 🟢 Medium | 🆕 Open |
+| #32 | ENHANCEMENT 010: FUNCTIONALITY TO LOG OUT OF THE CURRENTLY SIGNED IN GOOGLE DRIVE | Google Drive | 🟢 Medium | 🆕 Open |
+| #30 | ENHANCEMENT 009: ADD TOOLTIPS | UI Refinements | 🟢 Medium | Open |
 | #28 | ENHANCEMENT 008: UI IMPROVEMENT TO EASILY DISTINGUISH BETWEEN DIFFERENT DATES | UI Refinements | 🟢 Medium | Open |
 | #27 | ENHANCEMENT 007: ADD AN APPLICATION ICON | UI Refinements | 🟢 Medium | ✅ Complete |
 | #22 | ENHANCEMENT 005: ALL LISTVIEWS SHOULD BE SORTED BY MODIFIED DATE IN DESCENDING ORDER | enhancement | 🟡 High | ✅ Implemented |
@@ -85,6 +86,14 @@
 ---
 
 ### 🟢 Medium Priority Enhancements
+
+| # | Title | Labels | Priority | Estimated Effort |
+|---|-------|--------|----------|-----------------|
+| #32 | ENHANCEMENT 010: Functionality to log out of the currently signed in Google Drive | Google Drive | 🟢 Medium | Low |
+
+**Status:** 🆕 **New Issue** (Created: Mar 8, 2026)
+**Implementation:** Add logout button to clear Google Drive authentication tokens, allowing users to switch accounts
+**Notes:** Important for users with multiple Google accounts. Should clear credentials.json and token.json files (or equivalent storage)
 
 | # | Title | Labels | Priority | Estimated Effort |
 |---|-------|--------|----------|-----------------|
@@ -213,11 +222,12 @@
 - [x] #22 - All listviews sorted by modified date (descending) on startup/refresh ✅
 - [x] #27 - Add an application icon ✅ (Mar 7, 2026)
 - [x] #19 - Make sorting indicators more prominent ✅ IMPROVED (Mar 7, 2026)
-- [ ] #30 - Add tooltips to UI elements 🆕
+- [ ] #32 - Add functionality to log out of Google Drive 🆕
+- [ ] #30 - Add tooltips to UI elements
 - [ ] #28 - UI improvement to distinguish between different dates
 - [ ] #20 - Make expand icon more prominent
 
-**Estimated Duration:** 2-3 days
+**Estimated Duration:** 3-4 days
 **Branch:** `feature/UIEnhancements`
 
 ---
@@ -349,5 +359,5 @@ Add any other context or screenshots about the feature request here.
 
 ---
 
-*Last Updated: 2026-03-07*
+*Last Updated: 2026-03-09*
 *Maintained by: Development Team*

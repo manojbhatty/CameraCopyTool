@@ -121,7 +121,7 @@ namespace CameraCopyTool.Models
         /// <summary>
         /// Gets a human-readable upload date string for tooltips.
         /// </summary>
-        public string UploadedDateString => $"Uploaded to Google Drive on {Timestamp:yyyy-MM-dd hh:mm:ss tt}";
+        public string UploadedDateString => $"Uploaded to Google Drive on {Timestamp:MMM dd, yyyy h:mm tt}";
 
         /// <summary>
         /// Computes the SHA256 hash of a file.

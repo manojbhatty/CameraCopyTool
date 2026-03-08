@@ -18,6 +18,11 @@
         <!-- Half height converter for limiting expanded ListView height -->
         <converters:HalfHeightConverter x:Key="HalfHeightConverter"/>
 
+        <!-- Dynamic font size ToolTip style -->
+        <Style x:Key="DynamicToolTip" TargetType="ToolTip">
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
+
         <!-- Action button style -->
         <Style x:Key="ActionButtonStyle" TargetType="Button">
             <Setter Property="FontFamily" Value="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
@@ -146,6 +151,15 @@
                     <Setter Property="Background" Value="#90CAF9"/>
                     <Setter Property="Opacity" Value="1.0"/>
                 </MultiTrigger>
+                <!-- Tooltip for uploaded files to Google Drive -->
+                <DataTrigger Binding="{Binding UploadStatus}" Value="uploaded">
+                    <Setter Property="ToolTip">
+                        <Setter.Value>
+                            <ToolTip Content="{Binding UploadTooltip, StringFormat=Uploaded to Google Drive on {0}}"
+                                     Style="{StaticResource DynamicToolTip}"/>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
             </Style.Triggers>
         </Style>
 
@@ -383,7 +397,12 @@
                     <Button Content="🔄 Refresh (F5)"
                             Command="{Binding RefreshCommand}"
                             Style="{StaticResource RefreshButtonStyle}"
-                            Margin="0,0,10,0"/>
+                            Margin="0,0,10,0">
+                        <Button.ToolTip>
+                            <ToolTip Content="Reload files from source and destination folders (F5)"
+                                     Style="{StaticResource DynamicToolTip}"/>
+                        </Button.ToolTip>
+                    </Button>
                 </StackPanel>
 
                 <!-- Right side: Settings and Help buttons -->
@@ -391,10 +410,20 @@
                     <Button Content="⚙️ Settings"
                             Command="{Binding OpenSettingsCommand}"
                             Style="{StaticResource SettingsButtonStyle}"
-                            Margin="0,0,10,0"/>
+                            Margin="0,0,10,0">
+                        <Button.ToolTip>
+                            <ToolTip Content="Configure application settings (font size, Google Drive, etc.)"
+                                     Style="{StaticResource DynamicToolTip}"/>
+                        </Button.ToolTip>
+                    </Button>
                     <Button Content="❓ How to Use"
                             Command="{Binding ToggleHelpCommand}"
-                            Style="{StaticResource HelpButtonStyle}"/>
+                            Style="{StaticResource HelpButtonStyle}">
+                        <Button.ToolTip>
+                            <ToolTip Content="Show/hide instructions and keyboard shortcuts"
+                                     Style="{StaticResource DynamicToolTip}"/>
+                        </Button.ToolTip>
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>
@@ -705,6 +734,24 @@
                                   VerticalAlignment="Stretch"
                                   HorizontalContentAlignment="Stretch"
                                   Background="Transparent">
+                            <ListView.ItemContainerStyle>
+                                <Style BasedOn="{StaticResource {x:Type ListViewItem}}" TargetType="ListViewItem">
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding IsAlreadyCopied}" Value="False"/>
+                                                <Condition Binding="{Binding UploadStatus}" Value="{x:Null}"/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="ToolTip">
+                                                <Setter.Value>
+                                                    <ToolTip Content="Click to select"
+                                                             Style="{StaticResource DynamicToolTip}"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListView.ItemContainerStyle>
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="File Name">
@@ -760,6 +807,7 @@
                             <Setter Property="FontFamily" Value="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
                             <Setter Property="Foreground" Value="#FFFFFF"/>
                             <Setter Property="Cursor" Value="Hand"/>
+                            <Setter Property="ToolTipService.ShowOnDisabled" Value="True"/>
                             <Style.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter Property="Background" Value="#43A047"/>
@@ -770,6 +818,18 @@
                                     <Setter Property="Foreground" Value="#A0A0A0"/>
                                     <Setter Property="BorderBrush" Value="#C0C0C0"/>
                                     <Setter Property="Cursor" Value="Arrow"/>
+                                    <Setter Property="ToolTip">
+                                        <Setter.Value>
+                                            <ToolTip Content="Select a file to copy" FontSize="16"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="True">
+                                    <Setter Property="ToolTip">
+                                        <Setter.Value>
+                                            <ToolTip Content="Copy selected files to destination folder" FontSize="16"/>
+                                        </Setter.Value>
+                                    </Setter>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
