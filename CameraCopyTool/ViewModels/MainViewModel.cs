@@ -160,6 +160,7 @@ public class MainViewModel : ViewModelBase
         OpenSettingsCommand = new RelayCommand(_ => OpenSettings());
         ToggleHelpCommand = new RelayCommand(_ => ToggleHelpPanel());
         LogoutGoogleDriveCommand = new RelayCommand(_ => LogoutGoogleDrive());
+        LogoutCommand = new RelayCommand(_ => LogoutWithConfirmation());
 
         // Load saved settings from previous session
         _sourcePath = _settingsService.LastSourceFolder ?? string.Empty;
@@ -344,11 +345,21 @@ public class MainViewModel : ViewModelBase
     public bool IsGoogleDriveConfigured => _googleDriveService != null;
 
     /// <summary>
+    /// Gets a value indicating whether the user is authenticated with Google Drive.
+    /// </summary>
+    public bool IsGoogleDriveAuthenticated => _googleDriveService?.IsAuthenticated == true;
+
+    /// <summary>
     /// Gets the Google Drive authentication status message.
     /// </summary>
     public string GoogleDriveStatus => _googleDriveService?.IsAuthenticated == true
         ? "Connected to Google Drive"
         : "Not connected to Google Drive";
+
+    /// <summary>
+    /// Gets the authenticated Google Drive user's email address.
+    /// </summary>
+    public string? GoogleDriveUserEmail => _googleDriveService?.UserEmail;
 
     /// <summary>
     /// Gets the status bar icon (emoji) based on current state.
@@ -555,6 +566,12 @@ public class MainViewModel : ViewModelBase
     /// </summary>
     public ICommand LogoutGoogleDriveCommand { get; }
 
+    /// <summary>
+    /// Gets the command to logout from Google Drive with confirmation dialog.
+    /// Bound to the logout button in the main window.
+    /// </summary>
+    public ICommand LogoutCommand { get; }
+
     #endregion
 
     #region Command Handlers
@@ -674,12 +691,51 @@ public class MainViewModel : ViewModelBase
     {
         _googleDriveService?.Logout();
         OnPropertyChanged(nameof(GoogleDriveStatus));
-        
+        OnPropertyChanged(nameof(GoogleDriveUserEmail));
+        OnPropertyChanged(nameof(IsGoogleDriveAuthenticated));
+
         _dialogService.ShowMessage(
             "Disconnected from Google Drive.\n\nYou will need to sign in again to upload files.",
             "Logged Out",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
+    }
+
+    /// <summary>
+    /// Shows a confirmation dialog and logs out from Google Drive if confirmed.
+    /// </summary>
+    private void LogoutWithConfirmation()
+    {
+        if (_googleDriveService == null)
+        {
+            return;
+        }
+
+        if (!_googleDriveService.IsAuthenticated)
+        {
+            _dialogService.ShowMessage(
+                "You are not currently signed in to Google Drive.",
+                "Not Connected",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        var userEmail = _googleDriveService.UserEmail ?? "unknown account";
+        var message = $"You are currently connected to Google Drive as:\n\n  {userEmail}\n\n" +
+                     $"If you log out, you will need to sign in again to upload files.\n\n" +
+                     $"Do you want to continue?";
+
+        var result = _dialogService.ShowMessage(
+            message,
+            "Confirm Logout",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result == MessageBoxResult.Yes)
+        {
+            LogoutGoogleDrive();
+        }
     }
 
     /// <summary>

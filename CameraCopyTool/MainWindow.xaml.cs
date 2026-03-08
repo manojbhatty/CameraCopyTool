@@ -378,10 +378,13 @@ namespace CameraCopyTool
                         return;
                     }
 
-                    // Authentication successful - no MessageBox needed
-                    // Force refresh the status bar to show connected status
+                    // Authentication successful - update all related properties
                     _viewModel.OnPropertyChanged(nameof(MainViewModel.GoogleDriveStatus));
+                    _viewModel.OnPropertyChanged(nameof(MainViewModel.GoogleDriveUserEmail));
+                    _viewModel.OnPropertyChanged(nameof(MainViewModel.IsGoogleDriveAuthenticated));
                     System.Diagnostics.Debug.WriteLine($"Status bar updated: {_viewModel.GoogleDriveStatus}");
+                    System.Diagnostics.Debug.WriteLine($"User email: {_viewModel.GoogleDriveUserEmail}");
+                    System.Diagnostics.Debug.WriteLine($"IsAuthenticated: {_viewModel.IsGoogleDriveAuthenticated}");
                 }
 
                 // Show upload progress dialog
