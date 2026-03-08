@@ -5,10 +5,10 @@
 | Property | Value |
 |----------|-------|
 | **Application Name** | CameraCopyTool |
-| **Version** | 2.28.0 |
+| **Version** | 2.29.0 |
 | **Platform** | Windows (WPF .NET) |
 | **Architecture** | MVVM Pattern with Dependency Injection |
-| **Last Updated** | 2026-03-06 |
+| **Last Updated** | 2026-03-09 |
 
 ---
 
@@ -1211,6 +1211,21 @@ Scenario: Authentication token is persisted
   Given the user has successfully authenticated
   When the application is closed and reopened
   Then the authentication should be restored (no re-authentication required)
+  And the user's email should display in the toolbar (👤 user@gmail.com)
+  And the status bar should show: "✓ Connected to Google Drive (user@gmail.com)"
+
+Scenario: User email is displayed after authentication
+  Given the user has successfully authenticated with Google Drive
+  When viewing the main window
+  Then the toolbar should display the user's email address
+  Format: "👤 user@gmail.com" (blue color #1976D2)
+  And hovering over the email should show tooltip: "Connected to Google Drive"
+
+Scenario: Account email appears in status bar
+  Given the user is authenticated with Google Drive
+  When viewing the status bar
+  Then it should show: "✓ Connected to Google Drive (user@gmail.com)"
+  And the email should update if the user switches accounts
 
 Scenario: Authentication error handling
   Given the user cancels the OAuth flow in the browser
@@ -1218,6 +1233,79 @@ Scenario: Authentication error handling
   When returning to the application
   Then an error message should display: "Authentication cancelled" or error description
   And the user should be able to try again
+
+#### User Story 10.4: Google Drive Logout
+
+**As a** user with multiple Google accounts
+**I want to** log out from my current Google Drive account
+**So that** I can switch to a different account
+
+**Acceptance Criteria:**
+
+```gherkin
+Scenario: Logout button is visible in toolbar
+  Given Google Drive is configured in App.config
+  When viewing the main window
+  Then a logout button should be visible in the toolbar
+  Button content: "🚪 Logout"
+  Position: Between Settings and Help buttons
+  Style: Red background (#F44336)
+
+Scenario: Logout button state when authenticated
+  Given the user is authenticated with Google Drive
+  When viewing the logout button
+  Then the button should be enabled (clickable)
+  And the user's email should display: "👤 user@gmail.com"
+  And hovering over logout button should show tooltip: "Disconnect from Google Drive account"
+
+Scenario: Logout button state when not authenticated
+  Given the user is not authenticated with Google Drive
+  When viewing the logout button
+  Then the button should be disabled (grayed out)
+  And hovering over logout button should show tooltip: "Sign in to Google Drive first to use logout"
+
+Scenario: User logs out with confirmation
+  Given the user is authenticated as user@gmail.com
+  When the user clicks the logout button
+  Then a confirmation dialog should appear with:
+    | Element | Content |
+    |---------|---------|
+    | Title | "Confirm Logout" |
+    | Message | "You are currently connected to Google Drive as: user@gmail.com\n\nIf you log out, you will need to sign in again to upload files.\n\nDo you want to continue?" |
+    | Buttons | "Yes" and "No" |
+
+Scenario: User confirms logout
+  Given the confirmation dialog is displayed
+  When the user clicks "Yes"
+  Then the credentials should be deleted from disk
+  And the user's email should disappear from the toolbar
+  And the status bar should update to: "Not connected to Google Drive"
+  And the logout button should become disabled
+  And a message should display: "Disconnected from Google Drive.\n\nYou will need to sign in again to upload files."
+
+Scenario: User cancels logout
+  Given the confirmation dialog is displayed
+  When the user clicks "No"
+  Then the dialog should close
+  And the user should remain authenticated
+  And the email should still display in the toolbar
+
+Scenario: Session restore on application startup
+  Given the user previously authenticated and did not log out
+  When the application starts
+  Then cached credentials should be detected
+  And silent authentication should occur (no browser popup)
+  And the user's email should display in the toolbar
+  And the status bar should show: "✓ Connected to Google Drive (user@gmail.com)"
+  And the logout button should be enabled
+
+Scenario: No session restore after logout
+  Given the user logged out in a previous session
+  When the application starts
+  Then no cached credentials should exist
+  And the status bar should show: "Not connected to Google Drive"
+  And the logout button should be disabled
+  And the email should not display in the toolbar
 ```
 
 #### User Story 10.3: Upload History Tracking
@@ -3097,6 +3185,7 @@ The following unit tests have been implemented to verify BDD compliance:
 | 2.28.0 | 2026-03-06 | AI Assistant | **Issue #22 Enhancement - Relative Date Display**: Implemented human-friendly relative date display. Shows "Today, 10:30 AM" for today's files, "Yesterday, 3:45 PM" for yesterday, day name for recent files ("Friday, 10:30 AM"), and full date for older files ("Mar 06, 2026 10:30 PM"). Added ModifiedDateTime property for accurate DateTime sorting. Sorting still works correctly while displaying readable dates. Updated Business Rule 1.1 with date display specification. Benefits: easier to understand file recency, reduces cognitive load, more intuitive than ISO date format. |
 | 2.27.0 | 2026-03-06 | AI Assistant | **Issue #22 Complete - Default List Sorting**: Added default sort by Modified Date descending (newest first) on application startup and refresh. Sort indicator (▼) automatically shows on Modified Date column header. Users can still click column headers to change sort. Updated Business Rule 1.1 with default sort specification. Benefits: newest files appear first, improved user experience, visual consistency across sessions. |
 | 2.25.0 | 2026-02-26 | AI Assistant | **Google Drive Integration Feature**: Added Feature 10: Google Drive Integration with three user stories (10.1 Upload Files, 10.2 Authentication, 10.3 Upload History). Added core capability for Google Drive upload. Created 3 Architecture Decision Records (ADR-001: API Integration, ADR-002: Upload History Storage, ADR-003: Error Handling). Updated Table of Contents with Google Drive Integration appendix. |
+| 2.29.0 | 2026-03-09 | AI Assistant | **Issue #32 Complete - Google Drive Logout**: Added logout button (🚪) in toolbar with confirmation dialog. Shows user's email in toolbar (👤 user@gmail.com) and status bar. Implements session restore on startup (silent re-authentication). Fetches user email from Google OAuth2 API using email/profile scopes. Properly clears credentials directory on logout. Created ADR-006 documenting logout and session management. Updated BDD with User Story 10.4 (Logout) and session restore scenarios. Benefits: users can switch Google accounts, clear visual indication of connected account, no unnecessary sign-in dialogs on startup. |
 
 ---
 
@@ -3125,6 +3214,9 @@ The Google Drive integration feature allows users to upload files directly from 
 | ADR-001 | Google Drive API Integration | [docs/adr/ADR-001-Google-Drive-API.md](docs/adr/ADR-001-Google-Drive-API.md) |
 | ADR-002 | Upload History Storage Format | [docs/adr/ADR-002-Upload-History-Storage.md](docs/adr/ADR-002-Upload-History-Storage.md) |
 | ADR-003 | Error Handling and Retry Strategy | [docs/adr/ADR-003-Error-Handling-Retry.md](docs/adr/ADR-003-Error-Handling-Retry.md) |
+| ADR-004 | Default List Sorting | [docs/adr/ADR-004-Default-List-Sorting.md](docs/adr/ADR-004-Default-List-Sorting.md) |
+| ADR-005 | Relative Date Display | [docs/adr/ADR-005-Relative-Date-Display.md](docs/adr/ADR-005-Relative-Date-Display.md) |
+| ADR-006 | Google Drive Logout and Session Management | [docs/adr/ADR-006-Google-Drive-Logout.md](docs/adr/ADR-006-Google-Drive-Logout.md) |
 
 ### Technical Specifications
 

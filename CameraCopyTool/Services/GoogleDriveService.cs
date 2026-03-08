@@ -8,6 +8,7 @@ using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using Google.Apis.Requests;
+using Google.Apis.Oauth2.v2;
 using CameraCopyTool.Models;
 
 namespace CameraCopyTool.Services
@@ -36,6 +37,12 @@ namespace CameraCopyTool.Services
         /// Gets the authenticated user's email address.
         /// </summary>
         string? UserEmail { get; }
+
+        /// <summary>
+        /// Checks if cached credentials exist from a previous session.
+        /// </summary>
+        /// <returns>True if cached credentials exist, false otherwise.</returns>
+        bool HasCachedCredentials();
 
         /// <summary>
         /// Event raised when an upload error occurs.
@@ -91,6 +98,7 @@ namespace CameraCopyTool.Services
         private readonly INetworkService _networkService;
         private UserCredential? _credential;
         private DriveService? _driveService;
+        private string? _userEmail;
         private readonly int _maxRetries;
         private readonly int[] _retryDelaysMs;
 
@@ -110,21 +118,17 @@ namespace CameraCopyTool.Services
 
         public bool IsAuthenticated => _credential != null;
 
-        public string? UserEmail
+        public string? UserEmail => _userEmail;
+
+        /// <summary>
+        /// Checks if cached credentials exist without triggering authentication.
+        /// </summary>
+        public bool HasCachedCredentials()
         {
-            get
-            {
-                // Try to get email from user info
-                var email = _credential?.UserId;
-
-                // If it's just "user" or empty, return generic message
-                if (string.IsNullOrEmpty(email) || email == "user")
-                {
-                    return "Google Account";
-                }
-
-                return email;
-            }
+            if (!_settings.IsConfigured)
+                return false;
+                
+            return Directory.Exists(_settings.CredentialsPath);
         }
 
         public event EventHandler<UploadErrorEventArgs>? UploadError;
@@ -154,13 +158,47 @@ namespace CameraCopyTool.Services
                     ClientSecret = _settings.ClientSecret!
                 };
 
-                // Authenticate using OAuth 2.0
+                // Authenticate using OAuth 2.0 with multiple scopes
+                // Include email scope to fetch user's email address
+                var scopes = new[] { _settings.Scope, "email", "profile" };
                 _credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
                     clientSecrets,
-                    new[] { _settings.Scope },
+                    scopes,
                     "user",
                     cancellationToken,
                     new FileDataStore(_settings.CredentialsPath, true));
+
+                // Fetch user info to get the email address
+                try
+                {
+                    var oauthService = new Oauth2Service(new BaseClientService.Initializer
+                    {
+                        HttpClientInitializer = _credential,
+                        ApplicationName = _settings.ApplicationName
+                    });
+
+                    var userInfo = await oauthService.Userinfo.Get().ExecuteAsync(cancellationToken);
+                    
+                    // Try to get email first, then fall back to other identifiers
+                    _userEmail = !string.IsNullOrEmpty(userInfo.Email) ? userInfo.Email :
+                                 !string.IsNullOrEmpty(userInfo.Name) ? userInfo.Name :
+                                 !string.IsNullOrEmpty(userInfo.GivenName) ? userInfo.GivenName :
+                                 !string.IsNullOrEmpty(userInfo.FamilyName) ? userInfo.FamilyName :
+                                 "Google Account";
+                    
+                    System.Diagnostics.Debug.WriteLine($"Authenticated user: {_userEmail}");
+                    System.Diagnostics.Debug.WriteLine($"  Email: {userInfo.Email}");
+                    System.Diagnostics.Debug.WriteLine($"  Name: {userInfo.Name}");
+                    System.Diagnostics.Debug.WriteLine($"  GivenName: {userInfo.GivenName}");
+                    System.Diagnostics.Debug.WriteLine($"  FamilyName: {userInfo.FamilyName}");
+                    System.Diagnostics.Debug.WriteLine($"  Id: {userInfo.Id}");
+                    System.Diagnostics.Debug.WriteLine($"  Picture: {userInfo.Picture}");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to fetch user email: {ex.Message}");
+                    _userEmail = "Google Account";
+                }
 
                 // Create Drive service
                 _driveService = new DriveService(new BaseClientService.Initializer
@@ -198,6 +236,7 @@ namespace CameraCopyTool.Services
 
                 _credential = null;
                 _driveService = null;
+                _userEmail = null;
                 
                 System.Diagnostics.Debug.WriteLine($"Logout successful - deleted: {_settings.CredentialsPath}");
             }

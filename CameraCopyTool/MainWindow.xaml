@@ -430,6 +430,18 @@
                                      Style="{StaticResource DynamicToolTip}"/>
                         </Button.ToolTip>
                     </Button>
+                    <!-- Account info - shows when authenticated -->
+                    <TextBlock Text="{Binding GoogleDriveUserEmail, StringFormat=👤 {0}}"
+                               Foreground="#1976D2"
+                               FontWeight="SemiBold"
+                               FontSize="{Binding FontSize, Mode=OneWay, RelativeSource={RelativeSource AncestorType=Window}}"
+                               Margin="0,0,10,0"
+                               VerticalAlignment="Center"
+                               Visibility="{Binding IsGoogleDriveAuthenticated, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock.ToolTip>
+                            <ToolTip Content="Connected to Google Drive" FontSize="16"/>
+                        </TextBlock.ToolTip>
+                    </TextBlock>
                     <Button Content="🚪 Logout"
                             Command="{Binding LogoutCommand}"
                             Style="{StaticResource LogoutButtonStyle}"
