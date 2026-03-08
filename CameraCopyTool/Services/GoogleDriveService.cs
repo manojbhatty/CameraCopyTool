@@ -189,13 +189,17 @@ namespace CameraCopyTool.Services
         {
             try
             {
-                if (File.Exists(_settings.CredentialsPath))
+                // FileDataStore stores tokens in subdirectories under CredentialsPath
+                // Delete the entire directory to clear all cached tokens
+                if (Directory.Exists(_settings.CredentialsPath))
                 {
-                    File.Delete(_settings.CredentialsPath);
+                    Directory.Delete(_settings.CredentialsPath, true);
                 }
 
                 _credential = null;
                 _driveService = null;
+                
+                System.Diagnostics.Debug.WriteLine($"Logout successful - deleted: {_settings.CredentialsPath}");
             }
             catch (Exception ex)
             {

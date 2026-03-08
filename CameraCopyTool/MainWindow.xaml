@@ -81,6 +81,20 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+
+        <!-- Logout button specific style -->
+        <Style x:Key="LogoutButtonStyle" BasedOn="{StaticResource ActionButtonStyle}" TargetType="Button">
+            <Setter Property="Background" Value="#F44336"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#E53935"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#D32F2F"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
         
         <!-- Context menu for ListView items -->
         <ContextMenu x:Key="FileItemContextMenu">
@@ -405,7 +419,7 @@
                     </Button>
                 </StackPanel>
 
-                <!-- Right side: Settings and Help buttons -->
+                <!-- Right side: Settings, Logout, and Help buttons -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Content="⚙️ Settings"
                             Command="{Binding OpenSettingsCommand}"
@@ -414,6 +428,29 @@
                         <Button.ToolTip>
                             <ToolTip Content="Configure application settings (font size, Google Drive, etc.)"
                                      Style="{StaticResource DynamicToolTip}"/>
+                        </Button.ToolTip>
+                    </Button>
+                    <Button Content="🚪 Logout"
+                            Command="{Binding LogoutCommand}"
+                            Style="{StaticResource LogoutButtonStyle}"
+                            Margin="0,0,10,0"
+                            Visibility="{Binding IsGoogleDriveConfigured, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            IsEnabled="{Binding IsGoogleDriveAuthenticated}">
+                        <Button.ToolTip>
+                            <ToolTip FontSize="16">
+                                <ToolTip.Style>
+                                    <Style TargetType="ToolTip" BasedOn="{StaticResource {x:Type ToolTip}}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsGoogleDriveAuthenticated}" Value="True">
+                                                <Setter Property="Content" Value="Disconnect from Google Drive account"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsGoogleDriveAuthenticated}" Value="False">
+                                                <Setter Property="Content" Value="Sign in to Google Drive first to use logout"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ToolTip.Style>
+                            </ToolTip>
                         </Button.ToolTip>
                     </Button>
                     <Button Content="❓ How to Use"
