@@ -6,7 +6,7 @@
         Title="Camera Copy Tool" Height="600" Width="1000"
         MinHeight="400" MinWidth="800"
         WindowState="Maximized"
-        Icon="AppIcon.ico">
+        Icon="pack://application:,,,/AppIcon.ico">
 
     <Window.Resources>
         <!-- Boolean to Visibility converter for help panel toggle -->
